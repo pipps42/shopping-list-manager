@@ -1,0 +1,113 @@
+# ==== FLUTTER PROJECT ANALYSIS .gitignore ====
+# Mantiene solo i file essenziali per code review
+
+# ===== KEEP THESE (commented out) =====
+# lib/                           # Source code (ESSENTIAL)
+# assets/                        # Assets (ESSENTIAL) 
+# pubspec.yaml                   # Dependencies (ESSENTIAL)
+# README.md                      # Documentation (ESSENTIAL)
+# android/app/src/main/AndroidManifest.xml # Android config (USEFUL)
+
+# ===== EXCLUDE EVERYTHING ELSE =====
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code (keep basic config, exclude personal settings)
+.vscode/
+!.vscode/settings.json
+!.vscode/launch.json
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+.packages
+
+# Generated files
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# ===== ANDROID (keep only essential config) =====
+/android/app/debug/
+/android/app/profile/
+/android/app/release/
+/android/app/build/
+/android/.gradle/
+/android/gradle/
+/android/local.properties
+/android/gradlew
+/android/gradlew.bat
+/android/gradle.properties
+/android/settings.gradle
+/android/build.gradle
+/android/app/build.gradle
+/android/.gitignore
+
+# Keep only AndroidManifest.xml
+!/android/app/src/main/AndroidManifest.xml
+
+# ===== iOS (exclude all, we focus on Android) =====
+/ios/
+
+# ===== WEB (exclude all) =====
+/web/
+
+# ===== LINUX/MACOS/WINDOWS (exclude all) =====
+/linux/
+/macos/
+/windows/
+
+# ===== TESTING =====
+/test_driver/
+/integration_test/
+
+# ===== FIREBASE & API KEYS =====
+/lib/firebase_options.dart
+google-services.json
+GoogleService-Info.plist
+.env
+*.pem
+*.p12
+*.keystore
+
+# ===== ANALYSIS & CACHE =====
+.flutter-devtools/
+.analysis_options_user.yaml
+
+# ===== LOCAL DATABASE & TEMP FILES =====
+*.db
+*.sqlite
+*.sqlite3
+/assets/images/*.jpg
+/assets/images/*.png
+/assets/images/*.jpeg
