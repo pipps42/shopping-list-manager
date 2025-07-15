@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/current_list_provider.dart';
 import 'current_list_screen.dart';
 import 'departments_management_screen.dart';
 import 'products_management_screen.dart';
@@ -78,6 +79,41 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             },
           ),
         ),
+        actions:
+            _selectedIndex ==
+                0 // MENU SOLO PER CURRENT LIST
+            ? [
+                PopupMenuButton<String>(
+                  onSelected: (value) => _handleMenuAction(value),
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'clear_all',
+                      child: Row(
+                        children: [
+                          Icon(Icons.clear_all, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text(
+                            'Svuota lista',
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // 🔥 SPAZIO PER FUTURE OPZIONI
+                    // const PopupMenuItem(
+                    //   value: 'export_list',
+                    //   child: Row(
+                    //     children: [
+                    //       Icon(Icons.share),
+                    //       SizedBox(width: 8),
+                    //       Text('Condividi lista'),
+                    //     ],
+                    //   ),
+                    // ),
+                  ],
+                ),
+              ]
+            : null, // Nessun menu per altri screen
       ),
       drawer: _buildDrawer(),
       body: GestureDetector(
@@ -189,6 +225,74 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         ],
       ),
     );
+  }
+
+  void _handleMenuAction(String action) {
+    switch (action) {
+      case 'clear_all':
+        _showClearAllDialog();
+        break;
+      // 🔥 FUTURE ACTIONS
+      // case 'export_list':
+      //   _exportCurrentList();
+      //   break;
+      // case 'complete_list':
+      //   _completeCurrentList();
+      //   break;
+    }
+  }
+
+  void _showClearAllDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Svuota Lista'),
+        content: const Text(
+          'Sei sicuro di voler rimuovere tutti i prodotti dalla lista corrente?\n\nQuesta azione non può essere annullata.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annulla'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _clearCurrentList();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Svuota Lista'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _clearCurrentList() async {
+    try {
+      // Ottieni il ref da un ConsumerState
+      final container = ProviderScope.containerOf(context);
+      await container.read(currentListProvider.notifier).clearAllItems();
+
+      // Mostra conferma
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Lista svuotata con successo'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Errore: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 }
 

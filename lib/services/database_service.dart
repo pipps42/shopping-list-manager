@@ -355,11 +355,6 @@ class DatabaseService {
     );
   }
 
-  Future<int> deleteListItem(int id) async {
-    final db = await database;
-    return await db.delete('list_items', where: 'id = ?', whereArgs: [id]);
-  }
-
   Future<bool> isProductInCurrentList(int productId) async {
     final db = await database;
     final currentList = await getCurrentShoppingList();
@@ -371,8 +366,28 @@ class DatabaseService {
         [currentList.id, productId],
       ),
     );
-
     return (count ?? 0) > 0;
+  }
+
+  Future<int> deleteListItem(int id) async {
+    final db = await database;
+    return await db.delete('list_items', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> clearCurrentList() async {
+    final db = await database;
+    final currentList = await getCurrentShoppingList();
+
+    if (currentList == null) {
+      throw Exception('Nessuna lista corrente trovata');
+    }
+
+    // Elimina tutti gli item della lista corrente
+    await db.delete(
+      'list_items',
+      where: 'list_id = ?',
+      whereArgs: [currentList.id],
+    );
   }
 
   Future<bool> addProductToCurrentList(int productId) async {

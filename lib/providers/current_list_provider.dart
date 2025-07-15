@@ -93,4 +93,16 @@ class CurrentListNotifier
     // Quindi aggiorna il database
     await _databaseService.toggleItemChecked(itemId, isChecked);
   }
+
+  Future<void> clearAllItems() async {
+    try {
+      await _databaseService.clearCurrentList();
+      await loadCurrentList();
+      // Invalida il provider degli ID
+      _ref.invalidate(currentListProductIdsProvider);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      rethrow;
+    }
+  }
 }
