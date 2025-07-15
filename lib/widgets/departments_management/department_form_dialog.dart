@@ -1,48 +1,37 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../models/product.dart';
 import '../../models/department.dart';
 import '../../providers/image_provider.dart';
 import '../../utils/constants.dart';
 
-class ProductFormDialog extends ConsumerStatefulWidget {
-  final Product? product;
-  final List<Department> departments;
-  final int? defaultDepartmentId;
-  final Function(String name, int departmentId, String? imagePath) onSave;
+class DepartmentFormDialog extends ConsumerStatefulWidget {
+  final Department? department;
+  final Function(String name, String? imagePath) onSave;
 
-  const ProductFormDialog({
+  const DepartmentFormDialog({
     super.key,
-    this.product,
-    required this.departments,
-    this.defaultDepartmentId,
+    this.department,
     required this.onSave,
   });
 
   @override
-  ConsumerState<ProductFormDialog> createState() => _ProductFormDialogState();
+  ConsumerState<DepartmentFormDialog> createState() =>
+      _DepartmentFormDialogState();
 }
 
-class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
+class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
   late TextEditingController _nameController;
-  int? _selectedDepartmentId;
   String? _selectedImagePath;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.product?.name ?? '');
-
-    _selectedDepartmentId =
-        widget.product?.departmentId ?? // 1. Prodotto esistente
-        widget.defaultDepartmentId ?? // 2. Reparto di default passato
-        (widget.departments.isNotEmpty
-            ? widget.departments.first.id
-            : null); // 3. Fallback primo reparto
-
-    _selectedImagePath = widget.product?.imagePath;
+    _nameController = TextEditingController(
+      text: widget.department?.name ?? '',
+    );
+    _selectedImagePath = widget.department?.imagePath;
   }
 
   @override
@@ -53,51 +42,26 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final isEditing = widget.product != null;
+    final isEditing = widget.department != null;
 
     return AlertDialog(
-      title: Text(isEditing ? 'Modifica Prodotto' : 'Nuovo Prodotto'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Nome prodotto
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Nome prodotto',
-                border: OutlineInputBorder(),
-              ),
+      title: Text(isEditing ? 'Modifica Reparto' : 'Nuovo Reparto'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Nome reparto
+          TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(
+              labelText: 'Nome reparto',
+              border: OutlineInputBorder(),
             ),
-            const SizedBox(height: 16),
+          ),
+          const SizedBox(height: 16),
 
-            // Selezione reparto
-            DropdownButtonFormField<int>(
-              value: _selectedDepartmentId,
-              decoration: const InputDecoration(
-                labelText: 'Reparto',
-                border: OutlineInputBorder(),
-              ),
-              items: widget.departments
-                  .map(
-                    (dept) => DropdownMenuItem(
-                      value: dept.id,
-                      child: Text(dept.name),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedDepartmentId = value;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // Sezione immagine
-            _buildImageSection(),
-          ],
-        ),
+          // Sezione immagine
+          _buildImageSection(),
+        ],
       ),
       actions: [
         TextButton(
@@ -136,7 +100,7 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
               color: Colors.grey[300],
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.shopping_basket, size: 30),
+            child: const Icon(Icons.store, size: 30),
           ),
         const SizedBox(width: 16),
 
@@ -199,19 +163,12 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
 
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Il nome del prodotto è obbligatorio')),
+        const SnackBar(content: Text('Il nome del reparto è obbligatorio')),
       );
       return;
     }
 
-    if (_selectedDepartmentId == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Seleziona un reparto')));
-      return;
-    }
-
-    widget.onSave(name, _selectedDepartmentId!, _selectedImagePath);
+    widget.onSave(name, _selectedImagePath);
     Navigator.pop(context);
   }
 }

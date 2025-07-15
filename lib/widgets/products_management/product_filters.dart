@@ -25,6 +25,7 @@ class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
   late TextEditingController _searchController;
   late FocusNode _searchFocusNode;
   int? _selectedDepartmentId;
+  bool _hasSearchText = false;
 
   @override
   void initState() {
@@ -32,6 +33,12 @@ class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
     _searchController = TextEditingController(text: widget.initialSearchQuery);
     _searchFocusNode = FocusNode();
     _selectedDepartmentId = widget.initialSelectedDepartmentId;
+    _hasSearchText = widget.initialSearchQuery.isNotEmpty;
+    _searchController.addListener(() {
+      setState(() {
+        _hasSearchText = _searchController.text.isNotEmpty;
+      });
+    });
   }
 
   @override
@@ -60,10 +67,22 @@ class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
           TextField(
             controller: _searchController,
             focusNode: _searchFocusNode,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Cerca prodotti...',
-              prefixIcon: Icon(Icons.search),
-              border: OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon:
+                  _hasSearchText // Mostra X solo quando c'è testo
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                        widget.onSearchChanged('');
+                        _clearFocus();
+                      },
+                      tooltip: 'Cancella ricerca',
+                    )
+                  : null,
+              border: const OutlineInputBorder(),
               isDense: true,
             ),
             onChanged: (value) {

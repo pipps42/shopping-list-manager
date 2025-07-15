@@ -23,8 +23,19 @@ class AddProductDialog extends ConsumerStatefulWidget {
 class _AddProductDialogState extends ConsumerState<AddProductDialog> {
   Department? selectedDepartment;
   String searchQuery = '';
+  bool _hasSearchText = false;
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _hasSearchText = _searchController.text.isNotEmpty;
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -45,7 +56,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
 
     return Dialog(
       child: GestureDetector(
-        // 🔥 NUOVO: Wrapper per tap fuori
+        // Wrapper per tap fuori
         onTap: () => _clearFocus(),
         child: Container(
           width: MediaQuery.of(context).size.width * 0.9,
@@ -81,10 +92,23 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
               TextField(
                 controller: _searchController,
                 focusNode: _searchFocusNode,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: 'Cerca prodotto...',
-                  prefixIcon: Icon(Icons.search),
-                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _hasSearchText
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {
+                              searchQuery = '';
+                            });
+                            _clearFocus();
+                          },
+                          tooltip: 'Cancella ricerca',
+                        )
+                      : null,
+                  border: const OutlineInputBorder(),
                 ),
                 onChanged: (value) {
                   setState(() {
