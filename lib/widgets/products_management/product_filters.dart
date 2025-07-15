@@ -1,0 +1,118 @@
+import 'package:flutter/material.dart';
+import '../../models/department.dart';
+
+class ProductFiltersWidget extends StatefulWidget {
+  final List<Department> departments;
+  final Function(String) onSearchChanged;
+  final Function(int?) onDepartmentFilterChanged;
+  final String initialSearchQuery;
+  final int? initialSelectedDepartmentId;
+
+  const ProductFiltersWidget({
+    super.key,
+    required this.departments,
+    required this.onSearchChanged,
+    required this.onDepartmentFilterChanged,
+    this.initialSearchQuery = '',
+    this.initialSelectedDepartmentId,
+  });
+
+  @override
+  State<ProductFiltersWidget> createState() => _ProductFiltersWidgetState();
+}
+
+class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
+  late TextEditingController _searchController;
+  late FocusNode _searchFocusNode;
+  int? _selectedDepartmentId;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController(text: widget.initialSearchQuery);
+    _searchFocusNode = FocusNode();
+    _selectedDepartmentId = widget.initialSelectedDepartmentId;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _clearFocus() {
+    _searchFocusNode.unfocus();
+    FocusScope.of(context).requestFocus(FocusNode());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
+      ),
+      child: Column(
+        children: [
+          // Barra di ricerca
+          TextField(
+            controller: _searchController,
+            focusNode: _searchFocusNode,
+            decoration: const InputDecoration(
+              hintText: 'Cerca prodotti...',
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(),
+              isDense: true,
+            ),
+            onChanged: (value) {
+              widget.onSearchChanged(value.toLowerCase());
+            },
+            onTapOutside: (event) => _clearFocus(),
+            onEditingComplete: () => _clearFocus(),
+          ),
+          const SizedBox(height: 12),
+          // Filtro reparti
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                // Opzione "Tutti"
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    label: const Text('Tutti'),
+                    selected: _selectedDepartmentId == null,
+                    onSelected: (selected) {
+                      setState(() {
+                        _selectedDepartmentId = null;
+                      });
+                      widget.onDepartmentFilterChanged(null);
+                    },
+                  ),
+                ),
+                // Reparti
+                ...widget.departments.map(
+                  (dept) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(dept.name),
+                      selected: _selectedDepartmentId == dept.id,
+                      onSelected: (selected) {
+                        setState(() {
+                          _selectedDepartmentId = selected ? dept.id : null;
+                        });
+                        widget.onDepartmentFilterChanged(_selectedDepartmentId);
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

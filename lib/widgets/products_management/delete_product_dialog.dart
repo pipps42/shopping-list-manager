@@ -1,0 +1,38 @@
+import 'package:flutter/material.dart';
+import '../../models/product.dart';
+
+class DeleteProductDialog extends StatelessWidget {
+  final Product product;
+  final VoidCallback onConfirmDelete;
+
+  const DeleteProductDialog({
+    super.key,
+    required this.product,
+    required this.onConfirmDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Elimina Prodotto'),
+      content: Text('Sei sicuro di voler eliminare "${product.name}"?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Annulla'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            onConfirmDelete();
+            Navigator.pop(context);
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+          ),
+          child: const Text('Elimina'),
+        ),
+      ],
+    );
+  }
+}
