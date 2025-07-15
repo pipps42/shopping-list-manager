@@ -13,7 +13,8 @@ class MainScreen extends ConsumerStatefulWidget {
 
 class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
-  
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   final List<Widget> _screens = [
     const CurrentListScreen(),
     const DepartmentsManagementScreen(),
@@ -27,21 +28,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   ];
 
   final List<DrawerItem> _drawerItems = [
-    DrawerItem(
-      icon: Icons.shopping_cart,
-      title: 'Lista Corrente',
-      index: 0,
-    ),
-    DrawerItem(
-      icon: Icons.store,
-      title: 'Gestione Reparti',
-      index: 1,
-    ),
-    DrawerItem(
-      icon: Icons.inventory_2,
-      title: 'Gestione Prodotti',
-      index: 2,
-    ),
+    DrawerItem(icon: Icons.shopping_cart, title: 'Lista Corrente', index: 0),
+    DrawerItem(icon: Icons.store, title: 'Gestione Reparti', index: 1),
+    DrawerItem(icon: Icons.inventory_2, title: 'Gestione Prodotti', index: 2),
     DrawerItem(
       icon: Icons.history,
       title: 'Ultime Liste',
@@ -49,23 +38,58 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     ),
   ];
 
+  void _onTabChanged(int index) {
+    // Rimuovi TUTTO il focus
+    final currentFocus = FocusScope.of(context);
+    if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null) {
+      currentFocus.focusedChild!.unfocus();
+    }
+    FocusScope.of(
+      context,
+    ).requestFocus(FocusNode()); // Forza focus su nodo vuoto
+    setState(() {
+      _selectedIndex = index;
+    });
+    Navigator.pop(context);
+  }
+
+  void _onDrawerOpened() {
+    // Rimuovi focus quando apro drawer
+    final currentFocus = FocusScope.of(context);
+    if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null) {
+      currentFocus.focusedChild!.unfocus();
+    }
+    FocusScope.of(context).requestFocus(FocusNode());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text(_titles[_selectedIndex]),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         leading: Builder(
           builder: (context) => IconButton(
             icon: const Icon(Icons.menu),
-            onPressed: () => Scaffold.of(context).openDrawer(),
+            onPressed: () => {
+              _onDrawerOpened(),
+              Scaffold.of(context).openDrawer(),
+            },
           ),
         ),
       ),
       drawer: _buildDrawer(),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _screens,
+      body: GestureDetector(
+        // Wrapper per catturare tap fuori
+        onTap: () {
+          final currentFocus = FocusScope.of(context);
+          if (!currentFocus.hasPrimaryFocus &&
+              currentFocus.focusedChild != null) {
+            currentFocus.focusedChild!.unfocus();
+          }
+        },
+        child: IndexedStack(index: _selectedIndex, children: _screens),
       ),
     );
   }
@@ -87,11 +111,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             ),
             child: const Row(
               children: [
-                Icon(
-                  Icons.shopping_bag,
-                  size: 48,
-                  color: Colors.white,
-                ),
+                Icon(Icons.shopping_bag, size: 48, color: Colors.white),
                 SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -108,10 +128,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       ),
                       Text(
                         'Esselunga',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 16,
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 16),
                       ),
                     ],
                   ),
@@ -131,41 +148,31 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 return ListTile(
                   leading: Icon(
                     item.icon,
-                    color: isDisabled 
-                        ? Colors.grey 
-                        : isSelected 
-                            ? Theme.of(context).colorScheme.primary 
-                            : null,
+                    color: isDisabled
+                        ? Colors.grey
+                        : isSelected
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
                   ),
                   title: Text(
                     item.title,
                     style: TextStyle(
-                      color: isDisabled 
-                          ? Colors.grey 
-                          : isSelected 
-                              ? Theme.of(context).colorScheme.primary 
-                              : null,
+                      color: isDisabled
+                          ? Colors.grey
+                          : isSelected
+                          ? Theme.of(context).colorScheme.primary
+                          : null,
                       fontWeight: isSelected ? FontWeight.bold : null,
                     ),
                   ),
                   selected: isSelected,
                   enabled: !isDisabled,
-                  onTap: isDisabled 
-                      ? null 
-                      : () {
-                          setState(() {
-                            _selectedIndex = item.index;
-                          });
-                          Navigator.pop(context);
-                        },
-                  trailing: isDisabled 
+                  onTap: isDisabled ? null : () => _onTabChanged(item.index),
+                  trailing: isDisabled
                       ? const Text(
                           'Presto',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
-                        ) 
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        )
                       : null,
                 );
               },
@@ -176,10 +183,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             padding: EdgeInsets.all(16.0),
             child: Text(
               'v1.0.0',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ),
         ],

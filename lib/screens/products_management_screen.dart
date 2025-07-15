@@ -24,11 +24,18 @@ class _ProductsManagementScreenState
   String searchQuery = '';
   int? selectedDepartmentId;
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
+  }
+
+  void _clearFocus() {
+    _searchFocusNode.unfocus();
+    FocusScope.of(context).requestFocus(FocusNode());
   }
 
   @override
@@ -36,34 +43,41 @@ class _ProductsManagementScreenState
     final productsState = ref.watch(productsProvider);
     final departmentsState = ref.watch(departmentsProvider);
 
-    return Scaffold(
-      body: Column(
-        children: [
-          // Filtri e ricerca
-          _buildFiltersSection(departmentsState.value ?? []),
-          // Lista prodotti
-          Expanded(
-            child: productsState.when(
-              data: (products) => _buildProductsList(
-                context,
-                ref,
-                products,
-                departmentsState.value ?? [],
-              ),
-              loading: () =>
-                  const LoadingWidget(message: 'Caricamento prodotti...'),
-              error: (error, stack) => ErrorStateWidget(
-                message: 'Errore nel caricamento dei prodotti: $error',
-                onRetry: () => ref.invalidate(productsProvider),
+    return GestureDetector(
+      // Wrapper per tap fuori
+      onTap: () => _clearFocus(),
+      child: Scaffold(
+        body: Column(
+          children: [
+            // Filtri e ricerca
+            _buildFiltersSection(departmentsState.value ?? []),
+            // Lista prodotti
+            Expanded(
+              child: productsState.when(
+                data: (products) => _buildProductsList(
+                  context,
+                  ref,
+                  products,
+                  departmentsState.value ?? [],
+                ),
+                loading: () =>
+                    const LoadingWidget(message: 'Caricamento prodotti...'),
+                error: (error, stack) => ErrorStateWidget(
+                  message: 'Errore nel caricamento dei prodotti: $error',
+                  onRetry: () => ref.invalidate(productsProvider),
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: "products_management_fab",
-        onPressed: () => _showAddProductDialog(context, ref),
-        child: const Icon(Icons.add),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          heroTag: "products_management_fab",
+          onPressed: () {
+            _clearFocus();
+            _showAddProductDialog(context, ref);
+          },
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
@@ -80,6 +94,7 @@ class _ProductsManagementScreenState
           // Barra di ricerca
           TextField(
             controller: _searchController,
+            focusNode: _searchFocusNode,
             decoration: const InputDecoration(
               hintText: 'Cerca prodotti...',
               prefixIcon: Icon(Icons.search),
@@ -91,6 +106,8 @@ class _ProductsManagementScreenState
                 searchQuery = value.toLowerCase();
               });
             },
+            onTapOutside: (event) => _clearFocus(),
+            onEditingComplete: () => _clearFocus(),
           ),
           const SizedBox(height: 12),
           // Filtro reparti

@@ -24,11 +24,18 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
   Department? selectedDepartment;
   String searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
+  }
+
+  void _clearFocus() {
+    _searchFocusNode.unfocus();
+    FocusScope.of(context).requestFocus(FocusNode());
   }
 
   @override
@@ -37,84 +44,97 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     final productsState = ref.watch(productsProvider);
 
     return Dialog(
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.9,
-        height: MediaQuery.of(context).size.height * 0.8,
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    'Aggiungi Prodotto',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Barra di ricerca
-            TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                hintText: 'Cerca prodotto...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  searchQuery = value.toLowerCase();
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // Filtro per reparto
-            departmentsState.when(
-              data: (departments) => _buildDepartmentFilter(departments),
-              loading: () => const LoadingWidget(
-                message: 'Caricamento reparti...',
-                size: 20,
-              ),
-              error: (error, stack) => Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Icon(Icons.error, color: Colors.red, size: 16),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Errore reparti: $error',
-                        style: TextStyle(color: Colors.red, fontSize: 12),
+      child: GestureDetector(
+        // 🔥 NUOVO: Wrapper per tap fuori
+        onTap: () => _clearFocus(),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.8,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Aggiungi Prodotto',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      _clearFocus();
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // Lista prodotti
-            Expanded(
-              child: productsState.when(
-                data: (products) => _buildProductsList(products),
-                loading: () =>
-                    const LoadingWidget(message: 'Caricamento prodotti...'),
-                error: (error, stack) => ErrorStateWidget(
-                  message: 'Errore nel caricamento dei prodotti: $error',
-                  icon: Icons.inventory_2_outlined,
+              // Barra di ricerca
+              TextField(
+                controller: _searchController,
+                focusNode: _searchFocusNode,
+                decoration: const InputDecoration(
+                  hintText: 'Cerca prodotto...',
+                  prefixIcon: Icon(Icons.search),
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    searchQuery = value.toLowerCase();
+                  });
+                },
+                onTapOutside: (event) => _clearFocus(),
+                onEditingComplete: () => _clearFocus(),
+              ),
+              const SizedBox(height: 16),
+
+              // Filtro per reparto
+              departmentsState.when(
+                data: (departments) => _buildDepartmentFilter(departments),
+                loading: () => const LoadingWidget(
+                  message: 'Caricamento reparti...',
+                  size: 20,
+                ),
+                error: (error, stack) => Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error, color: Colors.red, size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Errore reparti: $error',
+                          style: TextStyle(color: Colors.red, fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+
+              // Lista prodotti
+              Expanded(
+                child: productsState.when(
+                  data: (products) => _buildProductsList(products),
+                  loading: () =>
+                      const LoadingWidget(message: 'Caricamento prodotti...'),
+                  error: (error, stack) => ErrorStateWidget(
+                    message: 'Errore nel caricamento dei prodotti: $error',
+                    icon: Icons.inventory_2_outlined,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

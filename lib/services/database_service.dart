@@ -176,7 +176,25 @@ class DatabaseService {
 
   Future<int> deleteDepartment(int id) async {
     final db = await database;
-    return await db.delete('departments', where: 'id = ?', whereArgs: [id]);
+
+    return await db.transaction((txn) async {
+      // 1. Elimina tutti gli item nelle liste che riferiscono ai prodotti di questo reparto
+      await txn.rawDelete(
+        '''
+      DELETE FROM list_items 
+      WHERE product_id IN (
+        SELECT id FROM products WHERE department_id = ?
+      )
+    ''',
+        [id],
+      );
+
+      // 2. Elimina tutti i prodotti del reparto
+      await txn.delete('products', where: 'department_id = ?', whereArgs: [id]);
+
+      // 3. Elimina il reparto
+      return await txn.delete('departments', where: 'id = ?', whereArgs: [id]);
+    });
   }
 
   Future<void> reorderDepartments(List<Department> departments) async {

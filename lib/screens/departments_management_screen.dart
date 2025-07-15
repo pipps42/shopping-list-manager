@@ -410,6 +410,12 @@ class DepartmentsManagementScreen extends ConsumerWidget {
                   .read(departmentsProvider.notifier)
                   .deleteDepartment(department.id!);
               Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Reparto "${department.name}" eliminato'),
+                  backgroundColor: Colors.green,
+                ),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
