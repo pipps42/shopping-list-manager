@@ -1,8 +1,8 @@
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../models/product.dart';
 import '../../models/department.dart';
-import '../../utils/constants.dart';
 
 class ProductTileWidget extends StatelessWidget {
   final Product product;
@@ -25,7 +25,7 @@ class ProductTileWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: AppConstants.paddingXS),
       child: ListTile(
         leading: _buildProductImage(),
         title: Text(
@@ -37,11 +37,11 @@ class ProductTileWidget extends StatelessWidget {
           children: [
             Text(
               department.name,
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              style: TextStyle(color: Colors.grey[600], fontSize: AppConstants.fontM),
             ),
             Text(
               'ID: ${product.id}',
-              style: TextStyle(color: Colors.grey[500], fontSize: 10),
+              style: TextStyle(color: Colors.grey[500], fontSize: AppConstants.fontS),
             ),
           ],
         ),
@@ -65,8 +65,8 @@ class ProductTileWidget extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(Icons.edit),
-                  SizedBox(width: 8),
-                  Text('Modifica'),
+                  SizedBox(width: AppConstants.spacingS),
+                  Text(AppStrings.edit),
                 ],
               ),
             ),
@@ -75,8 +75,8 @@ class ProductTileWidget extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(Icons.swap_horiz),
-                  SizedBox(width: 8),
-                  Text('Cambia reparto'),
+                  SizedBox(width: AppConstants.spacingS),
+                  Text(AppStrings.moveProduct),
                 ],
               ),
             ),
@@ -85,8 +85,8 @@ class ProductTileWidget extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(Icons.delete, color: Colors.red),
-                  SizedBox(width: 8),
-                  Text('Elimina', style: TextStyle(color: Colors.red)),
+                  SizedBox(width: AppConstants.spacingS),
+                  Text(AppStrings.delete, style: TextStyle(color: Colors.red)),
                 ],
               ),
             ),
@@ -100,11 +100,11 @@ class ProductTileWidget extends StatelessWidget {
   Widget _buildProductImage() {
     if (product.imagePath != null) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppConstants.radiusM),
         child: Image.file(
           File(product.imagePath!),
-          width: 50,
-          height: 50,
+          width: AppConstants.imageL,
+          height: AppConstants.imageL,
           fit: BoxFit.cover,
           cacheWidth: AppConstants.imageCacheWidth,
           cacheHeight: AppConstants.imageCacheHeight,
@@ -118,13 +118,13 @@ class ProductTileWidget extends StatelessWidget {
 
   Widget _buildDefaultProductIcon() {
     return Container(
-      width: 50,
-      height: 50,
+      width: AppConstants.imageL,
+      height: AppConstants.imageL,
       decoration: BoxDecoration(
         color: Colors.orange[100],
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
-      child: const Icon(Icons.shopping_basket, size: 24, color: Colors.orange),
+      child: const Icon(Icons.shopping_basket, size: AppConstants.iconM, color: Colors.orange),
     );
   }
 }

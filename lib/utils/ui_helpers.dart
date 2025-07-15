@@ -28,7 +28,7 @@ class UIHelpers {
     if (imagePath == null) return fallback;
     
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(AppConstants.radiusM),
       child: Image.file(
         File(imagePath),
         width: size,

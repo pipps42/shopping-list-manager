@@ -5,6 +5,7 @@ version: 1.0.0+1
 environment:
   sdk: ^3.8.1
   flutter: ">=3.10.0"
+
 dependencies:
   flutter:
     sdk: flutter
@@ -25,9 +26,13 @@ dependencies:
   path_provider: ^2.1.1
   # Icons
   cupertino_icons: ^1.0.8
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  integration_test:
+    sdk: flutter
+
 flutter:
   uses-material-design: true
   assets:

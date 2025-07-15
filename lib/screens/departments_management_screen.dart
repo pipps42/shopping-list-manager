@@ -1,3 +1,4 @@
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/departments_provider.dart';
@@ -21,7 +22,8 @@ class DepartmentsManagementScreen extends ConsumerWidget {
     return Scaffold(
       body: departmentsState.when(
         data: (departments) => _buildDepartmentsList(context, ref, departments),
-        loading: () => const LoadingWidget(message: 'Caricamento reparti...'),
+        loading: () =>
+            const LoadingWidget(message: AppStrings.loadingDepartments),
         error: (error, stack) => ErrorStateWidget(
           message: 'Errore nel caricamento dei reparti: $error',
           onRetry: () => ref.invalidate(departmentsProvider),
@@ -43,8 +45,8 @@ class DepartmentsManagementScreen extends ConsumerWidget {
     if (departments.isEmpty) {
       return const EmptyStateWidget(
         icon: Icons.store_outlined,
-        title: 'Nessun reparto',
-        subtitle: 'Aggiungi il primo reparto con il pulsante +',
+        title: AppStrings.emptyDepartments,
+        subtitle: AppStrings.emptyDepartmentsSubtitle,
       );
     }
 
@@ -57,10 +59,10 @@ class DepartmentsManagementScreen extends ConsumerWidget {
         Expanded(
           child: ReorderableListView.builder(
             padding: const EdgeInsets.only(
-              top: 8.0,
-              left: 8.0,
-              right: 8.0,
-              bottom: 88.0, // Spazio per il FAB
+              top: AppConstants.paddingS,
+              left: AppConstants.paddingS,
+              right: AppConstants.paddingS,
+              bottom: AppConstants.listBottomSpacing, // Spazio per il FAB
             ),
             itemCount: departments.length,
             onReorder: (oldIndex, newIndex) =>

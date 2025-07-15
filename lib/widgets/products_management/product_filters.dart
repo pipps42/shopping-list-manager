@@ -1,3 +1,4 @@
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import '../../models/department.dart';
 
@@ -56,7 +57,7 @@ class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppConstants.paddingM),
       decoration: BoxDecoration(
         color: Colors.grey[50],
         border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
@@ -68,7 +69,7 @@ class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
             controller: _searchController,
             focusNode: _searchFocusNode,
             decoration: InputDecoration(
-              hintText: 'Cerca prodotti...',
+              hintText: AppStrings.searchPlaceholder,
               prefixIcon: const Icon(Icons.search),
               suffixIcon:
                   _hasSearchText // Mostra X solo quando c'è testo
@@ -91,7 +92,7 @@ class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
             onTapOutside: (event) => _clearFocus(),
             onEditingComplete: () => _clearFocus(),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppConstants.spacingL),
           // Filtro reparti
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -99,7 +100,7 @@ class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
               children: [
                 // Opzione "Tutti"
                 Padding(
-                  padding: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.only(right: AppConstants.spacingS),
                   child: FilterChip(
                     label: const Text('Tutti'),
                     selected: _selectedDepartmentId == null,
@@ -114,7 +115,7 @@ class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
                 // Reparti
                 ...widget.departments.map(
                   (dept) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.only(right: AppConstants.spacingS),
                     child: FilterChip(
                       label: Text(dept.name),
                       selected: _selectedDepartmentId == dept.id,

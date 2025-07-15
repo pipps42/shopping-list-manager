@@ -1,3 +1,4 @@
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/current_list_provider.dart';
@@ -19,7 +20,7 @@ class CurrentListScreen extends ConsumerWidget {
       body: currentListState.when(
         data: (departmentsWithProducts) =>
             _buildListView(context, ref, departmentsWithProducts),
-        loading: () => const LoadingWidget(message: 'Caricamento lista...'),
+        loading: () => const LoadingWidget(message: AppStrings.loadingList),
         error: (error, stack) => ErrorStateWidget(
           message: 'Errore nel caricamento della lista: $error',
           onRetry: () => ref.invalidate(currentListProvider),
@@ -41,8 +42,8 @@ class CurrentListScreen extends ConsumerWidget {
     if (departments.isEmpty) {
       return const EmptyStateWidget(
         icon: Icons.shopping_cart_outlined,
-        title: 'Lista vuota',
-        subtitle: 'Aggiungi prodotti con il pulsante +',
+        title: AppStrings.emptyList,
+        subtitle: AppStrings.emptyListSubtitle,
       );
     }
 
@@ -52,10 +53,10 @@ class CurrentListScreen extends ConsumerWidget {
       },
       child: ListView.builder(
         padding: const EdgeInsets.only(
-          top: 8.0,
-          left: 8.0,
-          right: 8.0,
-          bottom: 88.0, // Spazio per il FAB
+          top: AppConstants.paddingS,
+          left: AppConstants.paddingS,
+          right: AppConstants.paddingS,
+          bottom: AppConstants.listBottomSpacing, // Spazio per il FAB
         ),
         itemCount: departments.length,
         itemBuilder: (context, index) =>

@@ -1,7 +1,7 @@
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../models/department.dart';
-import '../../utils/constants.dart';
 
 class DepartmentTileWidget extends StatelessWidget {
   final Department department;
@@ -25,14 +25,17 @@ class DepartmentTileWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       key: Key('dept_${department.id}'),
-      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      margin: const EdgeInsets.symmetric(
+        vertical: AppConstants.paddingXS,
+        horizontal: AppConstants.paddingS,
+      ),
       child: ListTile(
         leading: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Handle per drag
             Icon(Icons.drag_handle, color: Colors.grey[600]),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppConstants.spacingS),
             // Immagine reparto
             _buildDepartmentImage(),
           ],
@@ -62,8 +65,8 @@ class DepartmentTileWidget extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(Icons.visibility),
-                  SizedBox(width: 8),
-                  Text('Visualizza prodotti'),
+                  SizedBox(width: AppConstants.spacingS),
+                  Text(AppStrings.viewProducts),
                 ],
               ),
             ),
@@ -72,8 +75,8 @@ class DepartmentTileWidget extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(Icons.edit),
-                  SizedBox(width: 8),
-                  Text('Modifica'),
+                  SizedBox(width: AppConstants.spacingS),
+                  Text(AppStrings.edit),
                 ],
               ),
             ),
@@ -82,8 +85,8 @@ class DepartmentTileWidget extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(Icons.delete, color: Colors.red),
-                  SizedBox(width: 8),
-                  Text('Elimina', style: TextStyle(color: Colors.red)),
+                  SizedBox(width: AppConstants.spacingS),
+                  Text(AppStrings.delete, style: TextStyle(color: Colors.red)),
                 ],
               ),
             ),
@@ -97,11 +100,11 @@ class DepartmentTileWidget extends StatelessWidget {
   Widget _buildDepartmentImage() {
     if (department.imagePath != null) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppConstants.radiusM),
         child: Image.file(
           File(department.imagePath!),
-          width: 50,
-          height: 50,
+          width: AppConstants.imageL,
+          height: AppConstants.imageL,
           fit: BoxFit.cover,
           cacheWidth: AppConstants.imageCacheWidth,
           cacheHeight: AppConstants.imageCacheHeight,
@@ -115,13 +118,13 @@ class DepartmentTileWidget extends StatelessWidget {
 
   Widget _buildDefaultDepartmentIcon() {
     return Container(
-      width: 50,
-      height: 50,
+      width: AppConstants.imageL,
+      height: AppConstants.imageL,
       decoration: BoxDecoration(
         color: Colors.blue[100],
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
-      child: const Icon(Icons.store, size: 24, color: Colors.blue),
+      child: const Icon(Icons.store, size: AppConstants.iconM, color: Colors.blue),
     );
   }
 }

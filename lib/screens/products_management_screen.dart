@@ -1,3 +1,4 @@
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/products_provider.dart';
@@ -54,7 +55,7 @@ class _ProductsManagementScreenState
                 data: (products) =>
                     _buildProductsList(products, departmentsState.value ?? []),
                 loading: () =>
-                    const LoadingWidget(message: 'Caricamento prodotti...'),
+                    const LoadingWidget(message: AppStrings.loadingProducts),
                 error: (error, stack) => ErrorStateWidget(
                   message: 'Errore nel caricamento dei prodotti: $error',
                   onRetry: () => ref.invalidate(productsProvider),
@@ -89,10 +90,10 @@ class _ProductsManagementScreenState
       onRefresh: () async => ref.refresh(productsProvider),
       child: ListView.builder(
         padding: const EdgeInsets.only(
-          top: 8.0,
-          left: 8.0,
-          right: 8.0,
-          bottom: 88.0, // Spazio per il FAB
+          top: AppConstants.paddingS,
+          left: AppConstants.paddingS,
+          right: AppConstants.paddingS,
+          bottom: AppConstants.listBottomSpacing, // Spazio per il FAB
         ),
         itemCount: filteredProducts.length,
         itemBuilder: (context, index) {
@@ -134,10 +135,10 @@ class _ProductsManagementScreenState
 
     return EmptyStateWidget(
       icon: hasFilters ? Icons.search_off : Icons.inventory_outlined,
-      title: hasFilters ? 'Nessun prodotto trovato' : 'Nessun prodotto',
+      title: hasFilters ? 'Nessun prodotto trovato' : AppStrings.emptyProducts,
       subtitle: hasFilters
           ? 'Prova a modificare i filtri di ricerca'
-          : 'Aggiungi il primo prodotto con il pulsante +',
+          : AppStrings.emptyProductsSubtitle,
     );
   }
 
@@ -234,7 +235,7 @@ class _ProductsManagementScreenState
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: const Text(AppStrings.ok),
           ),
         ],
       ),

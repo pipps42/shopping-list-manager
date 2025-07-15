@@ -1,3 +1,4 @@
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 
 class ReorderInstructionsWidget extends StatelessWidget {
@@ -8,8 +9,7 @@ class ReorderInstructionsWidget extends StatelessWidget {
 
   const ReorderInstructionsWidget({
     super.key,
-    this.text =
-        'Trascina per riordinare i reparti secondo il layout del supermercato',
+    this.text = AppStrings.reorderInstructions,
     this.icon = Icons.drag_handle,
     this.backgroundColor,
     this.textColor,
@@ -22,14 +22,14 @@ class ReorderInstructionsWidget extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppConstants.paddingM),
       color: bgColor,
       child: Row(
         children: [
           Icon(icon, color: txtColor),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppConstants.spacingS),
           Expanded(
-            child: Text(text, style: TextStyle(color: txtColor, fontSize: 14)),
+            child: Text(text, style: TextStyle(color: txtColor, fontSize: AppConstants.fontL)),
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shopping_list_manager/utils/constants.dart';
 
 class ErrorStateWidget extends StatelessWidget {
   final String message;
@@ -18,12 +19,12 @@ class ErrorStateWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppConstants.paddingM),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 64, color: Colors.red[600]),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppConstants.spacingM),
             Text(
               message,
               textAlign: TextAlign.center,
@@ -32,7 +33,7 @@ class ErrorStateWidget extends StatelessWidget {
               ).textTheme.titleMedium?.copyWith(color: Colors.grey[700]),
             ),
             if (onRetry != null) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: AppConstants.spacingM),
               ElevatedButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),

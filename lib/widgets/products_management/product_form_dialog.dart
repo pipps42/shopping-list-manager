@@ -1,10 +1,10 @@
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/product.dart';
 import '../../models/department.dart';
 import '../../providers/image_provider.dart';
-import '../../utils/constants.dart';
 
 class ProductFormDialog extends ConsumerStatefulWidget {
   final Product? product;
@@ -56,7 +56,7 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
     final isEditing = widget.product != null;
 
     return AlertDialog(
-      title: Text(isEditing ? 'Modifica Prodotto' : 'Nuovo Prodotto'),
+      title: Text(isEditing ? AppStrings.editProduct : AppStrings.newProduct),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -65,11 +65,11 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
             TextField(
               controller: _nameController,
               decoration: const InputDecoration(
-                labelText: 'Nome prodotto',
+                labelText: AppStrings.productNamePlaceholder,
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppConstants.spacingM),
 
             // Selezione reparto
             DropdownButtonFormField<int>(
@@ -92,7 +92,7 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
                 });
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppConstants.spacingM),
 
             // Sezione immagine
             _buildImageSection(),
@@ -102,11 +102,11 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Annulla'),
+          child: const Text(AppStrings.cancel),
         ),
         ElevatedButton(
           onPressed: _isLoading ? null : _handleSave,
-          child: Text(isEditing ? 'Salva' : 'Aggiungi'),
+          child: Text(isEditing ? AppStrings.save : AppStrings.add),
         ),
       ],
     );
@@ -118,11 +118,11 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
         // Preview immagine
         if (_selectedImagePath != null)
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppConstants.radiusM),
             child: Image.file(
               File(_selectedImagePath!),
-              width: 60,
-              height: 60,
+              width: AppConstants.imageXL,
+              height: AppConstants.imageXL,
               fit: BoxFit.cover,
               cacheWidth: AppConstants.imageCacheWidth,
               cacheHeight: AppConstants.imageCacheHeight,
@@ -130,15 +130,15 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
           )
         else
           Container(
-            width: 60,
-            height: 60,
+            width: AppConstants.imageXL,
+            height: AppConstants.imageXL,
             decoration: BoxDecoration(
               color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppConstants.radiusM),
             ),
-            child: const Icon(Icons.shopping_basket, size: 30),
+            child: const Icon(Icons.shopping_basket, size: AppConstants.imageS),
           ),
-        const SizedBox(width: 16),
+        const SizedBox(width: AppConstants.spacingM),
 
         // Bottoni gestione immagine
         Expanded(
@@ -148,14 +148,14 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
               ElevatedButton.icon(
                 onPressed: _isLoading ? null : _handlePickImage,
                 icon: const Icon(Icons.camera_alt),
-                label: const Text('Scegli immagine'),
+                label: const Text(AppStrings.chooseImage),
               ),
               if (_selectedImagePath != null)
                 TextButton.icon(
                   onPressed: _handleRemoveImage,
                   icon: const Icon(Icons.delete, color: Colors.red),
                   label: const Text(
-                    'Rimuovi',
+                    AppStrings.removeImage,
                     style: TextStyle(color: Colors.red),
                   ),
                 ),
@@ -199,15 +199,15 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
 
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Il nome del prodotto è obbligatorio')),
+        const SnackBar(content: Text(AppStrings.productNameRequired)),
       );
       return;
     }
 
     if (_selectedDepartmentId == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Seleziona un reparto')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppStrings.selectDepartment)),
+      );
       return;
     }
 

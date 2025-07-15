@@ -1,26 +1,28 @@
+import 'package:shopping_list_manager/utils/constants.dart';
+
 class Validators {
   static String? validateProductName(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'Il nome del prodotto è obbligatorio';
+      return AppStrings.productNameRequired;
     }
-    if (value.trim().length < 2) {
-      return 'Il nome deve essere di almeno 2 caratteri';
+    if (value.trim().length < AppConstants.productNameMinLength) {
+      return 'Il nome deve essere di almeno  {AppConstants.productNameMinLength} caratteri';
     }
-    if (value.trim().length > 50) {
-      return 'Il nome non può superare i 50 caratteri';
+    if (value.trim().length > AppConstants.productNameMaxLength) {
+      return 'Il nome non può superare i  {AppConstants.productNameMaxLength} caratteri';
     }
     return null;
   }
-  
+
   static String? validateDepartmentName(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'Il nome del reparto è obbligatorio';
+      return AppStrings.departmentNameRequired;
     }
-    if (value.trim().length < 3) {
-      return 'Il nome deve essere di almeno 3 caratteri';
+    if (value.trim().length < AppConstants.departmentNameMinLength) {
+      return 'Il nome deve essere di almeno  {AppConstants.departmentNameMinLength} caratteri';
     }
-    if (value.trim().length > 30) {
-      return 'Il nome non può superare i 30 caratteri';
+    if (value.trim().length > AppConstants.departmentNameMaxLength) {
+      return 'Il nome non può superare i  {AppConstants.departmentNameMaxLength} caratteri';
     }
     return null;
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shopping_list_manager/utils/constants.dart';
 
 class LoadingWidget extends StatelessWidget {
   final String? message;
@@ -14,14 +15,14 @@ class LoadingWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
-            width: size ?? 24,
-            height: size ?? 24,
+            width: size ?? AppConstants.iconM,
+            height: size ?? AppConstants.iconM,
             child: CircularProgressIndicator(
               color: color ?? Theme.of(context).primaryColor,
             ),
           ),
           if (message != null) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: AppConstants.spacingM),
             Text(
               message!,
               style: Theme.of(

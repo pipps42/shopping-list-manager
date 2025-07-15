@@ -1,8 +1,8 @@
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../models/product.dart';
 import '../../models/department.dart';
-import '../../utils/constants.dart';
 
 class MoveProductDialog extends StatelessWidget {
   final Product product;
@@ -19,13 +19,13 @@ class MoveProductDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Cambia Reparto'),
+      title: const Text(AppStrings.moveProduct),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Sposta "${product.name}" in:'),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppConstants.spacingM),
           SizedBox(
             height: 200,
             width: double.maxFinite,
@@ -66,7 +66,7 @@ class MoveProductDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Annulla'),
+          child: const Text(AppStrings.cancel),
         ),
       ],
     );
@@ -75,19 +75,19 @@ class MoveProductDialog extends StatelessWidget {
   Widget _buildDepartmentImage(Department department) {
     if (department.imagePath != null) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(AppConstants.radiusS),
         child: Image.file(
           File(department.imagePath!),
-          width: 32,
-          height: 32,
+          width: AppConstants.imageM,
+          height: AppConstants.imageM,
           fit: BoxFit.cover,
           cacheWidth: AppConstants.imageCacheWidth,
           cacheHeight: AppConstants.imageCacheHeight,
           errorBuilder: (context, error, stackTrace) =>
-              const Icon(Icons.store, size: 32),
+              const Icon(Icons.store, size: AppConstants.iconL),
         ),
       );
     }
-    return const Icon(Icons.store, size: 32);
+    return const Icon(Icons.store, size: AppConstants.iconL);
   }
 }

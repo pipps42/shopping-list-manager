@@ -1,3 +1,4 @@
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,7 +7,6 @@ import '../providers/products_provider.dart';
 import '../providers/current_list_provider.dart';
 import '../models/department.dart';
 import '../models/product.dart';
-import '../utils/constants.dart';
 import 'common/empty_state_widget.dart';
 import 'common/error_state_widget.dart';
 import 'common/loading_widget.dart';
@@ -61,7 +61,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
         child: Container(
           width: MediaQuery.of(context).size.width * 0.9,
           height: MediaQuery.of(context).size.height * 0.8,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppConstants.paddingM),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -70,9 +70,9 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 children: [
                   const Expanded(
                     child: Text(
-                      'Aggiungi Prodotto',
+                      AppStrings.addProduct,
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: AppConstants.fontXXXL,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -86,14 +86,14 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppConstants.spacingM),
 
               // Barra di ricerca
               TextField(
                 controller: _searchController,
                 focusNode: _searchFocusNode,
                 decoration: InputDecoration(
-                  hintText: 'Cerca prodotto...',
+                  hintText: AppStrings.searchProductPlaceholder,
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: _hasSearchText
                       ? IconButton(
@@ -118,39 +118,39 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 onTapOutside: (event) => _clearFocus(),
                 onEditingComplete: () => _clearFocus(),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppConstants.spacingM),
 
               // Filtro per reparto
               departmentsState.when(
                 data: (departments) => _buildDepartmentFilter(departments),
                 loading: () => const LoadingWidget(
-                  message: 'Caricamento reparti...',
-                  size: 20,
+                  message: AppStrings.loadingDepartments,
+                  size: AppConstants.iconS,
                 ),
                 error: (error, stack) => Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: EdgeInsets.all(AppConstants.paddingS),
                   child: Row(
                     children: [
-                      Icon(Icons.error, color: Colors.red, size: 16),
-                      const SizedBox(width: 8),
+                      Icon(Icons.error, color: Colors.red, size: AppConstants.iconS),
+                      const SizedBox(width: AppConstants.spacingS),
                       Expanded(
                         child: Text(
                           'Errore reparti: $error',
-                          style: TextStyle(color: Colors.red, fontSize: 12),
+                          style: TextStyle(color: Colors.red, fontSize: AppConstants.fontM),
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppConstants.spacingM),
 
               // Lista prodotti
               Expanded(
                 child: productsState.when(
                   data: (products) => _buildProductsList(products),
                   loading: () =>
-                      const LoadingWidget(message: 'Caricamento prodotti...'),
+                      const LoadingWidget(message: AppStrings.loadingProducts),
                   error: (error, stack) => ErrorStateWidget(
                     message: 'Errore nel caricamento dei prodotti: $error',
                     icon: Icons.inventory_2_outlined,
@@ -221,7 +221,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
         icon: Icons.search_off,
         title: 'Nessun prodotto trovato',
         subtitle: 'Prova a modificare i filtri di ricerca',
-        iconSize: 64,
+        iconSize: AppConstants.iconXL,
       );
     }
 
@@ -240,7 +240,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
         child: Column(
           children: [
             CircularProgressIndicator(),
-            SizedBox(height: 16),
+            SizedBox(height: AppConstants.spacingM),
             Text('Caricamento stato prodotti...'),
           ],
         ),
@@ -280,7 +280,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
           height: 20,
           child: CircularProgressIndicator(strokeWidth: 2),
         ),
-        title: Text('Caricamento...'),
+        title: Text(AppStrings.loading),
       ),
       error: (error, stack) => ListTile(
         leading: Icon(Icons.error, color: Colors.red, size: 20),

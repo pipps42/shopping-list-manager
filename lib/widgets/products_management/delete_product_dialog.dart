@@ -1,3 +1,4 @@
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import '../../models/product.dart';
 
@@ -19,7 +20,7 @@ class DeleteProductDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Annulla'),
+          child: Text(AppStrings.cancel),
         ),
         ElevatedButton(
           onPressed: () {
@@ -30,7 +31,7 @@ class DeleteProductDialog extends StatelessWidget {
             backgroundColor: Colors.red,
             foregroundColor: Colors.white,
           ),
-          child: const Text('Elimina'),
+          child: Text(AppStrings.delete),
         ),
       ],
     );

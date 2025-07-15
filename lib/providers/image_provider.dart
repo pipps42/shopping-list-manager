@@ -1,3 +1,4 @@
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -16,9 +17,9 @@ class ImageService {
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
-        maxWidth: 800,
-        maxHeight: 800,
-        imageQuality: 85,
+        maxWidth: AppConstants.maxImageWidth.toDouble(),
+        maxHeight: AppConstants.maxImageHeight.toDouble(),
+        imageQuality: AppConstants.imageQuality,
       );
 
       if (image == null) return null;
@@ -32,11 +33,16 @@ class ImageService {
 
       // Ridimensiona se necessario
       img.Image resized = originalImage;
-      if (originalImage.width > 800 || originalImage.height > 800) {
+      if (originalImage.width > AppConstants.maxImageWidth ||
+          originalImage.height > AppConstants.maxImageHeight) {
         resized = img.copyResize(
           originalImage,
-          width: originalImage.width > originalImage.height ? 800 : null,
-          height: originalImage.height > originalImage.width ? 800 : null,
+          width: originalImage.width > originalImage.height
+              ? AppConstants.maxImageWidth
+              : null,
+          height: originalImage.height > originalImage.width
+              ? AppConstants.maxImageHeight
+              : null,
         );
       }
 
@@ -44,7 +50,7 @@ class ImageService {
       final Directory appDir = await getApplicationDocumentsDirectory();
       final String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
       final String savedPath = path.join(appDir.path, 'images', fileName);
-      
+
       // Crea la directory se non esiste
       final Directory imageDir = Directory(path.dirname(savedPath));
       if (!await imageDir.exists()) {
@@ -52,7 +58,9 @@ class ImageService {
       }
 
       final File savedFile = File(savedPath);
-      await savedFile.writeAsBytes(img.encodeJpg(resized, quality: 85));
+      await savedFile.writeAsBytes(
+        img.encodeJpg(resized, quality: AppConstants.imageQuality),
+      );
 
       return savedPath;
     } catch (e) {

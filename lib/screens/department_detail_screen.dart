@@ -1,3 +1,4 @@
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/products_provider.dart';
@@ -54,17 +55,17 @@ class DepartmentDetailScreen extends ConsumerWidget {
     if (products.isEmpty) {
       return const EmptyStateWidget(
         icon: Icons.inventory_outlined,
-        title: 'Nessun prodotto',
-        subtitle: 'Aggiungi il primo prodotto con il pulsante +',
+        title: AppStrings.emptyProducts,
+        subtitle: AppStrings.emptyProductsSubtitle,
       );
     }
 
     return ListView.builder(
       padding: const EdgeInsets.only(
-        top: 8.0,
-        left: 8.0,
-        right: 8.0,
-        bottom: 88.0, // Spazio per il FAB
+        top: AppConstants.paddingS,
+        left: AppConstants.paddingS,
+        right: AppConstants.paddingS,
+        bottom: AppConstants.listBottomSpacing, // Spazio per il FAB
       ),
       itemCount: products.length,
       itemBuilder: (context, index) {

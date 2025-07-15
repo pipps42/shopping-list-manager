@@ -1,9 +1,9 @@
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/department.dart';
 import '../../providers/image_provider.dart';
-import '../../utils/constants.dart';
 
 class DepartmentFormDialog extends ConsumerStatefulWidget {
   final Department? department;
@@ -45,7 +45,9 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
     final isEditing = widget.department != null;
 
     return AlertDialog(
-      title: Text(isEditing ? 'Modifica Reparto' : 'Nuovo Reparto'),
+      title: Text(
+        isEditing ? AppStrings.editDepartment : AppStrings.newProduct,
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -53,11 +55,11 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
           TextField(
             controller: _nameController,
             decoration: const InputDecoration(
-              labelText: 'Nome reparto',
+              labelText: AppStrings.departmentNamePlaceholder,
               border: OutlineInputBorder(),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppConstants.spacingM),
 
           // Sezione immagine
           _buildImageSection(),
@@ -66,11 +68,11 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Annulla'),
+          child: Text(AppStrings.cancel),
         ),
         ElevatedButton(
           onPressed: _isLoading ? null : _handleSave,
-          child: Text(isEditing ? 'Salva' : 'Aggiungi'),
+          child: Text(isEditing ? AppStrings.save : AppStrings.add),
         ),
       ],
     );
@@ -102,7 +104,7 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
             ),
             child: const Icon(Icons.store, size: 30),
           ),
-        const SizedBox(width: 16),
+        const SizedBox(width: AppConstants.spacingM),
 
         // Bottoni gestione immagine
         Expanded(
@@ -112,14 +114,14 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
               ElevatedButton.icon(
                 onPressed: _isLoading ? null : _handlePickImage,
                 icon: const Icon(Icons.camera_alt),
-                label: const Text('Scegli immagine'),
+                label: Text(AppStrings.chooseImage),
               ),
               if (_selectedImagePath != null)
                 TextButton.icon(
                   onPressed: _handleRemoveImage,
                   icon: const Icon(Icons.delete, color: Colors.red),
                   label: const Text(
-                    'Rimuovi',
+                    AppStrings.removeImage,
                     style: TextStyle(color: Colors.red),
                   ),
                 ),
@@ -163,7 +165,7 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
 
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Il nome del reparto è obbligatorio')),
+        const SnackBar(content: Text(AppStrings.departmentNameRequired)),
       );
       return;
     }

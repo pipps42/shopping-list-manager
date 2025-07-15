@@ -1,3 +1,4 @@
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -53,14 +54,14 @@ class ProductListTile extends ConsumerWidget {
   Widget _buildProductImage() {
     if (item.productImagePath != null) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppConstants.radiusM),
         child: Image.file(
           File(item.productImagePath!),
-          width: 40,
-          height: 40,
+          width: AppConstants.imageM,
+          height: AppConstants.imageM,
           fit: BoxFit.cover,
-          cacheWidth: 100,
-          cacheHeight: 100,
+          cacheWidth: AppConstants.imageCacheWidth,
+          cacheHeight: AppConstants.imageCacheHeight,
           errorBuilder: (context, error, stackTrace) => _buildDefaultIcon(),
         ),
       );
@@ -70,13 +71,13 @@ class ProductListTile extends ConsumerWidget {
 
   Widget _buildDefaultIcon() {
     return Container(
-      width: 40,
-      height: 40,
+      width: AppConstants.imageM,
+      height: AppConstants.imageM,
       decoration: BoxDecoration(
         color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
-      child: const Icon(Icons.shopping_basket, size: 20),
+      child: const Icon(Icons.shopping_basket, size: AppConstants.iconS),
     );
   }
 
@@ -84,11 +85,11 @@ class ProductListTile extends ConsumerWidget {
     return Container(
       color: isSecondary ? Colors.orange : Colors.green,
       alignment: isSecondary ? Alignment.centerRight : Alignment.centerLeft,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingL),
       child: Icon(
         isSecondary ? Icons.undo : Icons.check,
         color: Colors.white,
-        size: 32,
+        size: AppConstants.iconL,
       ),
     );
   }
@@ -102,7 +103,7 @@ class ProductListTile extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annulla'),
+            child: Text(AppStrings.cancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -115,7 +116,7 @@ class ProductListTile extends ConsumerWidget {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Rimuovi'),
+            child: Text(AppStrings.removeImage),
           ),
         ],
       ),

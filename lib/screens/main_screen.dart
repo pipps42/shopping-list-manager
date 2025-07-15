@@ -1,3 +1,4 @@
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/current_list_provider.dart';
@@ -23,15 +24,27 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   ];
 
   final List<String> _titles = [
-    'Lista Corrente',
-    'Gestione Reparti',
-    'Gestione Prodotti',
+    AppStrings.currentList,
+    AppStrings.departmentManagement,
+    AppStrings.productManagement,
   ];
 
   final List<DrawerItem> _drawerItems = [
-    DrawerItem(icon: Icons.shopping_cart, title: 'Lista Corrente', index: 0),
-    DrawerItem(icon: Icons.store, title: 'Gestione Reparti', index: 1),
-    DrawerItem(icon: Icons.inventory_2, title: 'Gestione Prodotti', index: 2),
+    DrawerItem(
+      icon: Icons.shopping_cart,
+      title: AppStrings.currentList,
+      index: 0,
+    ),
+    DrawerItem(
+      icon: Icons.store,
+      title: AppStrings.departmentManagement,
+      index: 1,
+    ),
+    DrawerItem(
+      icon: Icons.inventory_2,
+      title: AppStrings.productManagement,
+      index: 2,
+    ),
     DrawerItem(
       icon: Icons.history,
       title: 'Ultime Liste',
@@ -91,9 +104,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       child: Row(
                         children: [
                           Icon(Icons.clear_all, color: Colors.red),
-                          SizedBox(width: 8),
+                          SizedBox(width: AppConstants.spacingS),
                           Text(
-                            'Svuota lista',
+                            AppStrings.clearList,
                             style: TextStyle(color: Colors.red),
                           ),
                         ],
@@ -105,7 +118,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     //   child: Row(
                     //     children: [
                     //       Icon(Icons.share),
-                    //       SizedBox(width: 8),
+                    //       SizedBox(width: AppConstants.spacingS),
                     //       Text('Condividi lista'),
                     //     ],
                     //   ),
@@ -147,8 +160,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             ),
             child: const Row(
               children: [
-                Icon(Icons.shopping_bag, size: 48, color: Colors.white),
-                SizedBox(width: 16),
+                Icon(Icons.shopping_bag, size: AppConstants.iconXL, color: Colors.white),
+                SizedBox(width: AppConstants.spacingM),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,13 +171,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         'Lista Spesa',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 24,
+                          fontSize: AppConstants.fontTitle,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         'Esselunga',
-                        style: TextStyle(color: Colors.white70, fontSize: 16),
+                        style: TextStyle(color: Colors.white70, fontSize: AppConstants.fontXL),
                       ),
                     ],
                   ),
@@ -207,7 +220,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   trailing: isDisabled
                       ? const Text(
                           'Presto',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                          style: TextStyle(fontSize: AppConstants.fontM, color: Colors.grey),
                         )
                       : null,
                 );
@@ -216,10 +229,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           ),
           const Divider(),
           const Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(AppConstants.paddingM),
             child: Text(
               'v1.0.0',
-              style: TextStyle(color: Colors.grey, fontSize: 12),
+              style: TextStyle(color: Colors.grey, fontSize: AppConstants.fontM),
             ),
           ),
         ],
@@ -246,14 +259,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Svuota Lista'),
+        title: Text(AppStrings.clearList),
         content: const Text(
           'Sei sicuro di voler rimuovere tutti i prodotti dalla lista corrente?\n\nQuesta azione non può essere annullata.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annulla'),
+            child: Text(AppStrings.cancel),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -264,7 +277,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Svuota Lista'),
+            child: Text(AppStrings.clearList),
           ),
         ],
       ),
@@ -281,7 +294,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Lista svuotata con successo'),
+            content: Text(AppStrings.listCleared),
             backgroundColor: Colors.green,
           ),
         );

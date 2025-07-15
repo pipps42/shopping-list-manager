@@ -1,3 +1,4 @@
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../models/department_with_products.dart';
@@ -11,7 +12,7 @@ class DepartmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      margin: const EdgeInsets.symmetric(vertical: AppConstants.paddingXS),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -25,19 +26,19 @@ class DepartmentCard extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(AppConstants.paddingM),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppConstants.radiusL)),
       ),
       child: Row(
         children: [
           _buildDepartmentImage(context),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppConstants.spacingL),
           Expanded(
             child: Text(
               department.department.name,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: AppConstants.fontXXL, fontWeight: FontWeight.bold),
             ),
           ),
           _buildStats(),
@@ -49,14 +50,14 @@ class DepartmentCard extends StatelessWidget {
   Widget _buildDepartmentImage(BuildContext context) {
     if (department.department.imagePath != null) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppConstants.radiusM),
         child: Image.file(
           File(department.department.imagePath!),
-          width: 40,
-          height: 40,
+          width: AppConstants.imageM,
+          height: AppConstants.imageM,
           fit: BoxFit.cover,
-          cacheWidth: 100,
-          cacheHeight: 100,
+          cacheWidth: AppConstants.imageCacheWidth,
+          cacheHeight: AppConstants.imageCacheHeight,
           errorBuilder: (context, error, stackTrace) =>
               _buildDefaultIcon(context),
         ),
@@ -67,13 +68,13 @@ class DepartmentCard extends StatelessWidget {
 
   Widget _buildDefaultIcon(BuildContext context) {
     return Container(
-      width: 40,
-      height: 40,
+      width: AppConstants.imageM,
+      height: AppConstants.imageM,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.secondary,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
-      child: const Icon(Icons.store, color: Colors.white, size: 20),
+      child: const Icon(Icons.store, color: Colors.white, size: AppConstants.iconS),
     );
   }
 
@@ -82,14 +83,14 @@ class DepartmentCard extends StatelessWidget {
     final completed = department.items.where((item) => item.isChecked).length;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingS, vertical: AppConstants.paddingXS),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppConstants.radiusL),
       ),
       child: Text(
         '$completed/$total',
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: AppConstants.fontM, fontWeight: FontWeight.bold),
       ),
     );
   }
