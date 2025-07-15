@@ -56,7 +56,12 @@ class DepartmentsManagementScreen extends ConsumerWidget {
         // Lista riordinabile
         Expanded(
           child: ReorderableListView.builder(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.only(
+              top: 8.0,
+              left: 8.0,
+              right: 8.0,
+              bottom: 88.0, // Spazio per il FAB
+            ),
             itemCount: departments.length,
             onReorder: (oldIndex, newIndex) =>
                 _onReorder(ref, departments, oldIndex, newIndex),

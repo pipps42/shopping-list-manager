@@ -88,7 +88,12 @@ class _ProductsManagementScreenState
     return RefreshIndicator(
       onRefresh: () async => ref.refresh(productsProvider),
       child: ListView.builder(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.only(
+          top: 8.0,
+          left: 8.0,
+          right: 8.0,
+          bottom: 88.0, // Spazio per il FAB
+        ),
         itemCount: filteredProducts.length,
         itemBuilder: (context, index) {
           final product = filteredProducts[index];

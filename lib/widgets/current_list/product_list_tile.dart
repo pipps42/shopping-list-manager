@@ -44,11 +44,6 @@ class ProductListTile extends ConsumerWidget {
           trailing: item.isChecked
               ? Icon(Icons.check_circle, color: Colors.green[600])
               : const Icon(Icons.radio_button_unchecked, color: Colors.grey),
-          onTap: () {
-            ref
-                .read(currentListProvider.notifier)
-                .toggleItemChecked(item.id!, !item.isChecked);
-          },
           onLongPress: () => _showRemoveDialog(context, ref),
         ),
       ),

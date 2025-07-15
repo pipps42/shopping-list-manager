@@ -60,7 +60,12 @@ class DepartmentDetailScreen extends ConsumerWidget {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.only(
+        top: 8.0,
+        left: 8.0,
+        right: 8.0,
+        bottom: 88.0, // Spazio per il FAB
+      ),
       itemCount: products.length,
       itemBuilder: (context, index) {
         final product = products[index];

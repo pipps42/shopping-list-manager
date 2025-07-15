@@ -270,12 +270,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
           trailing: isInList
               ? Icon(Icons.check_circle, color: Colors.green[600])
               : const Icon(Icons.add_circle_outline),
-          onTap: isInList
-              ? null
-              : () {
-                  widget.onProductSelected(product.id!);
-                  Navigator.pop(context);
-                },
+          onTap: isInList ? null : () => widget.onProductSelected(product.id!),
           enabled: !isInList,
         );
       },
