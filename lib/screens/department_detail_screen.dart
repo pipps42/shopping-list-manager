@@ -6,18 +6,21 @@ import '../providers/departments_provider.dart';
 import '../providers/image_provider.dart';
 import '../models/department.dart';
 import '../models/product.dart';
+import '../utils/constants.dart';
+import '../widgets/common/empty_state_widget.dart';
+import '../widgets/common/error_state_widget.dart';
+import '../widgets/common/loading_widget.dart';
 
 class DepartmentDetailScreen extends ConsumerWidget {
   final Department department;
 
-  const DepartmentDetailScreen({
-    super.key,
-    required this.department,
-  });
+  const DepartmentDetailScreen({super.key, required this.department});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final productsState = ref.watch(productsByDepartmentProvider(department.id!));
+    final productsState = ref.watch(
+      productsByDepartmentProvider(department.id!),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -26,60 +29,32 @@ class DepartmentDetailScreen extends ConsumerWidget {
       ),
       body: productsState.when(
         data: (products) => _buildProductsList(context, ref, products),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              Text('Errore: $error'),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => ref.refresh(productsByDepartmentProvider(department.id!)),
-                child: const Text('Riprova'),
-              ),
-            ],
-          ),
+        loading: () =>
+            const LoadingWidget(message: 'Caricamento prodotti del reparto...'),
+        error: (error, stack) => ErrorStateWidget(
+          message: 'Errore nel caricamento dei prodotti: $error',
+          onRetry: () =>
+              ref.invalidate(productsByDepartmentProvider(department.id!)),
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: "department_detail_fab",
         onPressed: () => _showAddProductDialog(context, ref),
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  Widget _buildProductsList(BuildContext context, WidgetRef ref, List<Product> products) {
+  Widget _buildProductsList(
+    BuildContext context,
+    WidgetRef ref,
+    List<Product> products,
+  ) {
     if (products.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.inventory_outlined,
-              size: 80,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Nessun prodotto',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Aggiungi il primo prodotto con il pulsante +',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[500],
-              ),
-            ),
-          ],
-        ),
+      return const EmptyStateWidget(
+        icon: Icons.inventory_outlined,
+        title: 'Nessun prodotto',
+        subtitle: 'Aggiungi il primo prodotto con il pulsante +',
       );
     }
 
@@ -93,7 +68,11 @@ class DepartmentDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProductTile(BuildContext context, WidgetRef ref, Product product) {
+  Widget _buildProductTile(
+    BuildContext context,
+    WidgetRef ref,
+    Product product,
+  ) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
@@ -167,7 +146,10 @@ class DepartmentDetailScreen extends ConsumerWidget {
           width: 50,
           height: 50,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => _buildDefaultProductIcon(),
+          cacheWidth: AppConstants.imageCacheWidth,
+          cacheHeight: AppConstants.imageCacheHeight,
+          errorBuilder: (context, error, stackTrace) =>
+              _buildDefaultProductIcon(),
         ),
       );
     }
@@ -190,11 +172,19 @@ class DepartmentDetailScreen extends ConsumerWidget {
     _showProductDialog(context, ref, null);
   }
 
-  void _showEditProductDialog(BuildContext context, WidgetRef ref, Product product) {
+  void _showEditProductDialog(
+    BuildContext context,
+    WidgetRef ref,
+    Product product,
+  ) {
     _showProductDialog(context, ref, product);
   }
 
-  void _showProductDialog(BuildContext context, WidgetRef ref, Product? product) {
+  void _showProductDialog(
+    BuildContext context,
+    WidgetRef ref,
+    Product? product,
+  ) {
     final TextEditingController nameController = TextEditingController(
       text: product?.name ?? '',
     );
@@ -228,6 +218,8 @@ class DepartmentDetailScreen extends ConsumerWidget {
                         width: 60,
                         height: 60,
                         fit: BoxFit.cover,
+                        cacheWidth: AppConstants.imageCacheWidth,
+                        cacheHeight: AppConstants.imageCacheHeight,
                       ),
                     )
                   else
@@ -246,14 +238,18 @@ class DepartmentDetailScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         ElevatedButton.icon(
-                          onPressed: isLoading ? null : () async {
-                            setState(() => isLoading = true);
-                            final imagePath = await ref.read(imageServiceProvider).pickAndSaveImage();
-                            if (imagePath != null) {
-                              selectedImagePath = imagePath;
-                            }
-                            setState(() => isLoading = false);
-                          },
+                          onPressed: isLoading
+                              ? null
+                              : () async {
+                                  setState(() => isLoading = true);
+                                  final imagePath = await ref
+                                      .read(imageServiceProvider)
+                                      .pickAndSaveImage();
+                                  if (imagePath != null) {
+                                    selectedImagePath = imagePath;
+                                  }
+                                  setState(() => isLoading = false);
+                                },
                           icon: const Icon(Icons.camera_alt),
                           label: const Text('Scegli immagine'),
                         ),
@@ -263,7 +259,10 @@ class DepartmentDetailScreen extends ConsumerWidget {
                               setState(() => selectedImagePath = null);
                             },
                             icon: const Icon(Icons.delete, color: Colors.red),
-                            label: const Text('Rimuovi', style: TextStyle(color: Colors.red)),
+                            label: const Text(
+                              'Rimuovi',
+                              style: TextStyle(color: Colors.red),
+                            ),
                           ),
                       ],
                     ),
@@ -278,31 +277,39 @@ class DepartmentDetailScreen extends ConsumerWidget {
               child: const Text('Annulla'),
             ),
             ElevatedButton(
-              onPressed: isLoading ? null : () async {
-                final name = nameController.text.trim();
-                if (name.isEmpty) return;
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      final name = nameController.text.trim();
+                      if (name.isEmpty) return;
 
-                if (product == null) {
-                  // Nuovo prodotto
-                  await ref.read(productsProvider.notifier).addProduct(
-                    name,
-                    department.id!,
-                    selectedImagePath,
-                  );
-                } else {
-                  // Modifica prodotto esistente
-                  await ref.read(productsProvider.notifier).updateProduct(
-                    product.copyWith(
-                      name: name,
-                      imagePath: selectedImagePath,
-                    ),
-                  );
-                }
+                      if (product == null) {
+                        // Nuovo prodotto
+                        await ref
+                            .read(productsProvider.notifier)
+                            .addProduct(
+                              name,
+                              department.id!,
+                              selectedImagePath,
+                            );
+                      } else {
+                        // Modifica prodotto esistente
+                        await ref
+                            .read(productsProvider.notifier)
+                            .updateProduct(
+                              product.copyWith(
+                                name: name,
+                                imagePath: selectedImagePath,
+                              ),
+                            );
+                      }
 
-                // Refresh della lista prodotti per questo reparto
-                ref.refresh(productsByDepartmentProvider(department.id!));
-                Navigator.pop(context);
-              },
+                      // Refresh della lista prodotti per questo reparto
+                      ref.invalidate(
+                        productsByDepartmentProvider(department.id!),
+                      );
+                      Navigator.pop(context);
+                    },
               child: Text(product == null ? 'Aggiungi' : 'Salva'),
             ),
           ],
@@ -311,7 +318,11 @@ class DepartmentDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _showMoveProductDialog(BuildContext context, WidgetRef ref, Product product) {
+  void _showMoveProductDialog(
+    BuildContext context,
+    WidgetRef ref,
+    Product product,
+  ) {
     final departmentsState = ref.watch(departmentsProvider);
 
     showDialog(
@@ -333,7 +344,7 @@ class DepartmentDetailScreen extends ConsumerWidget {
                   itemBuilder: (context, index) {
                     final dept = departments[index];
                     final isCurrentDept = dept.id == department.id;
-                    
+
                     return ListTile(
                       leading: dept.imagePath != null
                           ? ClipRRect(
@@ -343,27 +354,37 @@ class DepartmentDetailScreen extends ConsumerWidget {
                                 width: 32,
                                 height: 32,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => 
+                                cacheWidth: AppConstants.imageCacheWidth,
+                                cacheHeight: AppConstants.imageCacheHeight,
+                                errorBuilder: (context, error, stackTrace) =>
                                     const Icon(Icons.store, size: 32),
                               ),
                             )
                           : const Icon(Icons.store, size: 32),
                       title: Text(dept.name),
                       enabled: !isCurrentDept,
-                      onTap: isCurrentDept ? null : () async {
-                        await ref.read(productsProvider.notifier).updateProduct(
-                          product.copyWith(departmentId: dept.id),
-                        );
-                        ref.refresh(productsByDepartmentProvider(department.id!));
-                        Navigator.pop(context);
-                        
-                        // Mostra snackbar di conferma
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${product.name} spostato in ${dept.name}'),
-                          ),
-                        );
-                      },
+                      onTap: isCurrentDept
+                          ? null
+                          : () async {
+                              await ref
+                                  .read(productsProvider.notifier)
+                                  .updateProduct(
+                                    product.copyWith(departmentId: dept.id),
+                                  );
+                              ref.invalidate(
+                                productsByDepartmentProvider(department.id!),
+                              );
+                              Navigator.pop(context);
+
+                              // Mostra snackbar di conferma
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '${product.name} spostato in ${dept.name}',
+                                  ),
+                                ),
+                              );
+                            },
                     );
                   },
                 ),
@@ -383,7 +404,11 @@ class DepartmentDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, WidgetRef ref, Product product) {
+  void _showDeleteConfirmation(
+    BuildContext context,
+    WidgetRef ref,
+    Product product,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -396,8 +421,10 @@ class DepartmentDetailScreen extends ConsumerWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              await ref.read(productsProvider.notifier).deleteProduct(product.id!);
-              ref.refresh(productsByDepartmentProvider(department.id!));
+              await ref
+                  .read(productsProvider.notifier)
+                  .deleteProduct(product.id!);
+              ref.invalidate(productsByDepartmentProvider(department.id!));
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(

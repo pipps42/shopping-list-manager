@@ -6,14 +6,15 @@ import '../providers/products_provider.dart';
 import '../providers/current_list_provider.dart';
 import '../models/department.dart';
 import '../models/product.dart';
+import '../utils/constants.dart';
+import 'common/empty_state_widget.dart';
+import 'common/error_state_widget.dart';
+import 'common/loading_widget.dart';
 
 class AddProductDialog extends ConsumerStatefulWidget {
   final Function(int productId) onProductSelected;
 
-  const AddProductDialog({
-    super.key,
-    required this.onProductSelected,
-  });
+  const AddProductDialog({super.key, required this.onProductSelected});
 
   @override
   ConsumerState<AddProductDialog> createState() => _AddProductDialogState();
@@ -49,10 +50,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 const Expanded(
                   child: Text(
                     'Aggiungi Prodotto',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
                 IconButton(
@@ -82,8 +80,25 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
             // Filtro per reparto
             departmentsState.when(
               data: (departments) => _buildDepartmentFilter(departments),
-              loading: () => const LinearProgressIndicator(),
-              error: (error, stack) => Text('Errore caricamento reparti: $error'),
+              loading: () => const LoadingWidget(
+                message: 'Caricamento reparti...',
+                size: 20,
+              ),
+              error: (error, stack) => Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Icon(Icons.error, color: Colors.red, size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Errore reparti: $error',
+                        style: TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 16),
 
@@ -91,9 +106,11 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
             Expanded(
               child: productsState.when(
                 data: (products) => _buildProductsList(products),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, stack) => Center(
-                  child: Text('Errore caricamento prodotti: $error'),
+                loading: () =>
+                    const LoadingWidget(message: 'Caricamento prodotti...'),
+                error: (error, stack) => ErrorStateWidget(
+                  message: 'Errore nel caricamento dei prodotti: $error',
+                  icon: Icons.inventory_2_outlined,
                 ),
               ),
             ),
@@ -122,79 +139,95 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
             ),
           ),
           // Reparti
-          ...departments.map((dept) => Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(dept.name),
-              selected: selectedDepartment?.id == dept.id,
-              onSelected: (selected) {
-                setState(() {
-                  selectedDepartment = selected ? dept : null;
-                });
-              },
+          ...departments.map(
+            (dept) => Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: FilterChip(
+                label: Text(dept.name),
+                selected: selectedDepartment?.id == dept.id,
+                onSelected: (selected) {
+                  setState(() {
+                    selectedDepartment = selected ? dept : null;
+                  });
+                },
+              ),
             ),
-          )),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildProductsList(List<Product> allProducts) {
-    // Filtra prodotti in base ai criteri
+    // Filtra prodotti (stesso codice di prima)
     List<Product> filteredProducts = allProducts.where((product) {
-      // Filtro per reparto
-      if (selectedDepartment != null && product.departmentId != selectedDepartment!.id) {
+      if (selectedDepartment != null &&
+          product.departmentId != selectedDepartment!.id) {
         return false;
       }
-      
-      // Filtro per ricerca
-      if (searchQuery.isNotEmpty && !product.name.toLowerCase().contains(searchQuery)) {
+      if (searchQuery.isNotEmpty &&
+          !product.name.toLowerCase().contains(searchQuery)) {
         return false;
       }
-      
       return true;
     }).toList();
 
     if (filteredProducts.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.search_off, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text(
-              'Nessun prodotto trovato',
-              style: TextStyle(fontSize: 18, color: Colors.grey),
-            ),
-          ],
-        ),
+      return const EmptyStateWidget(
+        icon: Icons.search_off,
+        title: 'Nessun prodotto trovato',
+        subtitle: 'Prova a modificare i filtri di ricerca',
+        iconSize: 64,
       );
     }
 
-    return ListView.builder(
-      itemCount: filteredProducts.length,
-      itemBuilder: (context, index) {
-        final product = filteredProducts[index];
-        return _buildProductTile(product);
-      },
+    // Watch del provider qui per pre-caricare i dati
+    final productIdsInList = ref.watch(currentListProductIdsProvider);
+
+    return productIdsInList.when(
+      data: (_) => ListView.builder(
+        itemCount: filteredProducts.length,
+        itemBuilder: (context, index) {
+          final product = filteredProducts[index];
+          return _buildProductTile(product);
+        },
+      ),
+      loading: () => const Center(
+        child: Column(
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Caricamento stato prodotti...'),
+          ],
+        ),
+      ),
+      error: (error, stack) => Center(
+        child: Column(
+          children: [
+            Icon(Icons.error, color: Colors.red),
+            Text('Errore nel caricamento: $error'),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildProductTile(Product product) {
-    return FutureBuilder<bool>(
-      future: ref.read(currentListProvider.notifier).isProductInList(product.id!),
-      builder: (context, snapshot) {
-        final isInList = snapshot.data ?? false;
-        
+    final productIdsInList = ref.watch(currentListProductIdsProvider);
+
+    return productIdsInList.when(
+      data: (productIds) {
+        final isInList = productIds.contains(product.id!);
+
         return ListTile(
           leading: _buildProductImage(product),
           title: Text(product.name),
           subtitle: _buildDepartmentName(product.departmentId),
-          trailing: isInList 
+          trailing: isInList
               ? Icon(Icons.check_circle, color: Colors.green[600])
               : const Icon(Icons.add_circle_outline),
-          onTap: isInList 
-              ? null 
+          onTap: isInList
+              ? null
               : () {
                   widget.onProductSelected(product.id!);
                   Navigator.pop(context);
@@ -202,6 +235,21 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
           enabled: !isInList,
         );
       },
+      loading: () => const ListTile(
+        leading: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+        title: Text('Caricamento...'),
+      ),
+      error: (error, stack) => ListTile(
+        leading: Icon(Icons.error, color: Colors.red, size: 20),
+        title: Text(
+          'Errore',
+          style: TextStyle(color: Colors.red, fontSize: 12),
+        ),
+      ),
     );
   }
 
@@ -214,6 +262,8 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
           width: 40,
           height: 40,
           fit: BoxFit.cover,
+          cacheWidth: AppConstants.imageCacheWidth,
+          cacheHeight: AppConstants.imageCacheHeight,
           errorBuilder: (context, error, stackTrace) => _buildDefaultIcon(),
         ),
       );
@@ -235,19 +285,20 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
 
   Widget _buildDepartmentName(int departmentId) {
     final departmentsState = ref.watch(departmentsProvider);
-    
+
     return departmentsState.when(
       data: (departments) {
         final dept = departments.firstWhere(
           (d) => d.id == departmentId,
-          orElse: () => Department(id: -1, name: 'Reparto sconosciuto', orderIndex: 0),
+          orElse: () =>
+              Department(id: -1, name: 'Reparto sconosciuto', orderIndex: 0),
         );
         return Text(
           dept.name,
           style: const TextStyle(fontSize: 12, color: Colors.grey),
         );
       },
-      loading: () => const Text('...'),
+      loading: () => const LoadingWidget(message: '...'),
       error: (error, stack) => const Text('Errore'),
     );
   }

@@ -1,11 +1,23 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/department_with_products.dart';
-import '../models/list_item.dart';
 import '../services/database_service.dart';
 import 'database_provider.dart';
 
 final currentListProvider = StateNotifierProvider<CurrentListNotifier, AsyncValue<List<DepartmentWithProducts>>>((ref) {
   return CurrentListNotifier(ref.watch(databaseServiceProvider));
+});
+
+final currentListProductIdsProvider = FutureProvider<Set<int>>((ref) async {
+  final databaseService = ref.watch(databaseServiceProvider);
+  final departments = await databaseService.getCurrentListGroupedByDepartment();
+  
+  // Estrai tutti gli ID dei prodotti dalla lista corrente
+  final productIds = departments
+      .expand((dept) => dept.items)  // Flatten tutti gli items
+      .map((item) => item.productId) // Estrai solo gli ID
+      .toSet();                      // Converti in Set per performance O(1) lookup
+  
+  return productIds;
 });
 
 class CurrentListNotifier extends StateNotifier<AsyncValue<List<DepartmentWithProducts>>> {
@@ -26,8 +38,16 @@ class CurrentListNotifier extends StateNotifier<AsyncValue<List<DepartmentWithPr
   }
 
   Future<void> addProductToList(int productId) async {
-    await _databaseService.addProductToCurrentList(productId);
-    await loadCurrentList(); // Refresh automatico
+    try {
+      final success = await _databaseService.addProductToCurrentList(productId);
+      if (success) {
+        await loadCurrentList();
+      }
+      // Opzionalmente mostra messaggio di successo/errore
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      rethrow; // Permetti al UI di gestire l'errore
+    }
   }
 
   Future<void> toggleItemChecked(int itemId, bool isChecked) async {

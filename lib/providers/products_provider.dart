@@ -3,13 +3,21 @@ import '../models/product.dart';
 import '../services/database_service.dart';
 import 'database_provider.dart';
 
-final productsProvider = StateNotifierProvider<ProductsNotifier, AsyncValue<List<Product>>>((ref) {
-  return ProductsNotifier(ref.watch(databaseServiceProvider));
-});
+final productsProvider =
+    StateNotifierProvider<ProductsNotifier, AsyncValue<List<Product>>>((ref) {
+      return ProductsNotifier(ref.watch(databaseServiceProvider));
+    });
 
-final productsByDepartmentProvider = StateNotifierProvider.family<ProductsByDepartmentNotifier, AsyncValue<List<Product>>, int>((ref, departmentId) {
-  return ProductsByDepartmentNotifier(ref.watch(databaseServiceProvider), departmentId);
-});
+final productsByDepartmentProvider = StateNotifierProvider.family
+    .autoDispose<ProductsByDepartmentNotifier, AsyncValue<List<Product>>, int>((
+      ref,
+      departmentId,
+    ) {
+      return ProductsByDepartmentNotifier(
+        ref.watch(databaseServiceProvider),
+        departmentId,
+      );
+    });
 
 class ProductsNotifier extends StateNotifier<AsyncValue<List<Product>>> {
   final DatabaseService _databaseService;
@@ -28,7 +36,11 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<Product>>> {
     }
   }
 
-  Future<void> addProduct(String name, int departmentId, String? imagePath) async {
+  Future<void> addProduct(
+    String name,
+    int departmentId,
+    String? imagePath,
+  ) async {
     final product = Product(
       name: name,
       departmentId: departmentId,
@@ -50,18 +62,22 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<Product>>> {
   }
 }
 
-class ProductsByDepartmentNotifier extends StateNotifier<AsyncValue<List<Product>>> {
+class ProductsByDepartmentNotifier
+    extends StateNotifier<AsyncValue<List<Product>>> {
   final DatabaseService _databaseService;
   final int departmentId;
 
-  ProductsByDepartmentNotifier(this._databaseService, this.departmentId) : super(const AsyncValue.loading()) {
+  ProductsByDepartmentNotifier(this._databaseService, this.departmentId)
+    : super(const AsyncValue.loading()) {
     loadProducts();
   }
 
   Future<void> loadProducts() async {
     try {
       state = const AsyncValue.loading();
-      final products = await _databaseService.getProductsByDepartment(departmentId);
+      final products = await _databaseService.getProductsByDepartment(
+        departmentId,
+      );
       state = AsyncValue.data(products);
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);

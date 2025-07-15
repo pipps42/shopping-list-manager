@@ -1,6 +1,6 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_list_manager/utils/constants.dart';
 import 'screens/main_screen.dart';
 
 void main() {
@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         appBarTheme: const AppBarTheme(
           centerTitle: true,
-          elevation: 2,
+          elevation: AppConstants.cardElevation,
         ),
       ),
       home: const MainScreen(),

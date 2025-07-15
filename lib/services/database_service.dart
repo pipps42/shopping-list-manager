@@ -21,11 +21,15 @@ class DatabaseService {
 
   Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), 'shopping_list.db');
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _onCreate,
-    );
+    return await openDatabase(path, version: 1, onCreate: _onCreate);
+  }
+
+  /// Chiude la connessione al database e pulisce le risorse
+  Future<void> close() async {
+    if (_database != null) {
+      await _database!.close();
+      _database = null;
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -111,23 +115,23 @@ class DatabaseService {
       {'name': 'Pomodori', 'department_id': 1},
       {'name': 'Carote', 'department_id': 1},
       {'name': 'Insalata', 'department_id': 1},
-      
+
       // Pane e Panetteria (id: 6)
       {'name': 'Pane integrale', 'department_id': 6},
       {'name': 'Focaccia', 'department_id': 6},
       {'name': 'Cornetti', 'department_id': 6},
-      
+
       // Latticini e Uova (id: 3)
       {'name': 'Latte intero', 'department_id': 3},
       {'name': 'Yogurt greco', 'department_id': 3},
       {'name': 'Uova', 'department_id': 3},
       {'name': 'Burro', 'department_id': 3},
-      
+
       // Pasta, Riso e Cereali (id: 7)
       {'name': 'Spaghetti', 'department_id': 7},
       {'name': 'Riso Carnaroli', 'department_id': 7},
       {'name': 'Cereali per colazione', 'department_id': 7},
-      
+
       // Bevande (id: 14)
       {'name': 'Acqua naturale', 'department_id': 14},
       {'name': 'Succo d\'arancia', 'department_id': 14},
@@ -177,18 +181,17 @@ class DatabaseService {
 
   Future<void> reorderDepartments(List<Department> departments) async {
     final db = await database;
-    final batch = db.batch();
-    
-    for (int i = 0; i < departments.length; i++) {
-      batch.update(
-        'departments',
-        {'order_index': i + 1},
-        where: 'id = ?',
-        whereArgs: [departments[i].id],
-      );
-    }
-    
-    await batch.commit();
+
+    await db.transaction((txn) async {
+      for (int i = 0; i < departments.length; i++) {
+        await txn.update(
+          'departments',
+          {'order_index': i + 1},
+          where: 'id = ?',
+          whereArgs: [departments[i].id],
+        );
+      }
+    });
   }
 
   // CRUD per Products
@@ -265,9 +268,10 @@ class DatabaseService {
     return await db.insert('list_items', item.toMap());
   }
 
-  Future<List<DepartmentWithProducts>> getCurrentListGroupedByDepartment() async {
+  Future<List<DepartmentWithProducts>>
+  getCurrentListGroupedByDepartment() async {
     final db = await database;
-    
+
     // Query con JOIN per ottenere tutti i dati necessari
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT 
@@ -290,31 +294,37 @@ class DatabaseService {
       ORDER BY d.order_index ASC, p.name ASC
     ''');
 
-    final List<ListItem> items = List.generate(maps.length, (i) => ListItem.fromMap(maps[i]));
-    
+    final List<ListItem> items = List.generate(
+      maps.length,
+      (i) => ListItem.fromMap(maps[i]),
+    );
+
     // Raggruppa per reparto
     final Map<int, DepartmentWithProducts> grouped = {};
-    
+
     for (final item in items) {
       final deptId = item.departmentId!;
-      
+
       if (!grouped.containsKey(deptId)) {
         grouped[deptId] = DepartmentWithProducts(
           department: Department(
             id: deptId,
             name: item.departmentName!,
             orderIndex: item.departmentOrder!,
-            imagePath: maps.firstWhere((m) => m['department_id'] == deptId)['department_image_path'],
+            imagePath: maps.firstWhere(
+              (m) => m['department_id'] == deptId,
+            )['department_image_path'],
           ),
           items: [],
         );
       }
-      
+
       grouped[deptId]!.items.add(item);
     }
 
-    return grouped.values.toList()
-      ..sort((a, b) => a.department.orderIndex.compareTo(b.department.orderIndex));
+    return grouped.values.toList()..sort(
+      (a, b) => a.department.orderIndex.compareTo(b.department.orderIndex),
+    );
   }
 
   Future<int> updateListItem(ListItem item) async {
@@ -337,20 +347,26 @@ class DatabaseService {
     final currentList = await getCurrentShoppingList();
     if (currentList == null) return false;
 
-    final count = Sqflite.firstIntValue(await db.rawQuery(
-      'SELECT COUNT(*) FROM list_items WHERE list_id = ? AND product_id = ?',
-      [currentList.id, productId],
-    ));
-    
+    final count = Sqflite.firstIntValue(
+      await db.rawQuery(
+        'SELECT COUNT(*) FROM list_items WHERE list_id = ? AND product_id = ?',
+        [currentList.id, productId],
+      ),
+    );
+
     return (count ?? 0) > 0;
   }
 
-  Future<void> addProductToCurrentList(int productId) async {
+  Future<bool> addProductToCurrentList(int productId) async {
     final currentList = await getCurrentShoppingList();
-    if (currentList == null) return;
+    if (currentList == null) {
+      throw Exception('Nessuna lista corrente trovata');
+    }
 
     final exists = await isProductInCurrentList(productId);
-    if (exists) return;
+    if (exists) {
+      return false;
+    }
 
     final item = ListItem(
       listId: currentList.id!,
@@ -360,6 +376,7 @@ class DatabaseService {
     );
 
     await insertListItem(item);
+    return true;
   }
 
   Future<void> toggleItemChecked(int itemId, bool isChecked) async {
@@ -376,7 +393,7 @@ class DatabaseService {
     final db = await database;
     final currentList = await getCurrentShoppingList();
     if (currentList == null) return;
-    
+
     await db.update(
       'shopping_lists',
       {
@@ -386,11 +403,10 @@ class DatabaseService {
       where: 'id = ?',
       whereArgs: [currentList.id],
     );
-    
+
     // Crea una nuova lista corrente
-    await insertShoppingList(ShoppingList(
-      name: 'Lista Corrente',
-      createdAt: DateTime.now(),
-    ));
+    await insertShoppingList(
+      ShoppingList(name: 'Lista Corrente', createdAt: DateTime.now()),
+    );
   }
 }

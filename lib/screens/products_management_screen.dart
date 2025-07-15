@@ -6,15 +6,21 @@ import '../providers/departments_provider.dart';
 import '../providers/image_provider.dart';
 import '../models/product.dart';
 import '../models/department.dart';
+import '../utils/constants.dart';
+import '../widgets/common/empty_state_widget.dart';
+import '../widgets/common/error_state_widget.dart';
+import '../widgets/common/loading_widget.dart';
 
 class ProductsManagementScreen extends ConsumerStatefulWidget {
   const ProductsManagementScreen({super.key});
 
   @override
-  ConsumerState<ProductsManagementScreen> createState() => _ProductsManagementScreenState();
+  ConsumerState<ProductsManagementScreen> createState() =>
+      _ProductsManagementScreenState();
 }
 
-class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScreen> {
+class _ProductsManagementScreenState
+    extends ConsumerState<ProductsManagementScreen> {
   String searchQuery = '';
   int? selectedDepartmentId;
   final TextEditingController _searchController = TextEditingController();
@@ -38,28 +44,24 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
           // Lista prodotti
           Expanded(
             child: productsState.when(
-              data: (products) => _buildProductsList(context, ref, products, departmentsState.value ?? []),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error, size: 64, color: Colors.red),
-                    const SizedBox(height: 16),
-                    Text('Errore: $error'),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () => ref.refresh(productsProvider),
-                      child: const Text('Riprova'),
-                    ),
-                  ],
-                ),
+              data: (products) => _buildProductsList(
+                context,
+                ref,
+                products,
+                departmentsState.value ?? [],
+              ),
+              loading: () =>
+                  const LoadingWidget(message: 'Caricamento prodotti...'),
+              error: (error, stack) => ErrorStateWidget(
+                message: 'Errore nel caricamento dei prodotti: $error',
+                onRetry: () => ref.invalidate(productsProvider),
               ),
             ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: "products_management_fab",
         onPressed: () => _showAddProductDialog(context, ref),
         child: const Icon(Icons.add),
       ),
@@ -110,18 +112,20 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
                   ),
                 ),
                 // Reparti
-                ...departments.map((dept) => Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(dept.name),
-                    selected: selectedDepartmentId == dept.id,
-                    onSelected: (selected) {
-                      setState(() {
-                        selectedDepartmentId = selected ? dept.id : null;
-                      });
-                    },
+                ...departments.map(
+                  (dept) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: Text(dept.name),
+                      selected: selectedDepartmentId == dept.id,
+                      onSelected: (selected) {
+                        setState(() {
+                          selectedDepartmentId = selected ? dept.id : null;
+                        });
+                      },
+                    ),
                   ),
-                )),
+                ),
               ],
             ),
           ),
@@ -130,19 +134,26 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
     );
   }
 
-  Widget _buildProductsList(BuildContext context, WidgetRef ref, List<Product> allProducts, List<Department> departments) {
+  Widget _buildProductsList(
+    BuildContext context,
+    WidgetRef ref,
+    List<Product> allProducts,
+    List<Department> departments,
+  ) {
     // Filtra prodotti
     List<Product> filteredProducts = allProducts.where((product) {
       // Filtro per reparto
-      if (selectedDepartmentId != null && product.departmentId != selectedDepartmentId) {
+      if (selectedDepartmentId != null &&
+          product.departmentId != selectedDepartmentId) {
         return false;
       }
-      
+
       // Filtro per ricerca
-      if (searchQuery.isNotEmpty && !product.name.toLowerCase().contains(searchQuery)) {
+      if (searchQuery.isNotEmpty &&
+          !product.name.toLowerCase().contains(searchQuery)) {
         return false;
       }
-      
+
       return true;
     }).toList();
 
@@ -155,7 +166,7 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
 
     return RefreshIndicator(
       onRefresh: () async {
-        ref.refresh(productsProvider);
+        return ref.refresh(productsProvider);
       },
       child: ListView.builder(
         padding: const EdgeInsets.all(8),
@@ -164,53 +175,40 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
           final product = filteredProducts[index];
           final department = departments.firstWhere(
             (d) => d.id == product.departmentId,
-            orElse: () => Department(id: -1, name: 'Reparto sconosciuto', orderIndex: 0),
+            orElse: () =>
+                Department(id: -1, name: 'Reparto sconosciuto', orderIndex: 0),
           );
-          return _buildProductTile(context, ref, product, department, departments);
+          return _buildProductTile(
+            context,
+            ref,
+            product,
+            department,
+            departments,
+          );
         },
       ),
     );
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            searchQuery.isNotEmpty || selectedDepartmentId != null 
-                ? Icons.search_off 
-                : Icons.inventory_outlined,
-            size: 80,
-            color: Colors.grey,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            searchQuery.isNotEmpty || selectedDepartmentId != null 
-                ? 'Nessun prodotto trovato'
-                : 'Nessun prodotto',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            searchQuery.isNotEmpty || selectedDepartmentId != null 
-                ? 'Prova a modificare i filtri di ricerca'
-                : 'Aggiungi il primo prodotto con il pulsante +',
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
-          ),
-        ],
-      ),
+    final hasFilters = searchQuery.isNotEmpty || selectedDepartmentId != null;
+
+    return EmptyStateWidget(
+      icon: hasFilters ? Icons.search_off : Icons.inventory_outlined,
+      title: hasFilters ? 'Nessun prodotto trovato' : 'Nessun prodotto',
+      subtitle: hasFilters
+          ? 'Prova a modificare i filtri di ricerca'
+          : 'Aggiungi il primo prodotto con il pulsante +',
     );
   }
 
-  Widget _buildProductTile(BuildContext context, WidgetRef ref, Product product, Department department, List<Department> allDepartments) {
+  Widget _buildProductTile(
+    BuildContext context,
+    WidgetRef ref,
+    Product product,
+    Department department,
+    List<Department> allDepartments,
+  ) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
@@ -279,7 +277,8 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
             ),
           ],
         ),
-        onTap: () => _showEditProductDialog(context, ref, product, allDepartments),
+        onTap: () =>
+            _showEditProductDialog(context, ref, product, allDepartments),
       ),
     );
   }
@@ -293,7 +292,10 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
           width: 50,
           height: 50,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => _buildDefaultProductIcon(),
+          cacheWidth: AppConstants.imageCacheWidth,
+          cacheHeight: AppConstants.imageCacheHeight,
+          errorBuilder: (context, error, stackTrace) =>
+              _buildDefaultProductIcon(),
         ),
       );
     }
@@ -321,11 +323,21 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
     _showProductDialog(context, ref, null, departmentsState.value!);
   }
 
-  void _showEditProductDialog(BuildContext context, WidgetRef ref, Product product, List<Department> departments) {
+  void _showEditProductDialog(
+    BuildContext context,
+    WidgetRef ref,
+    Product product,
+    List<Department> departments,
+  ) {
     _showProductDialog(context, ref, product, departments);
   }
 
-  void _showProductDialog(BuildContext context, WidgetRef ref, Product? product, List<Department> departments) {
+  void _showProductDialog(
+    BuildContext context,
+    WidgetRef ref,
+    Product? product,
+    List<Department> departments,
+  ) {
     final TextEditingController nameController = TextEditingController(
       text: product?.name ?? '',
     );
@@ -351,7 +363,7 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Selezione reparto
                 DropdownButtonFormField<int>(
                   value: selectedDepartmentId,
@@ -359,10 +371,14 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
                     labelText: 'Reparto',
                     border: OutlineInputBorder(),
                   ),
-                  items: departments.map((dept) => DropdownMenuItem(
-                    value: dept.id,
-                    child: Text(dept.name),
-                  )).toList(),
+                  items: departments
+                      .map(
+                        (dept) => DropdownMenuItem(
+                          value: dept.id,
+                          child: Text(dept.name),
+                        ),
+                      )
+                      .toList(),
                   onChanged: (value) {
                     setState(() {
                       selectedDepartmentId = value;
@@ -370,7 +386,7 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
                   },
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Sezione immagine
                 Row(
                   children: [
@@ -382,6 +398,8 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
                           width: 60,
                           height: 60,
                           fit: BoxFit.cover,
+                          cacheWidth: AppConstants.imageCacheWidth,
+                          cacheHeight: AppConstants.imageCacheHeight,
                         ),
                       )
                     else
@@ -400,14 +418,18 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ElevatedButton.icon(
-                            onPressed: isLoading ? null : () async {
-                              setState(() => isLoading = true);
-                              final imagePath = await ref.read(imageServiceProvider).pickAndSaveImage();
-                              if (imagePath != null) {
-                                selectedImagePath = imagePath;
-                              }
-                              setState(() => isLoading = false);
-                            },
+                            onPressed: isLoading
+                                ? null
+                                : () async {
+                                    setState(() => isLoading = true);
+                                    final imagePath = await ref
+                                        .read(imageServiceProvider)
+                                        .pickAndSaveImage();
+                                    if (imagePath != null) {
+                                      selectedImagePath = imagePath;
+                                    }
+                                    setState(() => isLoading = false);
+                                  },
                             icon: const Icon(Icons.camera_alt),
                             label: const Text('Scegli immagine'),
                           ),
@@ -417,7 +439,10 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
                                 setState(() => selectedImagePath = null);
                               },
                               icon: const Icon(Icons.delete, color: Colors.red),
-                              label: const Text('Rimuovi', style: TextStyle(color: Colors.red)),
+                              label: const Text(
+                                'Rimuovi',
+                                style: TextStyle(color: Colors.red),
+                              ),
                             ),
                         ],
                       ),
@@ -433,30 +458,36 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
               child: const Text('Annulla'),
             ),
             ElevatedButton(
-              onPressed: isLoading ? null : () async {
-                final name = nameController.text.trim();
-                if (name.isEmpty || selectedDepartmentId == null) return;
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      final name = nameController.text.trim();
+                      if (name.isEmpty || selectedDepartmentId == null) return;
 
-                if (product == null) {
-                  // Nuovo prodotto
-                  await ref.read(productsProvider.notifier).addProduct(
-                    name,
-                    selectedDepartmentId!,
-                    selectedImagePath,
-                  );
-                } else {
-                  // Modifica prodotto esistente
-                  await ref.read(productsProvider.notifier).updateProduct(
-                    product.copyWith(
-                      name: name,
-                      departmentId: selectedDepartmentId,
-                      imagePath: selectedImagePath,
-                    ),
-                  );
-                }
+                      if (product == null) {
+                        // Nuovo prodotto
+                        await ref
+                            .read(productsProvider.notifier)
+                            .addProduct(
+                              name,
+                              selectedDepartmentId!,
+                              selectedImagePath,
+                            );
+                      } else {
+                        // Modifica prodotto esistente
+                        await ref
+                            .read(productsProvider.notifier)
+                            .updateProduct(
+                              product.copyWith(
+                                name: name,
+                                departmentId: selectedDepartmentId,
+                                imagePath: selectedImagePath,
+                              ),
+                            );
+                      }
 
-                Navigator.pop(context);
-              },
+                      Navigator.pop(context);
+                    },
               child: Text(product == null ? 'Aggiungi' : 'Salva'),
             ),
           ],
@@ -465,7 +496,12 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
     );
   }
 
-  void _showMoveProductDialog(BuildContext context, WidgetRef ref, Product product, List<Department> departments) {
+  void _showMoveProductDialog(
+    BuildContext context,
+    WidgetRef ref,
+    Product product,
+    List<Department> departments,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -484,7 +520,7 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
                 itemBuilder: (context, index) {
                   final dept = departments[index];
                   final isCurrentDept = dept.id == product.departmentId;
-                  
+
                   return ListTile(
                     leading: dept.imagePath != null
                         ? ClipRRect(
@@ -494,27 +530,37 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
                               width: 32,
                               height: 32,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => 
+                              cacheWidth: AppConstants.imageCacheWidth,
+                              cacheHeight: AppConstants.imageCacheHeight,
+                              errorBuilder: (context, error, stackTrace) =>
                                   const Icon(Icons.store, size: 32),
                             ),
                           )
                         : const Icon(Icons.store, size: 32),
                     title: Text(dept.name),
-                    trailing: isCurrentDept ? const Icon(Icons.check, color: Colors.green) : null,
+                    trailing: isCurrentDept
+                        ? const Icon(Icons.check, color: Colors.green)
+                        : null,
                     enabled: !isCurrentDept,
-                    onTap: isCurrentDept ? null : () async {
-                      await ref.read(productsProvider.notifier).updateProduct(
-                        product.copyWith(departmentId: dept.id),
-                      );
-                      Navigator.pop(context);
-                      
-                      // Mostra snackbar di conferma
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${product.name} spostato in ${dept.name}'),
-                        ),
-                      );
-                    },
+                    onTap: isCurrentDept
+                        ? null
+                        : () async {
+                            await ref
+                                .read(productsProvider.notifier)
+                                .updateProduct(
+                                  product.copyWith(departmentId: dept.id),
+                                );
+                            Navigator.pop(context);
+
+                            // Mostra snackbar di conferma
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '${product.name} spostato in ${dept.name}',
+                                ),
+                              ),
+                            );
+                          },
                   );
                 },
               ),
@@ -531,7 +577,11 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, WidgetRef ref, Product product) {
+  void _showDeleteConfirmation(
+    BuildContext context,
+    WidgetRef ref,
+    Product product,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -544,7 +594,9 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
           ),
           ElevatedButton(
             onPressed: () async {
-              await ref.read(productsProvider.notifier).deleteProduct(product.id!);
+              await ref
+                  .read(productsProvider.notifier)
+                  .deleteProduct(product.id!);
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
@@ -563,7 +615,9 @@ class _ProductsManagementScreenState extends ConsumerState<ProductsManagementScr
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Nessun Reparto'),
-        content: const Text('Prima di aggiungere prodotti, devi creare almeno un reparto nella sezione "Gestione Reparti".'),
+        content: const Text(
+          'Prima di aggiungere prodotti, devi creare almeno un reparto nella sezione "Gestione Reparti".',
+        ),
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.pop(context),

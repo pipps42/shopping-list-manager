@@ -1,10 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:reorderables/reorderables.dart';
 import '../providers/departments_provider.dart';
 import '../providers/image_provider.dart';
 import '../models/department.dart';
+import '../utils/constants.dart';
+import '../widgets/common/empty_state_widget.dart';
+import '../widgets/common/error_state_widget.dart';
+import '../widgets/common/loading_widget.dart';
 import 'department_detail_screen.dart';
 
 class DepartmentsManagementScreen extends ConsumerWidget {
@@ -17,49 +20,30 @@ class DepartmentsManagementScreen extends ConsumerWidget {
     return Scaffold(
       body: departmentsState.when(
         data: (departments) => _buildDepartmentsList(context, ref, departments),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              Text('Errore: $error'),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => ref.refresh(departmentsProvider),
-                child: const Text('Riprova'),
-              ),
-            ],
-          ),
+        loading: () => const LoadingWidget(message: 'Caricamento reparti...'),
+        error: (error, stack) => ErrorStateWidget(
+          message: 'Errore nel caricamento dei reparti: $error',
+          onRetry: () => ref.invalidate(departmentsProvider),
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: "departments_management_fab",
         onPressed: () => _showAddDepartmentDialog(context, ref),
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  Widget _buildDepartmentsList(BuildContext context, WidgetRef ref, List<Department> departments) {
+  Widget _buildDepartmentsList(
+    BuildContext context,
+    WidgetRef ref,
+    List<Department> departments,
+  ) {
     if (departments.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.store_outlined, size: 80, color: Colors.grey),
-            SizedBox(height: 16),
-            Text(
-              'Nessun reparto',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.grey),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Aggiungi il primo reparto con il pulsante +',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-          ],
-        ),
+      return const EmptyStateWidget(
+        icon: Icons.store_outlined,
+        title: 'Nessun reparto',
+        subtitle: 'Aggiungi il primo reparto con il pulsante +',
       );
     }
 
@@ -88,7 +72,8 @@ class DepartmentsManagementScreen extends ConsumerWidget {
           child: ReorderableListView.builder(
             padding: const EdgeInsets.all(8),
             itemCount: departments.length,
-            onReorder: (oldIndex, newIndex) => _onReorder(ref, departments, oldIndex, newIndex),
+            onReorder: (oldIndex, newIndex) =>
+                _onReorder(ref, departments, oldIndex, newIndex),
             itemBuilder: (context, index) {
               final department = departments[index];
               return _buildDepartmentTile(context, ref, department, index);
@@ -99,7 +84,12 @@ class DepartmentsManagementScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDepartmentTile(BuildContext context, WidgetRef ref, Department department, int index) {
+  Widget _buildDepartmentTile(
+    BuildContext context,
+    WidgetRef ref,
+    Department department,
+    int index,
+  ) {
     return Card(
       key: Key('dept_${department.id}'),
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
@@ -180,7 +170,10 @@ class DepartmentsManagementScreen extends ConsumerWidget {
           width: 50,
           height: 50,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => _buildDefaultDepartmentIcon(),
+          cacheWidth: AppConstants.imageCacheWidth,
+          cacheHeight: AppConstants.imageCacheHeight,
+          errorBuilder: (context, error, stackTrace) =>
+              _buildDefaultDepartmentIcon(),
         ),
       );
     }
@@ -199,24 +192,36 @@ class DepartmentsManagementScreen extends ConsumerWidget {
     );
   }
 
-  void _onReorder(WidgetRef ref, List<Department> departments, int oldIndex, int newIndex) {
+  void _onReorder(
+    WidgetRef ref,
+    List<Department> departments,
+    int oldIndex,
+    int newIndex,
+  ) {
     if (newIndex > oldIndex) {
       newIndex -= 1;
     }
-    
+
     final List<Department> reorderedDepartments = List.from(departments);
     final Department item = reorderedDepartments.removeAt(oldIndex);
     reorderedDepartments.insert(newIndex, item);
-    
+
     // Aggiorna l'orderIndex per tutti i reparti
     for (int i = 0; i < reorderedDepartments.length; i++) {
-      reorderedDepartments[i] = reorderedDepartments[i].copyWith(orderIndex: i + 1);
+      reorderedDepartments[i] = reorderedDepartments[i].copyWith(
+        orderIndex: i + 1,
+      );
     }
-    
-    ref.read(departmentsProvider.notifier).reorderDepartments(reorderedDepartments);
+
+    ref
+        .read(departmentsProvider.notifier)
+        .reorderDepartments(reorderedDepartments);
   }
 
-  void _navigateToDepartmentDetail(BuildContext context, Department department) {
+  void _navigateToDepartmentDetail(
+    BuildContext context,
+    Department department,
+  ) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -229,11 +234,19 @@ class DepartmentsManagementScreen extends ConsumerWidget {
     _showDepartmentDialog(context, ref, null);
   }
 
-  void _showEditDepartmentDialog(BuildContext context, WidgetRef ref, Department department) {
+  void _showEditDepartmentDialog(
+    BuildContext context,
+    WidgetRef ref,
+    Department department,
+  ) {
     _showDepartmentDialog(context, ref, department);
   }
 
-  void _showDepartmentDialog(BuildContext context, WidgetRef ref, Department? department) {
+  void _showDepartmentDialog(
+    BuildContext context,
+    WidgetRef ref,
+    Department? department,
+  ) {
     final TextEditingController nameController = TextEditingController(
       text: department?.name ?? '',
     );
@@ -244,7 +257,9 @@ class DepartmentsManagementScreen extends ConsumerWidget {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(department == null ? 'Nuovo Reparto' : 'Modifica Reparto'),
+          title: Text(
+            department == null ? 'Nuovo Reparto' : 'Modifica Reparto',
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -267,6 +282,8 @@ class DepartmentsManagementScreen extends ConsumerWidget {
                         width: 60,
                         height: 60,
                         fit: BoxFit.cover,
+                        cacheWidth: AppConstants.imageCacheWidth,
+                        cacheHeight: AppConstants.imageCacheHeight,
                       ),
                     )
                   else
@@ -285,14 +302,18 @@ class DepartmentsManagementScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         ElevatedButton.icon(
-                          onPressed: isLoading ? null : () async {
-                            setState(() => isLoading = true);
-                            final imagePath = await ref.read(imageServiceProvider).pickAndSaveImage();
-                            if (imagePath != null) {
-                              selectedImagePath = imagePath;
-                            }
-                            setState(() => isLoading = false);
-                          },
+                          onPressed: isLoading
+                              ? null
+                              : () async {
+                                  setState(() => isLoading = true);
+                                  final imagePath = await ref
+                                      .read(imageServiceProvider)
+                                      .pickAndSaveImage();
+                                  if (imagePath != null) {
+                                    selectedImagePath = imagePath;
+                                  }
+                                  setState(() => isLoading = false);
+                                },
                           icon: const Icon(Icons.camera_alt),
                           label: const Text('Scegli immagine'),
                         ),
@@ -302,7 +323,10 @@ class DepartmentsManagementScreen extends ConsumerWidget {
                               setState(() => selectedImagePath = null);
                             },
                             icon: const Icon(Icons.delete, color: Colors.red),
-                            label: const Text('Rimuovi', style: TextStyle(color: Colors.red)),
+                            label: const Text(
+                              'Rimuovi',
+                              style: TextStyle(color: Colors.red),
+                            ),
                           ),
                       ],
                     ),
@@ -317,33 +341,44 @@ class DepartmentsManagementScreen extends ConsumerWidget {
               child: const Text('Annulla'),
             ),
             ElevatedButton(
-              onPressed: isLoading ? null : () async {
-                final name = nameController.text.trim();
-                if (name.isEmpty) return;
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      final name = nameController.text.trim();
+                      if (name.isEmpty) return;
 
-                if (department == null) {
-                  // Nuovo reparto
-                  await ref.read(departmentsProvider.notifier).addDepartment(name);
-                  if (selectedImagePath != null) {
-                    // Trova il reparto appena creato e aggiorna l'immagine
-                    final departments = ref.read(departmentsProvider).value ?? [];
-                    final newDept = departments.lastWhere((d) => d.name == name);
-                    await ref.read(departmentsProvider.notifier).updateDepartment(
-                      newDept.copyWith(imagePath: selectedImagePath),
-                    );
-                  }
-                } else {
-                  // Modifica reparto esistente
-                  await ref.read(departmentsProvider.notifier).updateDepartment(
-                    department.copyWith(
-                      name: name,
-                      imagePath: selectedImagePath,
-                    ),
-                  );
-                }
+                      if (department == null) {
+                        // Nuovo reparto
+                        await ref
+                            .read(departmentsProvider.notifier)
+                            .addDepartment(name);
+                        if (selectedImagePath != null) {
+                          // Trova il reparto appena creato e aggiorna l'immagine
+                          final departments =
+                              ref.read(departmentsProvider).value ?? [];
+                          final newDept = departments.lastWhere(
+                            (d) => d.name == name,
+                          );
+                          await ref
+                              .read(departmentsProvider.notifier)
+                              .updateDepartment(
+                                newDept.copyWith(imagePath: selectedImagePath),
+                              );
+                        }
+                      } else {
+                        // Modifica reparto esistente
+                        await ref
+                            .read(departmentsProvider.notifier)
+                            .updateDepartment(
+                              department.copyWith(
+                                name: name,
+                                imagePath: selectedImagePath,
+                              ),
+                            );
+                      }
 
-                Navigator.pop(context);
-              },
+                      Navigator.pop(context);
+                    },
               child: Text(department == null ? 'Aggiungi' : 'Salva'),
             ),
           ],
@@ -352,12 +387,18 @@ class DepartmentsManagementScreen extends ConsumerWidget {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, WidgetRef ref, Department department) {
+  void _showDeleteConfirmation(
+    BuildContext context,
+    WidgetRef ref,
+    Department department,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Elimina Reparto'),
-        content: Text('Sei sicuro di voler eliminare "${department.name}"?\n\nTutti i prodotti associati verranno eliminati.'),
+        content: Text(
+          'Sei sicuro di voler eliminare "${department.name}"?\n\nTutti i prodotti associati verranno eliminati.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -365,7 +406,9 @@ class DepartmentsManagementScreen extends ConsumerWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              await ref.read(departmentsProvider.notifier).deleteDepartment(department.id!);
+              await ref
+                  .read(departmentsProvider.notifier)
+                  .deleteDepartment(department.id!);
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(

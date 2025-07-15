@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/list_item.dart';
+import 'constants.dart';
 
 class UIHelpers {
   static Color getItemColor(ListItem item, BuildContext context) {
@@ -32,6 +34,8 @@ class UIHelpers {
         width: size,
         height: size,
         fit: BoxFit.cover,
+        cacheWidth: AppConstants.imageCacheWidth,
+        cacheHeight: AppConstants.imageCacheHeight,
         errorBuilder: (context, error, stackTrace) => fallback,
       ),
     );
