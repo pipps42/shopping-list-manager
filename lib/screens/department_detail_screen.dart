@@ -1,3 +1,4 @@
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,7 +26,19 @@ class DepartmentDetailScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text(department.name)),
+      appBar: AppBar(
+        title: Text(department.name),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        foregroundColor: AppColors.textOnPrimary(context),
+      ),
       body: productsState.when(
         data: (products) => _buildProductsList(context, ref, products),
         loading: () =>
@@ -40,6 +53,8 @@ class DepartmentDetailScreen extends ConsumerWidget {
         heroTag: "department_detail_fab",
         onPressed: () => _showAddProductDialog(context, ref),
         child: const Icon(Icons.add),
+        backgroundColor: AppColors.secondary,
+        foregroundColor: AppColors.textOnSecondary(context),
       ),
     );
   }

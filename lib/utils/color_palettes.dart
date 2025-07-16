@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// ===== SISTEMA IBRIDO SEMPLICE =====
-
 class AppColors {
   // === COLORI STATICI (sempre disponibili) ===
-  static const Color primary = Color(0xFF2E7D4A); // Verde foresta
-  static const Color secondary = Color(0xFF1976D2); // Blu moderno
-  static const Color accent = Color(0xFFF57C00); // Arancione
+  static const Color primary = Color(0xFF2E7D4A);
+  static const Color secondary = Color(0xFF1976D2);
+  static const Color accent = Color(0xFFF57C00);
 
   // Universal colors
   static const Color success = Color(0xFF4CAF50);
@@ -22,9 +20,9 @@ class AppColors {
   static const Color transparent = Colors.transparent;
   static const Color shadow = Colors.black26;
   static const Color overlay = Colors.black54;
-  static Color get completedOverlay => Colors.grey.withOpacity(0.3);
+  static Color get completedOverlay => Colors.grey.withOpacity(0.2);
 
-  // === COLORI DINAMICI (con fallback eleganti) ===
+  // === COLORI DINAMICI ===
 
   // Text colors
   static Color textPrimary(BuildContext context) =>
@@ -35,6 +33,10 @@ class AppColors {
       Theme.of(context).colorScheme.onSurface.withOpacity(0.4);
   static Color textOnPrimary(BuildContext context) =>
       Theme.of(context).colorScheme.onPrimary;
+  static Color textOnSecondary(BuildContext context) =>
+      Theme.of(context).colorScheme.onSecondary;
+  static Color textOnTertiary(BuildContext context) =>
+      Theme.of(context).colorScheme.onTertiary;
 
   // Background colors
   static Color background(BuildContext context) =>
@@ -57,20 +59,6 @@ class AppColors {
       iconPrimary(context).withOpacity(0.6);
   static Color iconDisabled(BuildContext context) =>
       iconPrimary(context).withOpacity(0.4);
-
-  // === HELPER SENZA CONTEXT (con fallback) ===
-
-  // Per quando NON hai context disponibile
-  static const Color textPrimaryFallback = Color(
-    0xFF1A1A1A,
-  ); // Dark text per light theme
-  static const Color textSecondaryFallback = Color(0xFF6B7280); // Gray text
-  static const Color textDisabledFallback = Color(0xFF9CA3AF); // Light gray
-  static const Color backgroundFallback = Color(0xFFFAFAFA); // Light background
-  static const Color surfaceFallback = Color(0xFFFFFFFF); // White surface
-  static const Color cardBackgroundFallback = Color(0xFFFFFFFF); // White card
-  static const Color borderFallback = Color(0xFFE5E7EB); // Light border
-  static const Color iconPrimaryFallback = Color(0xFF4B5563); // Dark icon
 
   // Utility
   static bool isDark(BuildContext context) =>

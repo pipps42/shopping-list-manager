@@ -188,7 +188,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
               label: const Text('Tutti'),
               selected: selectedDepartment == null,
               selectedColor: AppColors.accent,
-              checkmarkColor: AppColors.textOnPrimary(context),
+              checkmarkColor: AppColors.textOnTertiary(context),
               onSelected: (selected) {
                 setState(() {
                   selectedDepartment = null;
@@ -204,7 +204,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 label: Text(dept.name),
                 selected: selectedDepartment?.id == dept.id,
                 selectedColor: AppColors.accent,
-                checkmarkColor: AppColors.textOnPrimary(context),
+                checkmarkColor: AppColors.textOnTertiary(context),
                 onSelected: (selected) {
                   setState(() {
                     selectedDepartment = selected ? dept : null;

@@ -63,8 +63,8 @@ class ProductListTile extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
         child: Image.file(
           File(item.productImagePath!),
-          width: AppConstants.imageM,
-          height: AppConstants.imageM,
+          width: AppConstants.imageL,
+          height: AppConstants.imageL,
           fit: BoxFit.cover,
           cacheWidth: AppConstants.imageCacheWidth,
           cacheHeight: AppConstants.imageCacheHeight,
@@ -77,8 +77,8 @@ class ProductListTile extends ConsumerWidget {
 
   Widget _buildDefaultIcon() {
     return Container(
-      width: AppConstants.imageM,
-      height: AppConstants.imageM,
+      width: AppConstants.imageL,
+      height: AppConstants.imageL,
       decoration: BoxDecoration(
         color: AppColors.primary.withOpacity(
           0.2,
@@ -87,7 +87,7 @@ class ProductListTile extends ConsumerWidget {
       ),
       child: Icon(
         Icons.shopping_basket,
-        size: AppConstants.iconS,
+        size: AppConstants.iconL,
         color: AppColors.primary, // ✅ Aggiungi colore icona
       ),
     );

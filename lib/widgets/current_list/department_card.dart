@@ -13,7 +13,7 @@ class DepartmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: AppConstants.paddingXS),
+      margin: const EdgeInsets.symmetric(vertical: AppConstants.paddingS),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -29,7 +29,7 @@ class DepartmentCard extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(AppConstants.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.1),
+        color: AppColors.secondary.withOpacity(0.4),
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppConstants.radiusL),
         ),
@@ -59,8 +59,8 @@ class DepartmentCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
         child: Image.file(
           File(department.department.imagePath!),
-          width: AppConstants.imageM,
-          height: AppConstants.imageM,
+          width: AppConstants.imageL,
+          height: AppConstants.imageL,
           fit: BoxFit.cover,
           cacheWidth: AppConstants.imageCacheWidth,
           cacheHeight: AppConstants.imageCacheHeight,
@@ -74,8 +74,8 @@ class DepartmentCard extends StatelessWidget {
 
   Widget _buildDefaultIcon(BuildContext context) {
     return Container(
-      width: AppConstants.imageM,
-      height: AppConstants.imageM,
+      width: AppConstants.imageL,
+      height: AppConstants.imageL,
       decoration: BoxDecoration(
         color: AppColors.secondary.withOpacity(0.2), // ✅ Verde con opacità
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
@@ -83,7 +83,7 @@ class DepartmentCard extends StatelessWidget {
       child: Icon(
         Icons.store,
         color: AppColors.secondary, // ✅ Verde pieno
-        size: AppConstants.iconS,
+        size: AppConstants.iconL,
       ),
     );
   }
@@ -98,14 +98,18 @@ class DepartmentCard extends StatelessWidget {
         vertical: AppConstants.paddingS,
       ),
       decoration: BoxDecoration(
-        color: AppColors.textPrimary(context).withOpacity(0.8),
+        backgroundBlendMode: AppColors.isLight(context)
+            ? BlendMode.darken
+            : BlendMode.lighten,
+        color: AppColors.textPrimary(context).withOpacity(0.7),
         borderRadius: BorderRadius.circular(AppConstants.radiusL),
       ),
       child: Text(
         '$completed/$total',
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: AppConstants.fontM,
           fontWeight: FontWeight.bold,
+          color: AppColors.textOnSecondary(context),
         ),
       ),
     );

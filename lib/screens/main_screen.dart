@@ -83,18 +83,16 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text(_titles[_selectedIndex]),
-        /* flexibleSpace: Container(
+        flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                AppColors.headerGradientStart,
-                AppColors.headerGradientEnd,
-              ],
+              colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
           ),
-        ), */
+        ),
+        foregroundColor: AppColors.textOnPrimary(context),
         leading: Builder(
           builder: (context) => IconButton(
             icon: const Icon(Icons.menu),
@@ -160,16 +158,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       child: Column(
         children: [
           DrawerHeader(
-            /* decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.headerGradientStart,
-                    AppColors.headerGradientEnd,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ), */
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
             child: Row(
               children: [
                 Icon(

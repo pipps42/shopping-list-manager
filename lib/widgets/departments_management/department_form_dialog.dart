@@ -119,6 +119,7 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.secondary,
+                  foregroundColor: AppColors.textOnSecondary(context),
                 ),
                 onPressed: _isLoading ? null : _handlePickImage,
                 icon: const Icon(Icons.camera_alt),
