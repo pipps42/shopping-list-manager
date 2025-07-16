@@ -131,7 +131,7 @@ class DepartmentTileWidget extends StatelessWidget {
       child: Icon(
         Icons.store,
         size: AppConstants.iconM,
-        color: AppColors.iconSecondary,
+        color: AppColors.secondary,
       ),
     );
   }

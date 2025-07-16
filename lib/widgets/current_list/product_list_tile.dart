@@ -80,10 +80,16 @@ class ProductListTile extends ConsumerWidget {
       width: AppConstants.imageM,
       height: AppConstants.imageM,
       decoration: BoxDecoration(
-        color: AppColors.iconPrimary,
+        color: AppColors.primary.withOpacity(
+          0.2,
+        ), // ✅ Brand primary con opacity
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
-      child: const Icon(Icons.shopping_basket, size: AppConstants.iconS),
+      child: Icon(
+        Icons.shopping_basket,
+        size: AppConstants.iconS,
+        color: AppColors.primary, // ✅ Aggiungi colore icona
+      ),
     );
   }
 

@@ -66,7 +66,7 @@ class MyApp extends StatelessWidget {
       // === BUTTONS ===
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: brandPalette.primary,
+          backgroundColor: brandPalette.secondary,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppConstants.borderRadius),
@@ -87,7 +87,7 @@ class MyApp extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-          borderSide: BorderSide(color: brandPalette.primary),
+          borderSide: BorderSide(color: AppColors.accent),
         ),
       ),
 

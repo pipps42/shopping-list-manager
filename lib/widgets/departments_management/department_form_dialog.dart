@@ -47,7 +47,7 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
 
     return AlertDialog(
       title: Text(
-        isEditing ? AppStrings.editDepartment : AppStrings.newProduct,
+        isEditing ? AppStrings.editDepartment : AppStrings.addDepartment,
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -72,6 +72,10 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
           child: Text(AppStrings.cancel),
         ),
         ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.textOnPrimary,
+          ),
           onPressed: _isLoading ? null : _handleSave,
           child: Text(isEditing ? AppStrings.save : AppStrings.add),
         ),
@@ -88,8 +92,8 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
             borderRadius: BorderRadius.circular(8),
             child: Image.file(
               File(_selectedImagePath!),
-              width: 60,
-              height: 60,
+              width: AppConstants.imageXL,
+              height: AppConstants.imageXL,
               fit: BoxFit.cover,
               cacheWidth: AppConstants.imageCacheWidth,
               cacheHeight: AppConstants.imageCacheHeight,
@@ -97,13 +101,13 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
           )
         else
           Container(
-            width: 60,
-            height: 60,
+            width: AppConstants.imageXL,
+            height: AppConstants.imageXL,
             decoration: BoxDecoration(
               color: AppColors.border,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.store, size: 30),
+            child: const Icon(Icons.store, size: AppConstants.iconL),
           ),
         const SizedBox(width: AppConstants.spacingM),
 
@@ -113,6 +117,9 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.secondary,
+                ),
                 onPressed: _isLoading ? null : _handlePickImage,
                 icon: const Icon(Icons.camera_alt),
                 label: Text(AppStrings.chooseImage),

@@ -183,6 +183,8 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
             child: FilterChip(
               label: const Text('Tutti'),
               selected: selectedDepartment == null,
+              selectedColor: AppColors.accent,
+              checkmarkColor: AppColors.textOnPrimary,
               onSelected: (selected) {
                 setState(() {
                   selectedDepartment = null;
@@ -197,6 +199,8 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
               child: FilterChip(
                 label: Text(dept.name),
                 selected: selectedDepartment?.id == dept.id,
+                selectedColor: AppColors.accent,
+                checkmarkColor: AppColors.textOnPrimary,
                 onSelected: (selected) {
                   setState(() {
                     selectedDepartment = selected ? dept : null;
@@ -303,11 +307,11 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
   Widget _buildProductImage(Product product) {
     if (product.imagePath != null) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
         child: Image.file(
           File(product.imagePath!),
-          width: 40,
-          height: 40,
+          width: AppConstants.imageM,
+          height: AppConstants.imageM,
           fit: BoxFit.cover,
           cacheWidth: AppConstants.imageCacheWidth,
           cacheHeight: AppConstants.imageCacheHeight,
@@ -320,13 +324,17 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
 
   Widget _buildDefaultIcon() {
     return Container(
-      width: 40,
-      height: 40,
+      width: AppConstants.imageM,
+      height: AppConstants.imageM,
       decoration: BoxDecoration(
-        color: AppColors.border,
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.primary.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
       ),
-      child: const Icon(Icons.shopping_basket, size: 20),
+      child: Icon(
+        Icons.shopping_basket,
+        size: AppConstants.iconM,
+        color: AppColors.primary,
+      ),
     );
   }
 

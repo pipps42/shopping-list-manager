@@ -28,17 +28,14 @@ class DepartmentProductTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: AppConstants.paddingXS),
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppConstants.paddingM,
+          vertical: AppConstants.paddingS,
+        ),
         leading: _buildProductImage(),
         title: Text(
           product.name,
           style: const TextStyle(fontWeight: FontWeight.w500),
-        ),
-        subtitle: Text(
-          'Reparto:  {department.name}',
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: AppConstants.fontM,
-          ),
         ),
         trailing: PopupMenuButton<String>(
           onSelected: (value) {

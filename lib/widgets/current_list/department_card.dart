@@ -77,12 +77,12 @@ class DepartmentCard extends StatelessWidget {
       width: AppConstants.imageM,
       height: AppConstants.imageM,
       decoration: BoxDecoration(
-        color: AppColors.iconSecondary,
+        color: AppColors.secondary.withOpacity(0.2), // ✅ Verde con opacità
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
       child: Icon(
         Icons.store,
-        color: AppColors.textOnPrimary,
+        color: AppColors.secondary, // ✅ Verde pieno
         size: AppConstants.iconS,
       ),
     );

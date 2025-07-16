@@ -43,13 +43,13 @@ class ProductTileWidget extends StatelessWidget {
                 fontSize: AppConstants.fontM,
               ),
             ),
-            Text(
+            /* Text(
               'ID: ${product.id}',
               style: TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: AppConstants.fontS,
               ),
-            ),
+            ), */
           ],
         ),
         trailing: PopupMenuButton<String>(
@@ -131,13 +131,13 @@ class ProductTileWidget extends StatelessWidget {
       width: AppConstants.imageL,
       height: AppConstants.imageL,
       decoration: BoxDecoration(
-        color: AppColors.iconSecondary.withOpacity(0.2),
+        color: AppColors.primary.withOpacity(0.2), // ✅ Brand primary
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
       child: Icon(
         Icons.shopping_basket,
         size: AppConstants.iconM,
-        color: AppColors.iconSecondary,
+        color: AppColors.primary, // ✅ Brand primary
       ),
     );
   }

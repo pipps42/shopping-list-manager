@@ -106,6 +106,10 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
           child: const Text(AppStrings.cancel),
         ),
         ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.textOnPrimary,
+          ),
           onPressed: _isLoading ? null : _handleSave,
           child: Text(isEditing ? AppStrings.save : AppStrings.add),
         ),
@@ -147,6 +151,9 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.secondary, // 🔄 Era primary
+                ),
                 onPressed: _isLoading ? null : _handlePickImage,
                 icon: const Icon(Icons.camera_alt),
                 label: const Text(AppStrings.chooseImage),

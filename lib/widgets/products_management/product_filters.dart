@@ -105,6 +105,8 @@ class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
                   child: FilterChip(
                     label: const Text('Tutti'),
                     selected: _selectedDepartmentId == null,
+                    selectedColor: AppColors.accent,
+                    checkmarkColor: AppColors.textOnPrimary,
                     onSelected: (selected) {
                       setState(() {
                         _selectedDepartmentId = null;
@@ -122,6 +124,8 @@ class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
                     child: FilterChip(
                       label: Text(dept.name),
                       selected: _selectedDepartmentId == dept.id,
+                      selectedColor: AppColors.accent,
+                      checkmarkColor: AppColors.textOnPrimary,
                       onSelected: (selected) {
                         setState(() {
                           _selectedDepartmentId = selected ? dept.id : null;
