@@ -36,6 +36,7 @@ class ProductListTile extends ConsumerWidget {
               ? AppColors.completedOverlay
               : AppColors.cardBackground(context),
         ),
+        padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingS),
         child: ListTile(
           leading: _buildProductImage(),
           title: Text(
@@ -63,8 +64,8 @@ class ProductListTile extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
         child: Image.file(
           File(item.productImagePath!),
-          width: AppConstants.imageL,
-          height: AppConstants.imageL,
+          width: AppConstants.imageXL,
+          height: AppConstants.imageXL,
           fit: BoxFit.cover,
           cacheWidth: AppConstants.imageCacheWidth,
           cacheHeight: AppConstants.imageCacheHeight,
@@ -77,18 +78,16 @@ class ProductListTile extends ConsumerWidget {
 
   Widget _buildDefaultIcon() {
     return Container(
-      width: AppConstants.imageL,
-      height: AppConstants.imageL,
+      width: AppConstants.imageXL,
+      height: AppConstants.imageXL,
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(
-          0.2,
-        ), // ✅ Brand primary con opacity
+        color: AppColors.primary.withOpacity(0.2),
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
       child: Icon(
         Icons.shopping_basket,
         size: AppConstants.iconL,
-        color: AppColors.primary, // ✅ Aggiungi colore icona
+        color: AppColors.primary,
       ),
     );
   }
