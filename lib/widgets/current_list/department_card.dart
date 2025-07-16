@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../models/department_with_products.dart';
 import 'product_list_tile.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 
 class DepartmentCard extends StatelessWidget {
   final DepartmentWithProducts department;
@@ -28,8 +29,10 @@ class DepartmentCard extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(AppConstants.paddingM),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppConstants.radiusL)),
+        color: AppColors.cardBackground,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppConstants.radiusL),
+        ),
       ),
       child: Row(
         children: [
@@ -38,7 +41,10 @@ class DepartmentCard extends StatelessWidget {
           Expanded(
             child: Text(
               department.department.name,
-              style: const TextStyle(fontSize: AppConstants.fontXXL, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: AppConstants.fontXXL,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           _buildStats(),
@@ -71,10 +77,14 @@ class DepartmentCard extends StatelessWidget {
       width: AppConstants.imageM,
       height: AppConstants.imageM,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.secondary,
+        color: AppColors.secondary,
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
-      child: const Icon(Icons.store, color: Colors.white, size: AppConstants.iconS),
+      child: Icon(
+        Icons.store,
+        color: AppColors.textOnPrimary,
+        size: AppConstants.iconS,
+      ),
     );
   }
 
@@ -83,14 +93,20 @@ class DepartmentCard extends StatelessWidget {
     final completed = department.items.where((item) => item.isChecked).length;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingS, vertical: AppConstants.paddingXS),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppConstants.paddingS,
+        vertical: AppConstants.paddingXS,
+      ),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
+        color: AppColors.textOnPrimary.withOpacity(0.8),
         borderRadius: BorderRadius.circular(AppConstants.radiusL),
       ),
       child: Text(
         '$completed/$total',
-        style: const TextStyle(fontSize: AppConstants.fontM, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+          fontSize: AppConstants.fontM,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }

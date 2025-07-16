@@ -5,6 +5,7 @@ import '../providers/current_list_provider.dart';
 import 'current_list_screen.dart';
 import 'departments_management_screen.dart';
 import 'products_management_screen.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -82,7 +83,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text(_titles[_selectedIndex]),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: AppColors.primary,
         leading: Builder(
           builder: (context) => IconButton(
             icon: const Icon(Icons.menu),
@@ -103,11 +104,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       value: 'clear_all',
                       child: Row(
                         children: [
-                          Icon(Icons.clear_all, color: Colors.red),
+                          Icon(Icons.clear_all, color: AppColors.error),
                           SizedBox(width: AppConstants.spacingS),
                           Text(
                             AppStrings.clearList,
-                            style: TextStyle(color: Colors.red),
+                            style: TextStyle(color: AppColors.error),
                           ),
                         ],
                       ),
@@ -150,18 +151,19 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           DrawerHeader(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  Theme.of(context).colorScheme.primary,
-                  Theme.of(context).colorScheme.primaryContainer,
-                ],
+                colors: [AppColors.primary, AppColors.headerGradientEnd],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.shopping_bag, size: AppConstants.iconXL, color: Colors.white),
-                SizedBox(width: AppConstants.spacingM),
+                Icon(
+                  Icons.shopping_bag,
+                  size: AppConstants.iconXL,
+                  color: AppColors.iconPrimary,
+                ),
+                const SizedBox(width: AppConstants.spacingM),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,14 +172,17 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       Text(
                         'Lista Spesa',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.textOnPrimary,
                           fontSize: AppConstants.fontTitle,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         'Esselunga',
-                        style: TextStyle(color: Colors.white70, fontSize: AppConstants.fontXL),
+                        style: TextStyle(
+                          color: AppColors.textOnPrimary.withOpacity(0.7),
+                          fontSize: AppConstants.fontXL,
+                        ),
                       ),
                     ],
                   ),
@@ -198,18 +203,18 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   leading: Icon(
                     item.icon,
                     color: isDisabled
-                        ? Colors.grey
+                        ? AppColors.textDisabled
                         : isSelected
-                        ? Theme.of(context).colorScheme.primary
+                        ? AppColors.primary
                         : null,
                   ),
                   title: Text(
                     item.title,
                     style: TextStyle(
                       color: isDisabled
-                          ? Colors.grey
+                          ? AppColors.textDisabled
                           : isSelected
-                          ? Theme.of(context).colorScheme.primary
+                          ? AppColors.primary
                           : null,
                       fontWeight: isSelected ? FontWeight.bold : null,
                     ),
@@ -218,9 +223,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   enabled: !isDisabled,
                   onTap: isDisabled ? null : () => _onTabChanged(item.index),
                   trailing: isDisabled
-                      ? const Text(
+                      ? Text(
                           'Presto',
-                          style: TextStyle(fontSize: AppConstants.fontM, color: Colors.grey),
+                          style: TextStyle(
+                            fontSize: AppConstants.fontM,
+                            color: AppColors.textDisabled,
+                          ),
                         )
                       : null,
                 );
@@ -228,11 +236,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             ),
           ),
           const Divider(),
-          const Padding(
-            padding: EdgeInsets.all(AppConstants.paddingM),
+          Padding(
+            padding: const EdgeInsets.all(AppConstants.paddingM),
             child: Text(
               'v1.0.0',
-              style: TextStyle(color: Colors.grey, fontSize: AppConstants.fontM),
+              style: TextStyle(
+                color: AppColors.textDisabled,
+                fontSize: AppConstants.fontM,
+              ),
             ),
           ),
         ],
@@ -274,8 +285,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               await _clearCurrentList();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.error,
+              foregroundColor: AppColors.textOnPrimary,
             ),
             child: Text(AppStrings.clearList),
           ),
@@ -295,14 +306,17 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(AppStrings.listCleared),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Errore: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Errore: $e'),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     }

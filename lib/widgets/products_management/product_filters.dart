@@ -1,6 +1,7 @@
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import '../../models/department.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 
 class ProductFiltersWidget extends StatefulWidget {
   final List<Department> departments;
@@ -59,8 +60,8 @@ class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
     return Container(
       padding: const EdgeInsets.all(AppConstants.paddingM),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
-        border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
+        color: AppColors.surface,
+        border: Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Column(
         children: [
@@ -115,7 +116,9 @@ class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
                 // Reparti
                 ...widget.departments.map(
                   (dept) => Padding(
-                    padding: const EdgeInsets.only(right: AppConstants.spacingS),
+                    padding: const EdgeInsets.only(
+                      right: AppConstants.spacingS,
+                    ),
                     child: FilterChip(
                       label: Text(dept.name),
                       selected: _selectedDepartmentId == dept.id,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 
 class EmptyStateWidget extends StatelessWidget {
@@ -30,7 +31,7 @@ class EmptyStateWidget extends StatelessWidget {
             Icon(
               icon,
               size: iconSize ?? AppConstants.iconXXL,
-              color: iconColor ?? Colors.grey[400],
+              color: iconColor ?? AppColors.textDisabled,
             ),
             const SizedBox(height: AppConstants.spacingM),
             Text(
@@ -38,14 +39,14 @@ class EmptyStateWidget extends StatelessWidget {
               style: TextStyle(
                 fontSize: AppConstants.fontTitle,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[600],
+                color: AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppConstants.spacingS),
             Text(
               subtitle,
-              style: TextStyle(fontSize: 16, color: Colors.grey[500]),
+              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             if (action != null) ...[

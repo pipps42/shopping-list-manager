@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/list_item.dart';
 import '../../providers/current_list_provider.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 
 class ProductListTile extends ConsumerWidget {
   final ListItem item;
@@ -31,7 +32,7 @@ class ProductListTile extends ConsumerWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          color: item.isChecked ? Colors.grey[200] : Colors.white,
+          color: item.isChecked ? AppColors.surface : AppColors.background,
         ),
         child: ListTile(
           leading: _buildProductImage(),
@@ -39,12 +40,15 @@ class ProductListTile extends ConsumerWidget {
             item.productName ?? 'Prodotto sconosciuto',
             style: TextStyle(
               decoration: item.isChecked ? TextDecoration.lineThrough : null,
-              color: item.isChecked ? Colors.grey[600] : null,
+              color: item.isChecked ? AppColors.textSecondary : null,
             ),
           ),
           trailing: item.isChecked
-              ? Icon(Icons.check_circle, color: Colors.green[600])
-              : const Icon(Icons.radio_button_unchecked, color: Colors.grey),
+              ? Icon(Icons.check_circle, color: AppColors.success)
+              : Icon(
+                  Icons.radio_button_unchecked,
+                  color: AppColors.textDisabled,
+                ),
           onLongPress: () => _showRemoveDialog(context, ref),
         ),
       ),
@@ -74,7 +78,7 @@ class ProductListTile extends ConsumerWidget {
       width: AppConstants.imageM,
       height: AppConstants.imageM,
       decoration: BoxDecoration(
-        color: Colors.grey[300],
+        color: AppColors.border,
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
       child: const Icon(Icons.shopping_basket, size: AppConstants.iconS),
@@ -83,12 +87,12 @@ class ProductListTile extends ConsumerWidget {
 
   Widget _buildSwipeBackground(bool isSecondary) {
     return Container(
-      color: isSecondary ? Colors.orange : Colors.green,
+      color: isSecondary ? AppColors.warning : AppColors.success,
       alignment: isSecondary ? Alignment.centerRight : Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingL),
       child: Icon(
         isSecondary ? Icons.undo : Icons.check,
-        color: Colors.white,
+        color: AppColors.textOnPrimary,
         size: AppConstants.iconL,
       ),
     );
@@ -113,8 +117,8 @@ class ProductListTile extends ConsumerWidget {
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.error,
+              foregroundColor: AppColors.textOnPrimary,
             ),
             child: Text(AppStrings.removeImage),
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'theme_manager.dart';
 
 /// ===== LAYER 1: BRAND COLORS (quello che cambia tra brand) =====
 
@@ -28,11 +29,11 @@ class EsseLungaBrandPalette extends AppBrandPalette {
   String get name => 'Esselunga';
 
   @override
-  Color get primary => const Color(0xFFFFD700); // Verde Esselunga
+  Color get primary => const Color.fromARGB(255, 0, 203, 207); // Verde Esselunga
   @override
-  Color get secondary => const Color(0xFFE31E24); // Rosso Esselunga
+  Color get secondary => const Color.fromARGB(255, 216, 7, 209); // Rosso Esselunga
   @override
-  Color get accent => const Color.fromARGB(255, 62, 139, 255); // Giallo oro
+  Color get accent => const Color(0xFFFFD700); // Giallo oro
 }
 
 /// Palette Carrefour
@@ -79,49 +80,92 @@ class AppUniversalColors {
   static Color get completedOverlay => Colors.grey.withOpacity(0.3);
 }
 
-/// ===== LAYER 3: SYSTEM COLORS (gestiti da Flutter Theme) =====
+/// ===== LAYER 3: SYSTEM COLORS (SICURI e senza context!) =====
 
 class AppSystemColors {
-  /// Colori di testo (dipendono da light/dark)
-  static Color textPrimary(BuildContext context) =>
-      Theme.of(context).colorScheme.onSurface;
+  static AppThemeManager get _theme => AppThemeManager();
 
-  static Color textSecondary(BuildContext context) =>
-      Theme.of(context).colorScheme.onSurface.withOpacity(0.6);
+  // 🎯 Fallback colors per quando il tema non è ancora inizializzato
+  static const Color _fallbackTextPrimary = Colors.black87;
+  static const Color _fallbackTextSecondary = Colors.black54;
+  static const Color _fallbackTextDisabled = Colors.black38;
+  static const Color _fallbackBackground = Colors.white;
+  static const Color _fallbackSurface = Colors.white;
+  static const Color _fallbackCard = Colors.white;
+  static const Color _fallbackDialog = Colors.white;
+  static const Color _fallbackBorder = Colors.grey;
+  static const Color _fallbackIcon = Colors.black87;
 
-  static Color textDisabled(BuildContext context) =>
-      Theme.of(context).colorScheme.onSurface.withOpacity(0.4);
+  /// Colori di testo (SICURI!)
+  static Color get textPrimary {
+    if (!_theme.isInitialized) return _fallbackTextPrimary;
+    return _theme.colorScheme.onSurface;
+  }
 
-  static Color textOnPrimary(BuildContext context) =>
-      Theme.of(context).colorScheme.onPrimary;
+  static Color get textSecondary {
+    if (!_theme.isInitialized) return _fallbackTextSecondary;
+    return _theme.colorScheme.onSurface.withOpacity(0.6);
+  }
 
-  /// Colori di background (dipendono da light/dark)
-  static Color background(BuildContext context) =>
-      Theme.of(context).colorScheme.background;
+  static Color get textDisabled {
+    if (!_theme.isInitialized) return _fallbackTextDisabled;
+    return _theme.colorScheme.onSurface.withOpacity(0.4);
+  }
 
-  static Color surface(BuildContext context) =>
-      Theme.of(context).colorScheme.surface;
+  static Color get textOnPrimary {
+    if (!_theme.isInitialized) return Colors.white;
+    return _theme.colorScheme.onPrimary;
+  }
 
-  static Color cardBackground(BuildContext context) =>
-      Theme.of(context).cardColor;
+  /// Colori di background (SICURI!)
+  static Color get background {
+    if (!_theme.isInitialized) return _fallbackBackground;
+    return _theme.colorScheme.background;
+  }
 
-  static Color dialogBackground(BuildContext context) =>
-      Theme.of(context).dialogBackgroundColor;
+  static Color get surface {
+    if (!_theme.isInitialized) return _fallbackSurface;
+    return _theme.colorScheme.surface;
+  }
 
-  /// Colori di bordi e divider (dipendono da light/dark)
-  static Color border(BuildContext context) => Theme.of(context).dividerColor;
+  static Color get cardBackground {
+    if (!_theme.isInitialized) return _fallbackCard;
+    return _theme.cardColor;
+  }
 
-  static Color divider(BuildContext context) => Theme.of(context).dividerColor;
+  static Color get dialogBackground {
+    if (!_theme.isInitialized) return _fallbackDialog;
+    return _theme.dialogBackgroundColor;
+  }
 
-  /// Colori icone (dipendono da light/dark)
-  static Color iconPrimary(BuildContext context) =>
-      Theme.of(context).iconTheme.color ?? textPrimary(context);
+  /// Colori di bordi e divider (SICURI!)
+  static Color get border {
+    if (!_theme.isInitialized) return _fallbackBorder;
+    return _theme.dividerColor;
+  }
 
-  static Color iconSecondary(BuildContext context) =>
-      iconPrimary(context).withOpacity(0.6);
+  static Color get divider {
+    if (!_theme.isInitialized) return _fallbackBorder;
+    return _theme.dividerColor;
+  }
 
-  static Color iconDisabled(BuildContext context) =>
-      iconPrimary(context).withOpacity(0.4);
+  /// Colori icone (SICURI!)
+  static Color get iconPrimary {
+    if (!_theme.isInitialized) return _fallbackIcon;
+    return _theme.iconColor ?? textPrimary;
+  }
+
+  static Color get iconSecondary {
+    return iconPrimary.withOpacity(0.6);
+  }
+
+  static Color get iconDisabled {
+    return iconPrimary.withOpacity(0.4);
+  }
+
+  /// Utility per conoscere il tema corrente (SICURE!)
+  static bool get isDark => _theme.isDarkSafe;
+  static bool get isLight => _theme.isLightSafe;
 }
 
 /// ===== MANAGER E FACADE =====
@@ -139,16 +183,17 @@ class BrandPaletteManager {
 
   static void setBrand(AppBrandPalette brand) {
     _currentBrand = brand;
-    // TODO: Notify listeners per rebuild UI
+    debugPrint('🎨 Brand cambiato a: ${brand.name}');
+    // TODO: Potresti integrare con Riverpod qui per notificare i cambi
   }
 }
 
-/// ===== FACADE UNIFICATO (facile da usare) =====
+/// ===== FACADE UNIFICATO (SICURO!) =====
 
 class AppColors {
   static AppBrandPalette get _brand => BrandPaletteManager.current;
 
-  // === BRAND COLORS ===
+  // === BRAND COLORS (sempre sicuri) ===
   static Color get primary => _brand.primary;
   static Color get secondary => _brand.secondary;
   static Color get accent => _brand.accent;
@@ -160,43 +205,35 @@ class AppColors {
   static Color get swipeComplete => _brand.swipeComplete;
   static Color get swipeDelete => _brand.swipeDelete;
 
-  // === UNIVERSAL COLORS ===
-  static Color get success => AppUniversalColors.success;
-  static Color get error => AppUniversalColors.error;
-  static Color get warning => AppUniversalColors.warning;
-  static Color get info => AppUniversalColors.info;
-  static Color get transparent => AppUniversalColors.transparent;
-  static Color get shadow => AppUniversalColors.shadow;
-  static Color get overlay => AppUniversalColors.overlay;
+  // === UNIVERSAL COLORS (sempre sicuri) ===
+  static const Color success = AppUniversalColors.success;
+  static const Color error = AppUniversalColors.error;
+  static const Color warning = AppUniversalColors.warning;
+  static const Color info = AppUniversalColors.info;
+  static const Color transparent = AppUniversalColors.transparent;
+  static const Color shadow = AppUniversalColors.shadow;
+  static const Color overlay = AppUniversalColors.overlay;
   static Color get completedOverlay => AppUniversalColors.completedOverlay;
 
-  // === SYSTEM COLORS (require context) ===
-  static Color textPrimary(BuildContext context) =>
-      AppSystemColors.textPrimary(context);
-  static Color textSecondary(BuildContext context) =>
-      AppSystemColors.textSecondary(context);
-  static Color textDisabled(BuildContext context) =>
-      AppSystemColors.textDisabled(context);
-  static Color textOnPrimary(BuildContext context) =>
-      AppSystemColors.textOnPrimary(context);
+  // === SYSTEM COLORS (con fallback sicuri!) ===
+  static Color get textPrimary => AppSystemColors.textPrimary;
+  static Color get textSecondary => AppSystemColors.textSecondary;
+  static Color get textDisabled => AppSystemColors.textDisabled;
+  static Color get textOnPrimary => AppSystemColors.textOnPrimary;
 
-  static Color background(BuildContext context) =>
-      AppSystemColors.background(context);
-  static Color surface(BuildContext context) =>
-      AppSystemColors.surface(context);
-  static Color cardBackground(BuildContext context) =>
-      AppSystemColors.cardBackground(context);
-  static Color dialogBackground(BuildContext context) =>
-      AppSystemColors.dialogBackground(context);
+  static Color get background => AppSystemColors.background;
+  static Color get surface => AppSystemColors.surface;
+  static Color get cardBackground => AppSystemColors.cardBackground;
+  static Color get dialogBackground => AppSystemColors.dialogBackground;
 
-  static Color border(BuildContext context) => AppSystemColors.border(context);
-  static Color divider(BuildContext context) =>
-      AppSystemColors.divider(context);
+  static Color get border => AppSystemColors.border;
+  static Color get divider => AppSystemColors.divider;
 
-  static Color iconPrimary(BuildContext context) =>
-      AppSystemColors.iconPrimary(context);
-  static Color iconSecondary(BuildContext context) =>
-      AppSystemColors.iconSecondary(context);
-  static Color iconDisabled(BuildContext context) =>
-      AppSystemColors.iconDisabled(context);
+  static Color get iconPrimary => AppSystemColors.iconPrimary;
+  static Color get iconSecondary => AppSystemColors.iconSecondary;
+  static Color get iconDisabled => AppSystemColors.iconDisabled;
+
+  // === UTILITY HELPERS ===
+  static bool get isDark => AppSystemColors.isDark;
+  static bool get isLight => AppSystemColors.isLight;
 }

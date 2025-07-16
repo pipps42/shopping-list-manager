@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../models/product.dart';
 import '../../models/department.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 
 class ProductTileWidget extends StatelessWidget {
   final Product product;
@@ -37,11 +38,17 @@ class ProductTileWidget extends StatelessWidget {
           children: [
             Text(
               department.name,
-              style: TextStyle(color: Colors.grey[600], fontSize: AppConstants.fontM),
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: AppConstants.fontM,
+              ),
             ),
             Text(
               'ID: ${product.id}',
-              style: TextStyle(color: Colors.grey[500], fontSize: AppConstants.fontS),
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: AppConstants.fontS,
+              ),
             ),
           ],
         ),
@@ -84,9 +91,12 @@ class ProductTileWidget extends StatelessWidget {
               value: 'delete',
               child: Row(
                 children: [
-                  Icon(Icons.delete, color: Colors.red),
+                  Icon(Icons.delete, color: AppColors.error),
                   SizedBox(width: AppConstants.spacingS),
-                  Text(AppStrings.delete, style: TextStyle(color: Colors.red)),
+                  Text(
+                    AppStrings.delete,
+                    style: TextStyle(color: AppColors.error),
+                  ),
                 ],
               ),
             ),
@@ -121,10 +131,14 @@ class ProductTileWidget extends StatelessWidget {
       width: AppConstants.imageL,
       height: AppConstants.imageL,
       decoration: BoxDecoration(
-        color: Colors.orange[100],
+        color: AppColors.warning.withOpacity(0.2),
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
-      child: const Icon(Icons.shopping_basket, size: AppConstants.iconM, color: Colors.orange),
+      child: Icon(
+        Icons.shopping_basket,
+        size: AppConstants.iconM,
+        color: AppColors.warning,
+      ),
     );
   }
 }

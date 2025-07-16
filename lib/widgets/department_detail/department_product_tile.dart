@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../models/product.dart';
 import '../../models/department.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 
 class DepartmentProductTile extends StatelessWidget {
   final Product product;
@@ -34,7 +35,10 @@ class DepartmentProductTile extends StatelessWidget {
         ),
         subtitle: Text(
           'Reparto:  {department.name}',
-          style: TextStyle(color: Colors.grey[600], fontSize: AppConstants.fontM),
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: AppConstants.fontM,
+          ),
         ),
         trailing: PopupMenuButton<String>(
           onSelected: (value) {
@@ -75,9 +79,12 @@ class DepartmentProductTile extends StatelessWidget {
               value: 'delete',
               child: Row(
                 children: [
-                  Icon(Icons.delete, color: Colors.red),
+                  Icon(Icons.delete, color: AppColors.error),
                   SizedBox(width: AppConstants.spacingS),
-                  Text(AppStrings.delete, style: TextStyle(color: Colors.red)),
+                  Text(
+                    AppStrings.delete,
+                    style: TextStyle(color: AppColors.error),
+                  ),
                 ],
               ),
             ),
@@ -112,10 +119,14 @@ class DepartmentProductTile extends StatelessWidget {
       width: AppConstants.imageL,
       height: AppConstants.imageL,
       decoration: BoxDecoration(
-        color: Colors.green[100],
+        color: AppColors.success.withOpacity(0.2),
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
-      child: const Icon(Icons.shopping_basket, size: AppConstants.iconM, color: Colors.green),
+      child: Icon(
+        Icons.shopping_basket,
+        size: AppConstants.iconM,
+        color: AppColors.success,
+      ),
     );
   }
 }

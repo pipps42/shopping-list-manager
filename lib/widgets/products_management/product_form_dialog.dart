@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/product.dart';
 import '../../models/department.dart';
 import '../../providers/image_provider.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 
 class ProductFormDialog extends ConsumerStatefulWidget {
   final Product? product;
@@ -133,7 +134,7 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
             width: AppConstants.imageXL,
             height: AppConstants.imageXL,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: AppColors.border,
               borderRadius: BorderRadius.circular(AppConstants.radiusM),
             ),
             child: const Icon(Icons.shopping_basket, size: AppConstants.imageS),
@@ -153,10 +154,10 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
               if (_selectedImagePath != null)
                 TextButton.icon(
                   onPressed: _handleRemoveImage,
-                  icon: const Icon(Icons.delete, color: Colors.red),
+                  icon: const Icon(Icons.delete, color: AppColors.error),
                   label: const Text(
                     AppStrings.removeImage,
-                    style: TextStyle(color: Colors.red),
+                    style: TextStyle(color: AppColors.error),
                   ),
                 ),
             ],

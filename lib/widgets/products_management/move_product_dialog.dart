@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../models/product.dart';
 import '../../models/department.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 
 class MoveProductDialog extends StatelessWidget {
   final Product product;
@@ -39,7 +40,7 @@ class MoveProductDialog extends StatelessWidget {
                   leading: _buildDepartmentImage(dept),
                   title: Text(dept.name),
                   trailing: isCurrentDept
-                      ? const Icon(Icons.check, color: Colors.green)
+                      ? const Icon(Icons.check, color: AppColors.success)
                       : null,
                   enabled: !isCurrentDept,
                   onTap: isCurrentDept

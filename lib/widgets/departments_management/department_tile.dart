@@ -2,6 +2,7 @@ import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../models/department.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 
 class DepartmentTileWidget extends StatelessWidget {
   final Department department;
@@ -34,7 +35,7 @@ class DepartmentTileWidget extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Handle per drag
-            Icon(Icons.drag_handle, color: Colors.grey[600]),
+            Icon(Icons.drag_handle, color: AppColors.textSecondary),
             const SizedBox(width: AppConstants.spacingS),
             // Immagine reparto
             _buildDepartmentImage(),
@@ -84,9 +85,12 @@ class DepartmentTileWidget extends StatelessWidget {
               value: 'delete',
               child: Row(
                 children: [
-                  Icon(Icons.delete, color: Colors.red),
+                  Icon(Icons.delete, color: AppColors.error),
                   SizedBox(width: AppConstants.spacingS),
-                  Text(AppStrings.delete, style: TextStyle(color: Colors.red)),
+                  Text(
+                    AppStrings.delete,
+                    style: TextStyle(color: AppColors.error),
+                  ),
                 ],
               ),
             ),
@@ -121,10 +125,10 @@ class DepartmentTileWidget extends StatelessWidget {
       width: AppConstants.imageL,
       height: AppConstants.imageL,
       decoration: BoxDecoration(
-        color: Colors.blue[100],
+        color: AppColors.info.withOpacity(0.2),
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
-      child: const Icon(Icons.store, size: AppConstants.iconM, color: Colors.blue),
+      child: Icon(Icons.store, size: AppConstants.iconM, color: AppColors.info),
     );
   }
 }

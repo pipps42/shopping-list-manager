@@ -2,14 +2,15 @@ import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/departments_provider.dart';
 import '../providers/products_provider.dart';
+import '../providers/departments_provider.dart';
 import '../providers/current_list_provider.dart';
-import '../models/department.dart';
 import '../models/product.dart';
+import '../models/department.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
+import 'common/loading_widget.dart';
 import 'common/empty_state_widget.dart';
 import 'common/error_state_widget.dart';
-import 'common/loading_widget.dart';
 
 class AddProductDialog extends ConsumerStatefulWidget {
   final Function(int productId) onProductSelected;
@@ -131,12 +132,19 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                   padding: EdgeInsets.all(AppConstants.paddingS),
                   child: Row(
                     children: [
-                      Icon(Icons.error, color: Colors.red, size: AppConstants.iconS),
+                      Icon(
+                        Icons.error,
+                        color: AppColors.error,
+                        size: AppConstants.iconS,
+                      ),
                       const SizedBox(width: AppConstants.spacingS),
                       Expanded(
                         child: Text(
                           'Errore reparti: $error',
-                          style: TextStyle(color: Colors.red, fontSize: AppConstants.fontM),
+                          style: TextStyle(
+                            color: AppColors.error,
+                            fontSize: AppConstants.fontM,
+                          ),
                         ),
                       ),
                     ],
@@ -248,7 +256,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
       error: (error, stack) => Center(
         child: Column(
           children: [
-            Icon(Icons.error, color: Colors.red),
+            Icon(Icons.error, color: AppColors.error),
             Text('Errore nel caricamento: $error'),
           ],
         ),
@@ -268,7 +276,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
           title: Text(product.name),
           subtitle: _buildDepartmentName(product.departmentId),
           trailing: isInList
-              ? Icon(Icons.check_circle, color: Colors.green[600])
+              ? Icon(Icons.check_circle, color: AppColors.success)
               : const Icon(Icons.add_circle_outline),
           onTap: isInList ? null : () => widget.onProductSelected(product.id!),
           enabled: !isInList,
@@ -283,10 +291,10 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
         title: Text(AppStrings.loading),
       ),
       error: (error, stack) => ListTile(
-        leading: Icon(Icons.error, color: Colors.red, size: 20),
+        leading: Icon(Icons.error, color: AppColors.error, size: 20),
         title: Text(
           'Errore',
-          style: TextStyle(color: Colors.red, fontSize: 12),
+          style: TextStyle(color: AppColors.error, fontSize: 12),
         ),
       ),
     );
@@ -315,7 +323,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: Colors.grey[300],
+        color: AppColors.border,
         borderRadius: BorderRadius.circular(8),
       ),
       child: const Icon(Icons.shopping_basket, size: 20),
@@ -334,7 +342,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
         );
         return Text(
           dept.name,
-          style: const TextStyle(fontSize: 12, color: Colors.grey),
+          style: TextStyle(fontSize: 12, color: AppColors.textDisabled),
         );
       },
       loading: () => const LoadingWidget(message: '...'),

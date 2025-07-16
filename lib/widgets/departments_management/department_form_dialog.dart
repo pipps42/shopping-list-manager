@@ -1,9 +1,10 @@
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/department.dart';
 import '../../providers/image_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 
 class DepartmentFormDialog extends ConsumerStatefulWidget {
   final Department? department;
@@ -99,7 +100,7 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: AppColors.border,
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(Icons.store, size: 30),
@@ -119,10 +120,10 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
               if (_selectedImagePath != null)
                 TextButton.icon(
                   onPressed: _handleRemoveImage,
-                  icon: const Icon(Icons.delete, color: Colors.red),
+                  icon: const Icon(Icons.delete, color: AppColors.error),
                   label: const Text(
                     AppStrings.removeImage,
-                    style: TextStyle(color: Colors.red),
+                    style: TextStyle(color: AppColors.error),
                   ),
                 ),
             ],

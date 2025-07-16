@@ -1,6 +1,7 @@
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import '../../models/department.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 
 class DeleteDepartmentDialog extends StatelessWidget {
   final Department department;
@@ -34,14 +35,14 @@ class DeleteDepartmentDialog extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Reparto "${department.name}" eliminato'),
-                  backgroundColor: Colors.green,
+                  backgroundColor: AppColors.success,
                 ),
               );
             });
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
+            backgroundColor: AppColors.error,
+            foregroundColor: AppColors.textOnPrimary,
           ),
           child: Text(AppStrings.delete),
         ),

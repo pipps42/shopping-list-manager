@@ -8,6 +8,7 @@ import '../models/product.dart';
 import '../widgets/common/empty_state_widget.dart';
 import '../widgets/common/error_state_widget.dart';
 import '../widgets/common/loading_widget.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 import '../widgets/products_management/product_form_dialog.dart';
 import '../widgets/products_management/move_product_dialog.dart';
 import '../widgets/products_management/delete_product_dialog.dart';
@@ -27,7 +28,7 @@ class DepartmentDetailScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(department.name),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: AppColors.primary,
       ),
       body: productsState.when(
         data: (products) => _buildProductsList(context, ref, products),

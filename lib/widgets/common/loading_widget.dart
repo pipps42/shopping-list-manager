@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 
 class LoadingWidget extends StatelessWidget {
@@ -17,9 +18,7 @@ class LoadingWidget extends StatelessWidget {
           SizedBox(
             width: size ?? AppConstants.iconM,
             height: size ?? AppConstants.iconM,
-            child: CircularProgressIndicator(
-              color: color ?? Theme.of(context).primaryColor,
-            ),
+            child: CircularProgressIndicator(color: color ?? AppColors.primary),
           ),
           if (message != null) ...[
             const SizedBox(height: AppConstants.spacingM),
@@ -27,7 +26,7 @@ class LoadingWidget extends StatelessWidget {
               message!,
               style: Theme.of(
                 context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
           ],

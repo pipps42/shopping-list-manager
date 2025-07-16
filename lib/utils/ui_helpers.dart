@@ -2,31 +2,30 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/list_item.dart';
 import 'constants.dart';
+import 'color_palettes.dart';
 
 class UIHelpers {
   static Color getItemColor(ListItem item, BuildContext context) {
     if (item.isChecked) {
-      return Colors.grey[200]!;
+      return AppColors.surface;
     }
-    return Theme.of(context).cardColor;
+    return AppColors.cardBackground;
   }
-  
+
   static TextStyle getItemTextStyle(ListItem item, BuildContext context) {
     return TextStyle(
       decoration: item.isChecked ? TextDecoration.lineThrough : null,
-      color: item.isChecked 
-          ? Colors.grey[600] 
-          : Theme.of(context).textTheme.bodyLarge?.color,
+      color: item.isChecked ? AppColors.textSecondary : AppColors.textPrimary,
     );
   }
-  
+
   static Widget buildImageWidget({
     required String? imagePath,
     required double size,
     required Widget fallback,
   }) {
     if (imagePath == null) return fallback;
-    
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppConstants.radiusM),
       child: Image.file(

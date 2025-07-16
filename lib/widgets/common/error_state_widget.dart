@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 
 class ErrorStateWidget extends StatelessWidget {
@@ -23,14 +24,14 @@ class ErrorStateWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 64, color: Colors.red[600]),
+            Icon(icon, size: 64, color: AppColors.error),
             const SizedBox(height: AppConstants.spacingM),
             Text(
               message,
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,
-              ).textTheme.titleMedium?.copyWith(color: Colors.grey[700]),
+              ).textTheme.titleMedium?.copyWith(color: AppColors.textSecondary),
             ),
             if (onRetry != null) ...[
               const SizedBox(height: AppConstants.spacingM),
@@ -39,8 +40,8 @@ class ErrorStateWidget extends StatelessWidget {
                 icon: const Icon(Icons.refresh),
                 label: Text(retryButtonText!),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.textOnPrimary,
                 ),
               ),
             ],

@@ -1,5 +1,6 @@
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 
 class ReorderInstructionsWidget extends StatelessWidget {
   final String text;
@@ -17,8 +18,8 @@ class ReorderInstructionsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = backgroundColor ?? Colors.blue[50];
-    final txtColor = textColor ?? Colors.blue;
+    final bgColor = backgroundColor ?? AppColors.info.withOpacity(0.1);
+    final txtColor = textColor ?? AppColors.info;
 
     return Container(
       width: double.infinity,
@@ -29,7 +30,10 @@ class ReorderInstructionsWidget extends StatelessWidget {
           Icon(icon, color: txtColor),
           const SizedBox(width: AppConstants.spacingS),
           Expanded(
-            child: Text(text, style: TextStyle(color: txtColor, fontSize: AppConstants.fontL)),
+            child: Text(
+              text,
+              style: TextStyle(color: txtColor, fontSize: AppConstants.fontL),
+            ),
           ),
         ],
       ),
