@@ -123,7 +123,8 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
 
               // Filtro per reparto
               departmentsState.when(
-                data: (departments) => _buildDepartmentFilter(departments),
+                data: (departments) =>
+                    _buildDepartmentFilter(context, departments),
                 loading: () => const LoadingWidget(
                   message: AppStrings.loadingDepartments,
                   size: AppConstants.iconS,
@@ -172,7 +173,10 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     );
   }
 
-  Widget _buildDepartmentFilter(List<Department> departments) {
+  Widget _buildDepartmentFilter(
+    BuildContext context,
+    List<Department> departments,
+  ) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -184,7 +188,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
               label: const Text('Tutti'),
               selected: selectedDepartment == null,
               selectedColor: AppColors.accent,
-              checkmarkColor: AppColors.textOnPrimary,
+              checkmarkColor: AppColors.textOnPrimary(context),
               onSelected: (selected) {
                 setState(() {
                   selectedDepartment = null;
@@ -200,7 +204,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                 label: Text(dept.name),
                 selected: selectedDepartment?.id == dept.id,
                 selectedColor: AppColors.accent,
-                checkmarkColor: AppColors.textOnPrimary,
+                checkmarkColor: AppColors.textOnPrimary(context),
                 onSelected: (selected) {
                   setState(() {
                     selectedDepartment = selected ? dept : null;
@@ -278,7 +282,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
         return ListTile(
           leading: _buildProductImage(product),
           title: Text(product.name),
-          subtitle: _buildDepartmentName(product.departmentId),
+          subtitle: _buildDepartmentName(context, product.departmentId),
           trailing: isInList
               ? Icon(Icons.check_circle, color: AppColors.success)
               : const Icon(Icons.add_circle_outline),
@@ -338,7 +342,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     );
   }
 
-  Widget _buildDepartmentName(int departmentId) {
+  Widget _buildDepartmentName(BuildContext context, int departmentId) {
     final departmentsState = ref.watch(departmentsProvider);
 
     return departmentsState.when(
@@ -350,7 +354,10 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
         );
         return Text(
           dept.name,
-          style: TextStyle(fontSize: 12, color: AppColors.textDisabled),
+          style: TextStyle(
+            fontSize: 12,
+            color: AppColors.textDisabled(context),
+          ),
         );
       },
       loading: () => const LoadingWidget(message: '...'),

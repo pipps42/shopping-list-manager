@@ -35,7 +35,7 @@ class DepartmentTileWidget extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Handle per drag
-            Icon(Icons.drag_handle, color: AppColors.textSecondary),
+            Icon(Icons.drag_handle, color: AppColors.textSecondary(context)),
             const SizedBox(width: AppConstants.spacingS),
             // Immagine reparto
             _buildDepartmentImage(),

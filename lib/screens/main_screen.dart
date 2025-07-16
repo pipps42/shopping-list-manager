@@ -1,7 +1,6 @@
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shopping_list_manager/utils/theme_aware_builder.dart';
 import '../providers/current_list_provider.dart';
 import 'current_list_screen.dart';
 import 'departments_management_screen.dart';
@@ -84,7 +83,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text(_titles[_selectedIndex]),
-        flexibleSpace: Container(
+        /* flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -95,7 +94,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               end: Alignment.bottomRight,
             ),
           ),
-        ),
+        ), */
         leading: Builder(
           builder: (context) => IconButton(
             icon: const Icon(Icons.menu),
@@ -157,12 +156,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   Widget _buildDrawer() {
-    return ThemeAwareBuilder(
-      builder: (context) => Drawer(
-        child: Column(
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
+    return Drawer(
+      child: Column(
+        children: [
+          DrawerHeader(
+            /* decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
                     AppColors.headerGradientStart,
@@ -171,99 +169,100 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.shopping_bag,
-                    size: AppConstants.iconXL,
-                    color: AppColors.textOnPrimary,
-                  ),
-                  const SizedBox(width: AppConstants.spacingM),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Lista Spesa',
-                          style: TextStyle(
-                            color: AppColors.textOnPrimary,
-                            fontSize: AppConstants.fontTitle,
-                            fontWeight: FontWeight.bold,
-                          ),
+              ), */
+            child: Row(
+              children: [
+                Icon(
+                  Icons.shopping_bag,
+                  size: AppConstants.iconXL,
+                  color: AppColors.textOnPrimary(context),
+                ),
+                const SizedBox(width: AppConstants.spacingM),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Lista Spesa',
+                        style: TextStyle(
+                          color: AppColors.textOnPrimary(context),
+                          fontSize: AppConstants.fontTitle,
+                          fontWeight: FontWeight.bold,
                         ),
-                        Text(
-                          'Esselunga',
-                          style: TextStyle(
-                            color: AppColors.textOnPrimary.withOpacity(0.7),
-                            fontSize: AppConstants.fontXL,
-                          ),
+                      ),
+                      Text(
+                        'Assistente alla spesa',
+                        style: TextStyle(
+                          color: AppColors.textOnPrimary(
+                            context,
+                          ).withOpacity(0.7),
+                          fontSize: AppConstants.fontXL,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            Expanded(
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                itemCount: _drawerItems.length,
-                itemBuilder: (context, index) {
-                  final item = _drawerItems[index];
-                  final isSelected = _selectedIndex == item.index;
-                  final isDisabled = item.index == -1;
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.zero,
+              itemCount: _drawerItems.length,
+              itemBuilder: (context, index) {
+                final item = _drawerItems[index];
+                final isSelected = _selectedIndex == item.index;
+                final isDisabled = item.index == -1;
 
-                  return ListTile(
-                    leading: Icon(
-                      item.icon,
+                return ListTile(
+                  leading: Icon(
+                    item.icon,
+                    color: isDisabled
+                        ? AppColors.textDisabled(context)
+                        : isSelected
+                        ? AppColors.primary
+                        : null,
+                  ),
+                  title: Text(
+                    item.title,
+                    style: TextStyle(
                       color: isDisabled
-                          ? AppColors.textDisabled
+                          ? AppColors.textDisabled(context)
                           : isSelected
                           ? AppColors.primary
                           : null,
+                      fontWeight: isSelected ? FontWeight.bold : null,
                     ),
-                    title: Text(
-                      item.title,
-                      style: TextStyle(
-                        color: isDisabled
-                            ? AppColors.textDisabled
-                            : isSelected
-                            ? AppColors.primary
-                            : null,
-                        fontWeight: isSelected ? FontWeight.bold : null,
-                      ),
-                    ),
-                    selected: isSelected,
-                    enabled: !isDisabled,
-                    onTap: isDisabled ? null : () => _onTabChanged(item.index),
-                    trailing: isDisabled
-                        ? Text(
-                            'Presto',
-                            style: TextStyle(
-                              fontSize: AppConstants.fontM,
-                              color: AppColors.textDisabled,
-                            ),
-                          )
-                        : null,
-                  );
-                },
+                  ),
+                  selected: isSelected,
+                  enabled: !isDisabled,
+                  onTap: isDisabled ? null : () => _onTabChanged(item.index),
+                  trailing: isDisabled
+                      ? Text(
+                          'Presto',
+                          style: TextStyle(
+                            fontSize: AppConstants.fontM,
+                            color: AppColors.textDisabled(context),
+                          ),
+                        )
+                      : null,
+                );
+              },
+            ),
+          ),
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.all(AppConstants.paddingM),
+            child: Text(
+              'v1.0.0',
+              style: TextStyle(
+                color: AppColors.textDisabled(context),
+                fontSize: AppConstants.fontM,
               ),
             ),
-            const Divider(),
-            Padding(
-              padding: const EdgeInsets.all(AppConstants.paddingM),
-              child: Text(
-                'v1.0.0',
-                style: TextStyle(
-                  color: AppColors.textDisabled,
-                  fontSize: AppConstants.fontM,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -286,30 +285,28 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   void _showClearAllDialog() {
     showDialog(
       context: context,
-      builder: (context) => ThemeAwareBuilder(
-        builder: (context) => AlertDialog(
-          title: Text(AppStrings.clearList),
-          content: const Text(
-            'Sei sicuro di voler rimuovere tutti i prodotti dalla lista corrente?\n\nQuesta azione non può essere annullata.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(AppStrings.cancel),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.pop(context);
-                await _clearCurrentList();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.error,
-                foregroundColor: AppColors.textOnPrimary,
-              ),
-              child: Text(AppStrings.clearList),
-            ),
-          ],
+      builder: (context) => AlertDialog(
+        title: Text(AppStrings.clearList),
+        content: const Text(
+          'Sei sicuro di voler rimuovere tutti i prodotti dalla lista corrente?\n\nQuesta azione non può essere annullata.',
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppStrings.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _clearCurrentList();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: AppColors.textOnPrimary(context),
+            ),
+            child: Text(AppStrings.clearList),
+          ),
+        ],
       ),
     );
   }

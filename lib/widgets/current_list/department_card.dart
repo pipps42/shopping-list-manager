@@ -47,7 +47,7 @@ class DepartmentCard extends StatelessWidget {
               ),
             ),
           ),
-          _buildStats(),
+          _buildStats(context),
         ],
       ),
     );
@@ -88,17 +88,17 @@ class DepartmentCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStats() {
+  Widget _buildStats(BuildContext context) {
     final total = department.items.length;
     final completed = department.items.where((item) => item.isChecked).length;
 
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppConstants.paddingS,
-        vertical: AppConstants.paddingXS,
+        vertical: AppConstants.paddingS,
       ),
       decoration: BoxDecoration(
-        color: AppColors.textOnPrimary.withOpacity(0.8),
+        color: AppColors.textPrimary(context).withOpacity(0.8),
         borderRadius: BorderRadius.circular(AppConstants.radiusL),
       ),
       child: Text(

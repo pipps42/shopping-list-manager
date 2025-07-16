@@ -2,7 +2,6 @@ import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shopping_list_manager/utils/theme_aware_builder.dart';
 import '../../models/list_item.dart';
 import '../../providers/current_list_provider.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
@@ -16,8 +15,8 @@ class ProductListTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Dismissible(
       key: Key('item_${item.id}'),
-      background: _buildSwipeBackground(false),
-      secondaryBackground: _buildSwipeBackground(true),
+      background: _buildSwipeBackground(context, false),
+      secondaryBackground: _buildSwipeBackground(context, true),
       confirmDismiss: (direction) async {
         if (direction == DismissDirection.startToEnd) {
           ref
@@ -35,7 +34,7 @@ class ProductListTile extends ConsumerWidget {
         decoration: BoxDecoration(
           color: item.isChecked
               ? AppColors.completedOverlay
-              : AppColors.cardBackground,
+              : AppColors.cardBackground(context),
         ),
         child: ListTile(
           leading: _buildProductImage(),
@@ -43,14 +42,14 @@ class ProductListTile extends ConsumerWidget {
             item.productName ?? 'Prodotto sconosciuto',
             style: TextStyle(
               decoration: item.isChecked ? TextDecoration.lineThrough : null,
-              color: item.isChecked ? AppColors.textSecondary : null,
+              color: item.isChecked ? AppColors.textSecondary(context) : null,
             ),
           ),
           trailing: item.isChecked
               ? Icon(Icons.check_circle, color: AppColors.success)
               : Icon(
                   Icons.radio_button_unchecked,
-                  color: AppColors.textDisabled,
+                  color: AppColors.textDisabled(context),
                 ),
           onLongPress: () => _showRemoveDialog(context, ref),
         ),
@@ -94,14 +93,14 @@ class ProductListTile extends ConsumerWidget {
     );
   }
 
-  Widget _buildSwipeBackground(bool isSecondary) {
+  Widget _buildSwipeBackground(BuildContext context, bool isSecondary) {
     return Container(
       color: isSecondary ? AppColors.swipeDelete : AppColors.success,
       alignment: isSecondary ? Alignment.centerRight : Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingL),
       child: Icon(
         isSecondary ? Icons.undo : Icons.check,
-        color: AppColors.textOnPrimary,
+        color: AppColors.textOnPrimary(context),
         size: AppConstants.iconL,
       ),
     );
@@ -110,30 +109,28 @@ class ProductListTile extends ConsumerWidget {
   void _showRemoveDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (context) => ThemeAwareBuilder(
-        builder: (context) => AlertDialog(
-          title: const Text('Rimuovi prodotto'),
-          content: Text('Vuoi rimuovere "${item.productName}" dalla lista?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(AppStrings.cancel),
+      builder: (context) => AlertDialog(
+        title: const Text('Rimuovi prodotto'),
+        content: Text('Vuoi rimuovere "${item.productName}" dalla lista?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppStrings.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              ref
+                  .read(currentListProvider.notifier)
+                  .removeItemFromList(item.id!);
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: AppColors.textOnPrimary(context),
             ),
-            ElevatedButton(
-              onPressed: () {
-                ref
-                    .read(currentListProvider.notifier)
-                    .removeItemFromList(item.id!);
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.error,
-                foregroundColor: AppColors.textOnPrimary,
-              ),
-              child: Text(AppStrings.removeImage),
-            ),
-          ],
-        ),
+            child: Text(AppStrings.removeImage),
+          ),
+        ],
       ),
     );
   }

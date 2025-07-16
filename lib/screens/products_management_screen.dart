@@ -1,7 +1,6 @@
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shopping_list_manager/utils/theme_aware_builder.dart';
 import '../providers/products_provider.dart';
 import '../providers/departments_provider.dart';
 import '../models/product.dart';
@@ -33,49 +32,45 @@ class _ProductsManagementScreenState
     final productsState = ref.watch(productsProvider);
     final departmentsState = ref.watch(departmentsProvider);
 
-    return ThemeAwareBuilder(
-      builder: (context) => GestureDetector(
-        onTap: () => _clearFocus(),
-        child: Scaffold(
-          body: Column(
-            children: [
-              // Filtri e ricerca
-              if (departmentsState.hasValue)
-                ProductFiltersWidget(
-                  departments: departmentsState.value!,
-                  onSearchChanged: (query) =>
-                      setState(() => _searchQuery = query),
-                  onDepartmentFilterChanged: (deptId) =>
-                      setState(() => _selectedDepartmentId = deptId),
-                  initialSearchQuery: _searchQuery,
-                  initialSelectedDepartmentId: _selectedDepartmentId,
-                ),
+    return GestureDetector(
+      onTap: () => _clearFocus(),
+      child: Scaffold(
+        body: Column(
+          children: [
+            // Filtri e ricerca
+            if (departmentsState.hasValue)
+              ProductFiltersWidget(
+                departments: departmentsState.value!,
+                onSearchChanged: (query) =>
+                    setState(() => _searchQuery = query),
+                onDepartmentFilterChanged: (deptId) =>
+                    setState(() => _selectedDepartmentId = deptId),
+                initialSearchQuery: _searchQuery,
+                initialSelectedDepartmentId: _selectedDepartmentId,
+              ),
 
-              // Lista prodotti
-              Expanded(
-                child: productsState.when(
-                  data: (products) => _buildProductsList(
-                    products,
-                    departmentsState.value ?? [],
-                  ),
-                  loading: () =>
-                      const LoadingWidget(message: AppStrings.loadingProducts),
-                  error: (error, stack) => ErrorStateWidget(
-                    message: 'Errore nel caricamento dei prodotti: $error',
-                    onRetry: () => ref.invalidate(productsProvider),
-                  ),
+            // Lista prodotti
+            Expanded(
+              child: productsState.when(
+                data: (products) =>
+                    _buildProductsList(products, departmentsState.value ?? []),
+                loading: () =>
+                    const LoadingWidget(message: AppStrings.loadingProducts),
+                error: (error, stack) => ErrorStateWidget(
+                  message: 'Errore nel caricamento dei prodotti: $error',
+                  onRetry: () => ref.invalidate(productsProvider),
                 ),
               ),
-            ],
-          ),
-          floatingActionButton: FloatingActionButton(
-            heroTag: "products_management_fab",
-            onPressed: () {
-              _clearFocus();
-              _showAddProductDialog();
-            },
-            child: const Icon(Icons.add),
-          ),
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          heroTag: "products_management_fab",
+          onPressed: () {
+            _clearFocus();
+            _showAddProductDialog();
+          },
+          child: const Icon(Icons.add),
         ),
       ),
     );
@@ -170,15 +165,13 @@ class _ProductsManagementScreenState
 
     showDialog(
       context: context,
-      builder: (context) => ThemeAwareBuilder(
-        builder: (context) => ProductFormDialog(
-          departments: departments,
-          onSave: (name, departmentId, imagePath) async {
-            await ref
-                .read(productsProvider.notifier)
-                .addProduct(name, departmentId, imagePath);
-          },
-        ),
+      builder: (context) => ProductFormDialog(
+        departments: departments,
+        onSave: (name, departmentId, imagePath) async {
+          await ref
+              .read(productsProvider.notifier)
+              .addProduct(name, departmentId, imagePath);
+        },
       ),
     );
   }
@@ -186,22 +179,20 @@ class _ProductsManagementScreenState
   void _showEditProductDialog(Product product, List<Department> departments) {
     showDialog(
       context: context,
-      builder: (context) => ThemeAwareBuilder(
-        builder: (context) => ProductFormDialog(
-          product: product,
-          departments: departments,
-          onSave: (name, departmentId, imagePath) async {
-            await ref
-                .read(productsProvider.notifier)
-                .updateProduct(
-                  product.copyWith(
-                    name: name,
-                    departmentId: departmentId,
-                    imagePath: imagePath,
-                  ),
-                );
-          },
-        ),
+      builder: (context) => ProductFormDialog(
+        product: product,
+        departments: departments,
+        onSave: (name, departmentId, imagePath) async {
+          await ref
+              .read(productsProvider.notifier)
+              .updateProduct(
+                product.copyWith(
+                  name: name,
+                  departmentId: departmentId,
+                  imagePath: imagePath,
+                ),
+              );
+        },
       ),
     );
   }
@@ -209,16 +200,14 @@ class _ProductsManagementScreenState
   void _showMoveProductDialog(Product product, List<Department> departments) {
     showDialog(
       context: context,
-      builder: (context) => ThemeAwareBuilder(
-        builder: (context) => MoveProductDialog(
-          product: product,
-          departments: departments,
-          onMoveProduct: (department) async {
-            await ref
-                .read(productsProvider.notifier)
-                .updateProduct(product.copyWith(departmentId: department.id));
-          },
-        ),
+      builder: (context) => MoveProductDialog(
+        product: product,
+        departments: departments,
+        onMoveProduct: (department) async {
+          await ref
+              .read(productsProvider.notifier)
+              .updateProduct(product.copyWith(departmentId: department.id));
+        },
       ),
     );
   }
@@ -226,15 +215,11 @@ class _ProductsManagementScreenState
   void _showDeleteProductDialog(Product product) {
     showDialog(
       context: context,
-      builder: (context) => ThemeAwareBuilder(
-        builder: (context) => DeleteProductDialog(
-          product: product,
-          onConfirmDelete: () async {
-            await ref
-                .read(productsProvider.notifier)
-                .deleteProduct(product.id!);
-          },
-        ),
+      builder: (context) => DeleteProductDialog(
+        product: product,
+        onConfirmDelete: () async {
+          await ref.read(productsProvider.notifier).deleteProduct(product.id!);
+        },
       ),
     );
   }
@@ -242,19 +227,17 @@ class _ProductsManagementScreenState
   void _showNoDepartmentsWarning() {
     showDialog(
       context: context,
-      builder: (context) => ThemeAwareBuilder(
-        builder: (context) => AlertDialog(
-          title: const Text('Nessun Reparto'),
-          content: const Text(
-            'Prima di aggiungere prodotti, devi creare almeno un reparto nella sezione "Gestione Reparti".',
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text(AppStrings.ok),
-            ),
-          ],
+      builder: (context) => AlertDialog(
+        title: const Text('Nessun Reparto'),
+        content: const Text(
+          'Prima di aggiungere prodotti, devi creare almeno un reparto nella sezione "Gestione Reparti".',
         ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(AppStrings.ok),
+          ),
+        ],
       ),
     );
   }

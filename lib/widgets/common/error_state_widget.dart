@@ -29,9 +29,9 @@ class ErrorStateWidget extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(color: AppColors.textSecondary),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: AppColors.textSecondary(context),
+              ),
             ),
             if (onRetry != null) ...[
               const SizedBox(height: AppConstants.spacingM),
@@ -41,7 +41,7 @@ class ErrorStateWidget extends StatelessWidget {
                 label: Text(retryButtonText!),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.textOnPrimary,
+                  foregroundColor: AppColors.textOnPrimary(context),
                 ),
               ),
             ],

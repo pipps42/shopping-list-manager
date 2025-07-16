@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
-import 'package:shopping_list_manager/utils/theme_aware_builder.dart';
-import 'package:shopping_list_manager/utils/theme_manager.dart';
 import 'screens/main_screen.dart';
 
 void main() {
@@ -15,38 +13,29 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: AppThemeManager(),
-      builder: (context, child) {
-        return MaterialApp(
-          title: AppConstants.appName,
-          theme: _buildTheme(Brightness.light),
-          darkTheme: _buildTheme(Brightness.dark),
-          themeMode: ThemeMode.system, // Segue tema sistema
-          builder: (context, child) {
-            return ThemeAwareBuilder(
-              builder: (context) => child ?? const SizedBox(),
-            );
-          },
-          home: const ThemeProvider(child: MainScreen()),
-          debugShowCheckedModeBanner: false,
-        );
-      },
+    return MaterialApp(
+      title: AppConstants.appName,
+
+      // 🎯 TEMA AUTOMATICO - Flutter gestisce tutto!
+      themeMode: ThemeMode.system,
+      theme: _buildTheme(Brightness.light),
+      darkTheme: _buildTheme(Brightness.dark),
+
+      home: const MainScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 
   ThemeData _buildTheme(Brightness brightness) {
-    final brandPalette = BrandPaletteManager.current;
-
     return ThemeData(
       brightness: brightness,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: brandPalette.primary,
+        seedColor: AppColors.primary,
         brightness: brightness,
-        primary: brandPalette.primary,
-        secondary: brandPalette.secondary,
-        tertiary: brandPalette.accent,
-        error: AppUniversalColors.error,
+        primary: AppColors.primary,
+        secondary: AppColors.secondary,
+        tertiary: AppColors.accent,
+        error: AppColors.error,
       ),
       useMaterial3: true,
 
@@ -69,7 +58,7 @@ class MyApp extends StatelessWidget {
       // === BUTTONS ===
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: brandPalette.secondary,
+          backgroundColor: AppColors.secondary,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppConstants.borderRadius),
@@ -79,7 +68,7 @@ class MyApp extends StatelessWidget {
 
       // === FAB ===
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: brandPalette.fabBackground,
+        backgroundColor: AppColors.secondary,
         foregroundColor: Colors.white,
       ),
 
@@ -96,13 +85,13 @@ class MyApp extends StatelessWidget {
 
       // === CHIP THEME ===
       chipTheme: ChipThemeData(
-        selectedColor: brandPalette.chipSelected,
-        checkmarkColor: brandPalette.primary,
+        selectedColor: AppColors.accent.withOpacity(0.2),
+        checkmarkColor: AppColors.accent,
       ),
 
       // === PROGRESS INDICATOR ===
       progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: brandPalette.progressIndicator,
+        color: AppColors.secondary,
       ),
     );
   }

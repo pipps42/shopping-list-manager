@@ -1,6 +1,5 @@
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:shopping_list_manager/utils/theme_aware_builder.dart';
 import '../../models/product.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
 
@@ -16,28 +15,26 @@ class DeleteProductDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ThemeAwareBuilder(
-      builder: (context) => AlertDialog(
-        title: const Text('Elimina Prodotto'),
-        content: Text('Sei sicuro di voler eliminare "${product.name}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppStrings.cancel),
+    return AlertDialog(
+      title: const Text('Elimina Prodotto'),
+      content: Text('Sei sicuro di voler eliminare "${product.name}"?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(AppStrings.cancel),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            onConfirmDelete();
+            Navigator.pop(context);
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.error,
+            foregroundColor: AppColors.textOnPrimary(context),
           ),
-          ElevatedButton(
-            onPressed: () {
-              onConfirmDelete();
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-              foregroundColor: AppColors.textOnPrimary,
-            ),
-            child: Text(AppStrings.delete),
-          ),
-        ],
-      ),
+          child: Text(AppStrings.delete),
+        ),
+      ],
     );
   }
 }

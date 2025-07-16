@@ -39,17 +39,10 @@ class ProductTileWidget extends StatelessWidget {
             Text(
               department.name,
               style: TextStyle(
-                color: AppColors.textSecondary,
+                color: AppColors.textSecondary(context),
                 fontSize: AppConstants.fontM,
               ),
             ),
-            /* Text(
-              'ID: ${product.id}',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: AppConstants.fontS,
-              ),
-            ), */
           ],
         ),
         trailing: PopupMenuButton<String>(

@@ -1,7 +1,6 @@
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shopping_list_manager/utils/theme_aware_builder.dart';
 import '../providers/current_list_provider.dart';
 import '../models/department_with_products.dart';
 import '../widgets/add_product_dialog.dart';
@@ -17,22 +16,20 @@ class CurrentListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentListState = ref.watch(currentListProvider);
 
-    return ThemeAwareBuilder(
-      builder: (context) => Scaffold(
-        body: currentListState.when(
-          data: (departmentsWithProducts) =>
-              _buildListView(context, ref, departmentsWithProducts),
-          loading: () => const LoadingWidget(message: AppStrings.loadingList),
-          error: (error, stack) => ErrorStateWidget(
-            message: 'Errore nel caricamento della lista: $error',
-            onRetry: () => ref.invalidate(currentListProvider),
-          ),
+    return Scaffold(
+      body: currentListState.when(
+        data: (departmentsWithProducts) =>
+            _buildListView(context, ref, departmentsWithProducts),
+        loading: () => const LoadingWidget(message: AppStrings.loadingList),
+        error: (error, stack) => ErrorStateWidget(
+          message: 'Errore nel caricamento della lista: $error',
+          onRetry: () => ref.invalidate(currentListProvider),
         ),
-        floatingActionButton: FloatingActionButton(
-          heroTag: "current_list_fab",
-          onPressed: () => _showAddProductDialog(context, ref),
-          child: const Icon(Icons.add),
-        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        heroTag: "current_list_fab",
+        onPressed: () => _showAddProductDialog(context, ref),
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -71,12 +68,10 @@ class CurrentListScreen extends ConsumerWidget {
   void _showAddProductDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (context) => ThemeAwareBuilder(
-        builder: (context) => AddProductDialog(
-          onProductSelected: (productId) {
-            ref.read(currentListProvider.notifier).addProductToList(productId);
-          },
-        ),
+      builder: (context) => AddProductDialog(
+        onProductSelected: (productId) {
+          ref.read(currentListProvider.notifier).addProductToList(productId);
+        },
       ),
     );
   }

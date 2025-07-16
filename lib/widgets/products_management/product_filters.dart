@@ -60,8 +60,8 @@ class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
     return Container(
       padding: const EdgeInsets.all(AppConstants.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border(bottom: BorderSide(color: AppColors.border)),
+        color: AppColors.surface(context),
+        border: Border(bottom: BorderSide(color: AppColors.border(context))),
       ),
       child: Column(
         children: [
@@ -106,7 +106,7 @@ class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
                     label: const Text('Tutti'),
                     selected: _selectedDepartmentId == null,
                     selectedColor: AppColors.accent,
-                    checkmarkColor: AppColors.textOnPrimary,
+                    checkmarkColor: AppColors.textOnPrimary(context),
                     onSelected: (selected) {
                       setState(() {
                         _selectedDepartmentId = null;
@@ -125,7 +125,7 @@ class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
                       label: Text(dept.name),
                       selected: _selectedDepartmentId == dept.id,
                       selectedColor: AppColors.accent,
-                      checkmarkColor: AppColors.textOnPrimary,
+                      checkmarkColor: AppColors.textOnPrimary(context),
                       onSelected: (selected) {
                         setState(() {
                           _selectedDepartmentId = selected ? dept.id : null;
