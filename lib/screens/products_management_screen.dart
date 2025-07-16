@@ -33,45 +33,49 @@ class _ProductsManagementScreenState
     final productsState = ref.watch(productsProvider);
     final departmentsState = ref.watch(departmentsProvider);
 
-    return GestureDetector(
-      onTap: () => _clearFocus(),
-      child: Scaffold(
-        body: Column(
-          children: [
-            // Filtri e ricerca
-            if (departmentsState.hasValue)
-              ProductFiltersWidget(
-                departments: departmentsState.value!,
-                onSearchChanged: (query) =>
-                    setState(() => _searchQuery = query),
-                onDepartmentFilterChanged: (deptId) =>
-                    setState(() => _selectedDepartmentId = deptId),
-                initialSearchQuery: _searchQuery,
-                initialSelectedDepartmentId: _selectedDepartmentId,
-              ),
+    return ThemeAwareBuilder(
+      builder: (context) => GestureDetector(
+        onTap: () => _clearFocus(),
+        child: Scaffold(
+          body: Column(
+            children: [
+              // Filtri e ricerca
+              if (departmentsState.hasValue)
+                ProductFiltersWidget(
+                  departments: departmentsState.value!,
+                  onSearchChanged: (query) =>
+                      setState(() => _searchQuery = query),
+                  onDepartmentFilterChanged: (deptId) =>
+                      setState(() => _selectedDepartmentId = deptId),
+                  initialSearchQuery: _searchQuery,
+                  initialSelectedDepartmentId: _selectedDepartmentId,
+                ),
 
-            // Lista prodotti
-            Expanded(
-              child: productsState.when(
-                data: (products) =>
-                    _buildProductsList(products, departmentsState.value ?? []),
-                loading: () =>
-                    const LoadingWidget(message: AppStrings.loadingProducts),
-                error: (error, stack) => ErrorStateWidget(
-                  message: 'Errore nel caricamento dei prodotti: $error',
-                  onRetry: () => ref.invalidate(productsProvider),
+              // Lista prodotti
+              Expanded(
+                child: productsState.when(
+                  data: (products) => _buildProductsList(
+                    products,
+                    departmentsState.value ?? [],
+                  ),
+                  loading: () =>
+                      const LoadingWidget(message: AppStrings.loadingProducts),
+                  error: (error, stack) => ErrorStateWidget(
+                    message: 'Errore nel caricamento dei prodotti: $error',
+                    onRetry: () => ref.invalidate(productsProvider),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          heroTag: "products_management_fab",
-          onPressed: () {
-            _clearFocus();
-            _showAddProductDialog();
-          },
-          child: const Icon(Icons.add),
+            ],
+          ),
+          floatingActionButton: FloatingActionButton(
+            heroTag: "products_management_fab",
+            onPressed: () {
+              _clearFocus();
+              _showAddProductDialog();
+            },
+            child: const Icon(Icons.add),
+          ),
         ),
       ),
     );

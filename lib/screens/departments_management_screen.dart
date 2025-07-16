@@ -20,20 +20,23 @@ class DepartmentsManagementScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final departmentsState = ref.watch(departmentsProvider);
 
-    return Scaffold(
-      body: departmentsState.when(
-        data: (departments) => _buildDepartmentsList(context, ref, departments),
-        loading: () =>
-            const LoadingWidget(message: AppStrings.loadingDepartments),
-        error: (error, stack) => ErrorStateWidget(
-          message: 'Errore nel caricamento dei reparti: $error',
-          onRetry: () => ref.invalidate(departmentsProvider),
+    return ThemeAwareBuilder(
+      builder: (context) => Scaffold(
+        body: departmentsState.when(
+          data: (departments) =>
+              _buildDepartmentsList(context, ref, departments),
+          loading: () =>
+              const LoadingWidget(message: AppStrings.loadingDepartments),
+          error: (error, stack) => ErrorStateWidget(
+            message: 'Errore nel caricamento dei reparti: $error',
+            onRetry: () => ref.invalidate(departmentsProvider),
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: "departments_management_fab",
-        onPressed: () => _showAddDepartmentDialog(context, ref),
-        child: const Icon(Icons.add),
+        floatingActionButton: FloatingActionButton(
+          heroTag: "departments_management_fab",
+          onPressed: () => _showAddDepartmentDialog(context, ref),
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }

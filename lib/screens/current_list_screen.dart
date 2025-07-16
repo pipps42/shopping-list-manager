@@ -17,20 +17,22 @@ class CurrentListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentListState = ref.watch(currentListProvider);
 
-    return Scaffold(
-      body: currentListState.when(
-        data: (departmentsWithProducts) =>
-            _buildListView(context, ref, departmentsWithProducts),
-        loading: () => const LoadingWidget(message: AppStrings.loadingList),
-        error: (error, stack) => ErrorStateWidget(
-          message: 'Errore nel caricamento della lista: $error',
-          onRetry: () => ref.invalidate(currentListProvider),
+    return ThemeAwareBuilder(
+      builder: (context) => Scaffold(
+        body: currentListState.when(
+          data: (departmentsWithProducts) =>
+              _buildListView(context, ref, departmentsWithProducts),
+          loading: () => const LoadingWidget(message: AppStrings.loadingList),
+          error: (error, stack) => ErrorStateWidget(
+            message: 'Errore nel caricamento della lista: $error',
+            onRetry: () => ref.invalidate(currentListProvider),
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: "current_list_fab",
-        onPressed: () => _showAddProductDialog(context, ref),
-        child: const Icon(Icons.add),
+        floatingActionButton: FloatingActionButton(
+          heroTag: "current_list_fab",
+          onPressed: () => _showAddProductDialog(context, ref),
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }

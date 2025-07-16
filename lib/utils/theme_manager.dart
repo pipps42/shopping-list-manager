@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 /// ===== THEME MANAGER =====
 /// Gestisce i valori correnti del tema senza bisogno di context
@@ -18,15 +19,18 @@ class AppThemeManager extends ChangeNotifier {
 
   bool _initialized = false;
 
-  /// 🆕 LISTENER per cambiamenti tema sistema
+  /// LISTENER per cambiamenti tema sistema
   void _initSystemThemeListener() {
     WidgetsBinding.instance.platformDispatcher.onPlatformBrightnessChanged =
         () {
           WidgetsBinding.instance.handlePlatformBrightnessChanged();
-          // Forza aggiornamento quando cambia tema sistema
+
+          // 🔧 FIX: Posticipa notifica per evitare cicli durante build
           if (_initialized) {
-            debugPrint('🎨 Tema sistema cambiato - aggiornamento automatico');
-            notifyListeners();
+            SchedulerBinding.instance.addPostFrameCallback((_) {
+              debugPrint('🎨 Tema sistema cambiato - aggiornamento automatico');
+              notifyListeners();
+            });
           }
         };
   }
@@ -45,21 +49,24 @@ class AppThemeManager extends ChangeNotifier {
 
     if (!_initialized) {
       _initialized = true;
-      _initSystemThemeListener(); // 🆕 Attiva listener
+      _initSystemThemeListener();
       debugPrint(
         '🎨 AppThemeManager inizializzato con tema ${_brightness.name}',
       );
     }
 
-    // 🆕 Log cambiamenti tema
     if (oldBrightness != null && oldBrightness != _brightness) {
       debugPrint(
         '🎨 Tema cambiato da ${oldBrightness.name} a ${_brightness.name}',
       );
     }
 
-    // 🆕 SEMPRE notifica (non solo alla prima inizializzazione)
-    notifyListeners();
+    // Posticipa notifica al prossimo frame per evitare cicli
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (_initialized) {
+        notifyListeners();
+      }
+    });
   }
 
   /// Verifica che il tema sia stato inizializzato

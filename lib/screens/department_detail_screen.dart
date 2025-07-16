@@ -26,36 +26,39 @@ class DepartmentDetailScreen extends ConsumerWidget {
       productsByDepartmentProvider(department.id!),
     );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(department.name),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppColors.headerGradientStart,
-                AppColors.headerGradientEnd,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+    return ThemeAwareBuilder(
+      builder: (context) => Scaffold(
+        appBar: AppBar(
+          title: Text(department.name),
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.headerGradientStart,
+                  AppColors.headerGradientEnd,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
           ),
         ),
-      ),
-      body: productsState.when(
-        data: (products) => _buildProductsList(context, ref, products),
-        loading: () =>
-            const LoadingWidget(message: 'Caricamento prodotti del reparto...'),
-        error: (error, stack) => ErrorStateWidget(
-          message: 'Errore nel caricamento dei prodotti: $error',
-          onRetry: () =>
-              ref.invalidate(productsByDepartmentProvider(department.id!)),
+        body: productsState.when(
+          data: (products) => _buildProductsList(context, ref, products),
+          loading: () => const LoadingWidget(
+            message: 'Caricamento prodotti del reparto...',
+          ),
+          error: (error, stack) => ErrorStateWidget(
+            message: 'Errore nel caricamento dei prodotti: $error',
+            onRetry: () =>
+                ref.invalidate(productsByDepartmentProvider(department.id!)),
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: "department_detail_fab",
-        onPressed: () => _showAddProductDialog(context, ref),
-        child: const Icon(Icons.add),
+        floatingActionButton: FloatingActionButton(
+          heroTag: "department_detail_fab",
+          onPressed: () => _showAddProductDialog(context, ref),
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }

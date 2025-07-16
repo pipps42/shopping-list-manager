@@ -157,111 +157,113 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   Widget _buildDrawer() {
-    return Drawer(
-      child: Column(
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.headerGradientStart,
-                  AppColors.headerGradientEnd,
+    return ThemeAwareBuilder(
+      builder: (context) => Drawer(
+        child: Column(
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.headerGradientStart,
+                    AppColors.headerGradientEnd,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.shopping_bag,
+                    size: AppConstants.iconXL,
+                    color: AppColors.textOnPrimary,
+                  ),
+                  const SizedBox(width: AppConstants.spacingM),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Lista Spesa',
+                          style: TextStyle(
+                            color: AppColors.textOnPrimary,
+                            fontSize: AppConstants.fontTitle,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Esselunga',
+                          style: TextStyle(
+                            color: AppColors.textOnPrimary.withOpacity(0.7),
+                            fontSize: AppConstants.fontXL,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
               ),
             ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.shopping_bag,
-                  size: AppConstants.iconXL,
-                  color: AppColors.textOnPrimary,
-                ),
-                const SizedBox(width: AppConstants.spacingM),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Lista Spesa',
-                        style: TextStyle(
-                          color: AppColors.textOnPrimary,
-                          fontSize: AppConstants.fontTitle,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'Esselunga',
-                        style: TextStyle(
-                          color: AppColors.textOnPrimary.withOpacity(0.7),
-                          fontSize: AppConstants.fontXL,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.zero,
-              itemCount: _drawerItems.length,
-              itemBuilder: (context, index) {
-                final item = _drawerItems[index];
-                final isSelected = _selectedIndex == item.index;
-                final isDisabled = item.index == -1;
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                itemCount: _drawerItems.length,
+                itemBuilder: (context, index) {
+                  final item = _drawerItems[index];
+                  final isSelected = _selectedIndex == item.index;
+                  final isDisabled = item.index == -1;
 
-                return ListTile(
-                  leading: Icon(
-                    item.icon,
-                    color: isDisabled
-                        ? AppColors.textDisabled
-                        : isSelected
-                        ? AppColors.primary
-                        : null,
-                  ),
-                  title: Text(
-                    item.title,
-                    style: TextStyle(
+                  return ListTile(
+                    leading: Icon(
+                      item.icon,
                       color: isDisabled
                           ? AppColors.textDisabled
                           : isSelected
                           ? AppColors.primary
                           : null,
-                      fontWeight: isSelected ? FontWeight.bold : null,
                     ),
-                  ),
-                  selected: isSelected,
-                  enabled: !isDisabled,
-                  onTap: isDisabled ? null : () => _onTabChanged(item.index),
-                  trailing: isDisabled
-                      ? Text(
-                          'Presto',
-                          style: TextStyle(
-                            fontSize: AppConstants.fontM,
-                            color: AppColors.textDisabled,
-                          ),
-                        )
-                      : null,
-                );
-              },
-            ),
-          ),
-          const Divider(),
-          Padding(
-            padding: const EdgeInsets.all(AppConstants.paddingM),
-            child: Text(
-              'v1.0.0',
-              style: TextStyle(
-                color: AppColors.textDisabled,
-                fontSize: AppConstants.fontM,
+                    title: Text(
+                      item.title,
+                      style: TextStyle(
+                        color: isDisabled
+                            ? AppColors.textDisabled
+                            : isSelected
+                            ? AppColors.primary
+                            : null,
+                        fontWeight: isSelected ? FontWeight.bold : null,
+                      ),
+                    ),
+                    selected: isSelected,
+                    enabled: !isDisabled,
+                    onTap: isDisabled ? null : () => _onTabChanged(item.index),
+                    trailing: isDisabled
+                        ? Text(
+                            'Presto',
+                            style: TextStyle(
+                              fontSize: AppConstants.fontM,
+                              color: AppColors.textDisabled,
+                            ),
+                          )
+                        : null,
+                  );
+                },
               ),
             ),
-          ),
-        ],
+            const Divider(),
+            Padding(
+              padding: const EdgeInsets.all(AppConstants.paddingM),
+              child: Text(
+                'v1.0.0',
+                style: TextStyle(
+                  color: AppColors.textDisabled,
+                  fontSize: AppConstants.fontM,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

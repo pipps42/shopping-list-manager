@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
+import 'package:shopping_list_manager/utils/theme_aware_builder.dart';
 import 'package:shopping_list_manager/utils/theme_manager.dart';
 import 'screens/main_screen.dart';
 
@@ -22,6 +23,11 @@ class MyApp extends StatelessWidget {
           theme: _buildTheme(Brightness.light),
           darkTheme: _buildTheme(Brightness.dark),
           themeMode: ThemeMode.system, // Segue tema sistema
+          builder: (context, child) {
+            return ThemeAwareBuilder(
+              builder: (context) => child ?? const SizedBox(),
+            );
+          },
           home: const ThemeProvider(child: MainScreen()),
           debugShowCheckedModeBanner: false,
         );
