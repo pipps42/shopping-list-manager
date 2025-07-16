@@ -29,7 +29,7 @@ class DepartmentCard extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(AppConstants.paddingM),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: AppColors.primary.withOpacity(0.1),
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppConstants.radiusL),
         ),
@@ -77,7 +77,7 @@ class DepartmentCard extends StatelessWidget {
       width: AppConstants.imageM,
       height: AppConstants.imageM,
       decoration: BoxDecoration(
-        color: AppColors.secondary,
+        color: AppColors.iconSecondary,
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
       child: Icon(

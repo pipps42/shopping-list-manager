@@ -131,13 +131,13 @@ class ProductTileWidget extends StatelessWidget {
       width: AppConstants.imageL,
       height: AppConstants.imageL,
       decoration: BoxDecoration(
-        color: AppColors.warning.withOpacity(0.2),
+        color: AppColors.iconSecondary.withOpacity(0.2),
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
       child: Icon(
         Icons.shopping_basket,
         size: AppConstants.iconM,
-        color: AppColors.warning,
+        color: AppColors.iconSecondary,
       ),
     );
   }

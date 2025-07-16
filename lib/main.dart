@@ -33,19 +33,17 @@ class MyApp extends StatelessWidget {
   }
 
   ThemeData _buildTheme(Brightness brightness) {
-    // 🎯 SOLUZIONE: Usa i brand colors direttamente, NON AppColors.xxx
     final brandPalette = BrandPaletteManager.current;
 
     return ThemeData(
       brightness: brightness,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: brandPalette.primary, // ✅ Usa brandPalette direttamente
+        seedColor: brandPalette.primary,
         brightness: brightness,
-        // Brand colors iniettati nel sistema Flutter
         primary: brandPalette.primary,
         secondary: brandPalette.secondary,
         tertiary: brandPalette.accent,
-        error: AppUniversalColors.error, // ✅ Universal colors sono OK
+        error: AppUniversalColors.error,
       ),
       useMaterial3: true,
 
@@ -53,8 +51,8 @@ class MyApp extends StatelessWidget {
       appBarTheme: AppBarTheme(
         centerTitle: true,
         elevation: AppConstants.cardElevation,
-        backgroundColor: brandPalette.primary, // ✅ Usa brandPalette
-        foregroundColor: Colors.white, // ✅ Hardcode semplice per il tema
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
       ),
 
       // === CARDS ===
@@ -68,8 +66,8 @@ class MyApp extends StatelessWidget {
       // === BUTTONS ===
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: brandPalette.primary, // ✅ Usa brandPalette
-          foregroundColor: Colors.white, // ✅ Hardcode semplice
+          backgroundColor: brandPalette.primary,
+          foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppConstants.borderRadius),
           ),
@@ -78,8 +76,8 @@ class MyApp extends StatelessWidget {
 
       // === FAB ===
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: brandPalette.fabBackground, // ✅ Usa brandPalette
-        foregroundColor: Colors.white, // ✅ Hardcode semplice
+        backgroundColor: brandPalette.fabBackground,
+        foregroundColor: Colors.white,
       ),
 
       // === INPUT FIELDS ===
@@ -89,21 +87,19 @@ class MyApp extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-          borderSide: BorderSide(
-            color: brandPalette.primary,
-          ), // ✅ Usa brandPalette
+          borderSide: BorderSide(color: brandPalette.primary),
         ),
       ),
 
       // === CHIP THEME ===
       chipTheme: ChipThemeData(
-        selectedColor: brandPalette.chipSelected, // ✅ Usa brandPalette
-        checkmarkColor: brandPalette.primary, // ✅ Usa brandPalette
+        selectedColor: brandPalette.chipSelected,
+        checkmarkColor: brandPalette.primary,
       ),
 
       // === PROGRESS INDICATOR ===
       progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: brandPalette.progressIndicator, // ✅ Usa brandPalette
+        color: brandPalette.progressIndicator,
       ),
     );
   }

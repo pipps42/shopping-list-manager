@@ -125,10 +125,14 @@ class DepartmentTileWidget extends StatelessWidget {
       width: AppConstants.imageL,
       height: AppConstants.imageL,
       decoration: BoxDecoration(
-        color: AppColors.info.withOpacity(0.2),
+        color: AppColors.secondary.withOpacity(0.2),
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
-      child: Icon(Icons.store, size: AppConstants.iconM, color: AppColors.info),
+      child: Icon(
+        Icons.store,
+        size: AppConstants.iconM,
+        color: AppColors.iconSecondary,
+      ),
     );
   }
 }

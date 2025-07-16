@@ -83,7 +83,18 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text(_titles[_selectedIndex]),
-        backgroundColor: AppColors.primary,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.headerGradientStart,
+                AppColors.headerGradientEnd,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         leading: Builder(
           builder: (context) => IconButton(
             icon: const Icon(Icons.menu),
@@ -151,7 +162,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           DrawerHeader(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppColors.primary, AppColors.headerGradientEnd],
+                colors: [
+                  AppColors.headerGradientStart,
+                  AppColors.headerGradientEnd,
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -161,7 +175,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 Icon(
                   Icons.shopping_bag,
                   size: AppConstants.iconXL,
-                  color: AppColors.iconPrimary,
+                  color: AppColors.textOnPrimary,
                 ),
                 const SizedBox(width: AppConstants.spacingM),
                 Expanded(
@@ -304,7 +318,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       // Mostra conferma
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(AppStrings.listCleared),
             backgroundColor: AppColors.success,
           ),

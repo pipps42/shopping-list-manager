@@ -28,7 +28,18 @@ class DepartmentDetailScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(department.name),
-        backgroundColor: AppColors.primary,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.headerGradientStart,
+                AppColors.headerGradientEnd,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
       ),
       body: productsState.when(
         data: (products) => _buildProductsList(context, ref, products),

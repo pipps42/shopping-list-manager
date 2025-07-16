@@ -29,11 +29,11 @@ class EsseLungaBrandPalette extends AppBrandPalette {
   String get name => 'Esselunga';
 
   @override
-  Color get primary => const Color.fromARGB(255, 0, 203, 207); // Verde Esselunga
+  Color get primary => const Color(0xFFFF0000); // 🔴 ROSSO ACCESO
   @override
-  Color get secondary => const Color.fromARGB(255, 216, 7, 209); // Rosso Esselunga
+  Color get secondary => const Color(0xFF00FF00); // 🟢 VERDE ACCESO
   @override
-  Color get accent => const Color(0xFFFFD700); // Giallo oro
+  Color get accent => const Color(0xFF0000FF); // 🔵 BLU ACCESO
 }
 
 /// Palette Carrefour
@@ -86,15 +86,16 @@ class AppSystemColors {
   static AppThemeManager get _theme => AppThemeManager();
 
   // 🎯 Fallback colors per quando il tema non è ancora inizializzato
-  static const Color _fallbackTextPrimary = Colors.black87;
-  static const Color _fallbackTextSecondary = Colors.black54;
-  static const Color _fallbackTextDisabled = Colors.black38;
-  static const Color _fallbackBackground = Colors.white;
-  static const Color _fallbackSurface = Colors.white;
-  static const Color _fallbackCard = Colors.white;
-  static const Color _fallbackDialog = Colors.white;
-  static const Color _fallbackBorder = Colors.grey;
-  static const Color _fallbackIcon = Colors.black87;
+  /// SYSTEM COLORS DEBUG
+  static const Color _fallbackTextPrimary = Color(0xFF000000); // ⚫ NERO
+  static const Color _fallbackTextSecondary = Color(0xFFFF00FF); // 🟣 MAGENTA
+  static const Color _fallbackTextDisabled = Color(0xFF808080); // 🔘 GRIGIO
+  static const Color _fallbackBackground = Color(0xFFFFFFFF); // ⚪ BIANCO
+  static const Color _fallbackSurface = Color(0xFFFFFF00); // 🟡 GIALLO
+  static const Color _fallbackCard = Color(0xFF00FFFF); // 🔷 CIANO
+  static const Color _fallbackDialog = Color(0xFFFFA500); // 🟠 ARANCIONE
+  static const Color _fallbackBorder = Color(0xFF800080); // 🟪 VIOLA
+  static const Color _fallbackIcon = Color(0xFF8B4513); // 🟤 MARRONE
 
   /// Colori di testo (SICURI!)
   static Color get textPrimary {

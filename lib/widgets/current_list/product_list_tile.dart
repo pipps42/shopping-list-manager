@@ -32,7 +32,9 @@ class ProductListTile extends ConsumerWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          color: item.isChecked ? AppColors.surface : AppColors.background,
+          color: item.isChecked
+              ? AppColors.completedOverlay
+              : AppColors.cardBackground,
         ),
         child: ListTile(
           leading: _buildProductImage(),
@@ -78,7 +80,7 @@ class ProductListTile extends ConsumerWidget {
       width: AppConstants.imageM,
       height: AppConstants.imageM,
       decoration: BoxDecoration(
-        color: AppColors.border,
+        color: AppColors.iconPrimary,
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
       child: const Icon(Icons.shopping_basket, size: AppConstants.iconS),
@@ -87,7 +89,7 @@ class ProductListTile extends ConsumerWidget {
 
   Widget _buildSwipeBackground(bool isSecondary) {
     return Container(
-      color: isSecondary ? AppColors.warning : AppColors.success,
+      color: isSecondary ? AppColors.swipeDelete : AppColors.success,
       alignment: isSecondary ? Alignment.centerRight : Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingL),
       child: Icon(
