@@ -2,6 +2,7 @@ import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_list_manager/utils/theme_aware_builder.dart';
 import '../../models/list_item.dart';
 import '../../providers/current_list_provider.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
@@ -109,28 +110,30 @@ class ProductListTile extends ConsumerWidget {
   void _showRemoveDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Rimuovi prodotto'),
-        content: Text('Vuoi rimuovere "${item.productName}" dalla lista?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppStrings.cancel),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              ref
-                  .read(currentListProvider.notifier)
-                  .removeItemFromList(item.id!);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-              foregroundColor: AppColors.textOnPrimary,
+      builder: (context) => ThemeAwareBuilder(
+        builder: (context) => AlertDialog(
+          title: const Text('Rimuovi prodotto'),
+          content: Text('Vuoi rimuovere "${item.productName}" dalla lista?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(AppStrings.cancel),
             ),
-            child: Text(AppStrings.removeImage),
-          ),
-        ],
+            ElevatedButton(
+              onPressed: () {
+                ref
+                    .read(currentListProvider.notifier)
+                    .removeItemFromList(item.id!);
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.error,
+                foregroundColor: AppColors.textOnPrimary,
+              ),
+              child: Text(AppStrings.removeImage),
+            ),
+          ],
+        ),
       ),
     );
   }

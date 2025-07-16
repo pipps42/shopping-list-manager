@@ -14,21 +14,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: AppConstants.appName,
-
-      // === LIGHT THEME ===
-      theme: _buildTheme(Brightness.light),
-
-      // === DARK THEME ===
-      darkTheme: _buildTheme(Brightness.dark),
-
-      // === SEGUE IMPOSTAZIONI SISTEMA ===
-      themeMode: ThemeMode.system,
-
-      // === WRAPPA CON THEME PROVIDER ===
-      home: const ThemeProvider(child: MainScreen()),
-      debugShowCheckedModeBanner: false,
+    return AnimatedBuilder(
+      animation: AppThemeManager(),
+      builder: (context, child) {
+        return MaterialApp(
+          title: AppConstants.appName,
+          theme: _buildTheme(Brightness.light),
+          darkTheme: _buildTheme(Brightness.dark),
+          themeMode: ThemeMode.system, // Segue tema sistema
+          home: const ThemeProvider(child: MainScreen()),
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 

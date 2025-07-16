@@ -1,6 +1,7 @@
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_list_manager/utils/theme_aware_builder.dart';
 import '../providers/current_list_provider.dart';
 import '../models/department_with_products.dart';
 import '../widgets/add_product_dialog.dart';
@@ -68,10 +69,12 @@ class CurrentListScreen extends ConsumerWidget {
   void _showAddProductDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (context) => AddProductDialog(
-        onProductSelected: (productId) {
-          ref.read(currentListProvider.notifier).addProductToList(productId);
-        },
+      builder: (context) => ThemeAwareBuilder(
+        builder: (context) => AddProductDialog(
+          onProductSelected: (productId) {
+            ref.read(currentListProvider.notifier).addProductToList(productId);
+          },
+        ),
       ),
     );
   }

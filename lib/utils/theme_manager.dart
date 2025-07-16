@@ -18,9 +18,24 @@ class AppThemeManager extends ChangeNotifier {
 
   bool _initialized = false;
 
+  /// 🆕 LISTENER per cambiamenti tema sistema
+  void _initSystemThemeListener() {
+    WidgetsBinding.instance.platformDispatcher.onPlatformBrightnessChanged =
+        () {
+          WidgetsBinding.instance.handlePlatformBrightnessChanged();
+          // Forza aggiornamento quando cambia tema sistema
+          if (_initialized) {
+            debugPrint('🎨 Tema sistema cambiato - aggiornamento automatico');
+            notifyListeners();
+          }
+        };
+  }
+
   /// Aggiorna il tema corrente (chiamato automaticamente da ThemeProvider)
   void updateTheme(BuildContext context) {
     final theme = Theme.of(context);
+    final oldBrightness = _initialized ? _brightness : null;
+
     _colorScheme = theme.colorScheme;
     _cardColor = theme.cardColor;
     _dialogBackgroundColor = theme.dialogBackgroundColor;
@@ -30,11 +45,20 @@ class AppThemeManager extends ChangeNotifier {
 
     if (!_initialized) {
       _initialized = true;
+      _initSystemThemeListener(); // 🆕 Attiva listener
       debugPrint(
         '🎨 AppThemeManager inizializzato con tema ${_brightness.name}',
       );
     }
 
+    // 🆕 Log cambiamenti tema
+    if (oldBrightness != null && oldBrightness != _brightness) {
+      debugPrint(
+        '🎨 Tema cambiato da ${oldBrightness.name} a ${_brightness.name}',
+      );
+    }
+
+    // 🆕 SEMPRE notifica (non solo alla prima inizializzazione)
     notifyListeners();
   }
 
@@ -49,7 +73,7 @@ class AppThemeManager extends ChangeNotifier {
     }
   }
 
-  /// 🆕 Metodo per verificare se è inizializzato (senza exception)
+  /// Metodo per verificare se è inizializzato (senza exception)
   bool get isInitialized => _initialized;
 
   // === GETTERS PER I COLORI (senza context!) ===
@@ -87,7 +111,7 @@ class AppThemeManager extends ChangeNotifier {
   bool get isDark => _initialized ? _brightness == Brightness.dark : false;
   bool get isLight => _initialized ? _brightness == Brightness.light : true;
 
-  /// 🆕 Getters "safe" che non crashano se non inizializzato
+  /// Getters "safe" che non crashano se non inizializzato
   bool get isDarkSafe => _initialized && _brightness == Brightness.dark;
   bool get isLightSafe => !_initialized || _brightness == Brightness.light;
 }
@@ -110,6 +134,9 @@ class _ThemeProviderState extends State<ThemeProvider>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppThemeManager().updateTheme(context);
+    });
   }
 
   @override
@@ -119,36 +146,20 @@ class _ThemeProviderState extends State<ThemeProvider>
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // 🎯 Aggiorna il ThemeManager ogni volta che il tema cambia
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        AppThemeManager().updateTheme(context);
-      }
-    });
+  void didChangePlatformBrightness() {
+    super.didChangePlatformBrightness();
+    // 🆕 Aggiorna tema quando cambia quello del sistema
+    AppThemeManager().updateTheme(context);
   }
 
   @override
-  void didChangePlatformBrightness() {
-    super.didChangePlatformBrightness();
-    // Aggiorna quando l'utente cambia da light a dark mode
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        AppThemeManager().updateTheme(context);
-      }
-    });
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    AppThemeManager().updateTheme(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    // 🎯 Aggiorna il ThemeManager anche al primo build
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        AppThemeManager().updateTheme(context);
-      }
-    });
-
     return widget.child;
   }
 }

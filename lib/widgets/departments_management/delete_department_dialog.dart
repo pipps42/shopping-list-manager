@@ -1,5 +1,6 @@
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:shopping_list_manager/utils/theme_aware_builder.dart';
 import '../../models/department.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
 
@@ -15,38 +16,40 @@ class DeleteDepartmentDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Elimina Reparto'),
-      content: Text(
-        'Sei sicuro di voler eliminare "${department.name}"?\n\nTutti i prodotti associati verranno eliminati.',
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(AppStrings.cancel),
+    return ThemeAwareBuilder(
+      builder: (context) => AlertDialog(
+        title: const Text('Elimina Reparto'),
+        content: Text(
+          'Sei sicuro di voler eliminare "${department.name}"?\n\nTutti i prodotti associati verranno eliminati.',
         ),
-        ElevatedButton(
-          onPressed: () {
-            onConfirmDelete();
-            Navigator.pop(context);
-
-            // Mostra snackbar di conferma nel context parent
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Reparto "${department.name}" eliminato'),
-                  backgroundColor: AppColors.success,
-                ),
-              );
-            });
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.error,
-            foregroundColor: AppColors.textOnPrimary,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppStrings.cancel),
           ),
-          child: Text(AppStrings.delete),
-        ),
-      ],
+          ElevatedButton(
+            onPressed: () {
+              onConfirmDelete();
+              Navigator.pop(context);
+
+              // Mostra snackbar di conferma nel context parent
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Reparto "${department.name}" eliminato'),
+                    backgroundColor: AppColors.success,
+                  ),
+                );
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: AppColors.textOnPrimary,
+            ),
+            child: Text(AppStrings.delete),
+          ),
+        ],
+      ),
     );
   }
 }

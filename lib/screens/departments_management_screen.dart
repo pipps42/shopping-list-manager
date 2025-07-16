@@ -1,6 +1,7 @@
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_list_manager/utils/theme_aware_builder.dart';
 import '../providers/departments_provider.dart';
 import '../models/department.dart';
 import '../widgets/common/empty_state_widget.dart';
@@ -128,19 +129,21 @@ class DepartmentsManagementScreen extends ConsumerWidget {
   void _showAddDepartmentDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (context) => DepartmentFormDialog(
-        onSave: (name, imagePath) async {
-          await ref.read(departmentsProvider.notifier).addDepartment(name);
+      builder: (context) => ThemeAwareBuilder(
+        builder: (context) => DepartmentFormDialog(
+          onSave: (name, imagePath) async {
+            await ref.read(departmentsProvider.notifier).addDepartment(name);
 
-          // Se c'è un'immagine, aggiorna il reparto appena creato
-          if (imagePath != null) {
-            final departments = ref.read(departmentsProvider).value ?? [];
-            final newDept = departments.lastWhere((d) => d.name == name);
-            await ref
-                .read(departmentsProvider.notifier)
-                .updateDepartment(newDept.copyWith(imagePath: imagePath));
-          }
-        },
+            // Se c'è un'immagine, aggiorna il reparto appena creato
+            if (imagePath != null) {
+              final departments = ref.read(departmentsProvider).value ?? [];
+              final newDept = departments.lastWhere((d) => d.name == name);
+              await ref
+                  .read(departmentsProvider.notifier)
+                  .updateDepartment(newDept.copyWith(imagePath: imagePath));
+            }
+          },
+        ),
       ),
     );
   }
@@ -152,15 +155,17 @@ class DepartmentsManagementScreen extends ConsumerWidget {
   ) {
     showDialog(
       context: context,
-      builder: (context) => DepartmentFormDialog(
-        department: department,
-        onSave: (name, imagePath) async {
-          await ref
-              .read(departmentsProvider.notifier)
-              .updateDepartment(
-                department.copyWith(name: name, imagePath: imagePath),
-              );
-        },
+      builder: (context) => ThemeAwareBuilder(
+        builder: (context) => DepartmentFormDialog(
+          department: department,
+          onSave: (name, imagePath) async {
+            await ref
+                .read(departmentsProvider.notifier)
+                .updateDepartment(
+                  department.copyWith(name: name, imagePath: imagePath),
+                );
+          },
+        ),
       ),
     );
   }
@@ -172,13 +177,15 @@ class DepartmentsManagementScreen extends ConsumerWidget {
   ) {
     showDialog(
       context: context,
-      builder: (context) => DeleteDepartmentDialog(
-        department: department,
-        onConfirmDelete: () async {
-          await ref
-              .read(departmentsProvider.notifier)
-              .deleteDepartment(department.id!);
-        },
+      builder: (context) => ThemeAwareBuilder(
+        builder: (context) => DeleteDepartmentDialog(
+          department: department,
+          onConfirmDelete: () async {
+            await ref
+                .read(departmentsProvider.notifier)
+                .deleteDepartment(department.id!);
+          },
+        ),
       ),
     );
   }

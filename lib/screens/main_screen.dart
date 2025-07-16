@@ -1,6 +1,7 @@
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_list_manager/utils/theme_aware_builder.dart';
 import '../providers/current_list_provider.dart';
 import 'current_list_screen.dart';
 import 'departments_management_screen.dart';
@@ -283,28 +284,30 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   void _showClearAllDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppStrings.clearList),
-        content: const Text(
-          'Sei sicuro di voler rimuovere tutti i prodotti dalla lista corrente?\n\nQuesta azione non può essere annullata.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppStrings.cancel),
+      builder: (context) => ThemeAwareBuilder(
+        builder: (context) => AlertDialog(
+          title: Text(AppStrings.clearList),
+          content: const Text(
+            'Sei sicuro di voler rimuovere tutti i prodotti dalla lista corrente?\n\nQuesta azione non può essere annullata.',
           ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await _clearCurrentList();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-              foregroundColor: AppColors.textOnPrimary,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(AppStrings.cancel),
             ),
-            child: Text(AppStrings.clearList),
-          ),
-        ],
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                await _clearCurrentList();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.error,
+                foregroundColor: AppColors.textOnPrimary,
+              ),
+              child: Text(AppStrings.clearList),
+            ),
+          ],
+        ),
       ),
     );
   }

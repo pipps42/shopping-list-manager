@@ -2,6 +2,7 @@ import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_list_manager/utils/theme_aware_builder.dart';
 import '../../models/product.dart';
 import '../../models/department.dart';
 import '../../providers/image_provider.dart';
@@ -56,64 +57,66 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
   Widget build(BuildContext context) {
     final isEditing = widget.product != null;
 
-    return AlertDialog(
-      title: Text(isEditing ? AppStrings.editProduct : AppStrings.newProduct),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Nome prodotto
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: AppStrings.productNamePlaceholder,
-                border: OutlineInputBorder(),
+    return ThemeAwareBuilder(
+      builder: (context) => AlertDialog(
+        title: Text(isEditing ? AppStrings.editProduct : AppStrings.newProduct),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Nome prodotto
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: AppStrings.productNamePlaceholder,
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-            const SizedBox(height: AppConstants.spacingM),
+              const SizedBox(height: AppConstants.spacingM),
 
-            // Selezione reparto
-            DropdownButtonFormField<int>(
-              value: _selectedDepartmentId,
-              decoration: const InputDecoration(
-                labelText: 'Reparto',
-                border: OutlineInputBorder(),
+              // Selezione reparto
+              DropdownButtonFormField<int>(
+                value: _selectedDepartmentId,
+                decoration: const InputDecoration(
+                  labelText: 'Reparto',
+                  border: OutlineInputBorder(),
+                ),
+                items: widget.departments
+                    .map(
+                      (dept) => DropdownMenuItem(
+                        value: dept.id,
+                        child: Text(dept.name),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedDepartmentId = value;
+                  });
+                },
               ),
-              items: widget.departments
-                  .map(
-                    (dept) => DropdownMenuItem(
-                      value: dept.id,
-                      child: Text(dept.name),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedDepartmentId = value;
-                });
-              },
-            ),
-            const SizedBox(height: AppConstants.spacingM),
+              const SizedBox(height: AppConstants.spacingM),
 
-            // Sezione immagine
-            _buildImageSection(),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text(AppStrings.cancel),
-        ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.textOnPrimary,
+              // Sezione immagine
+              _buildImageSection(),
+            ],
           ),
-          onPressed: _isLoading ? null : _handleSave,
-          child: Text(isEditing ? AppStrings.save : AppStrings.add),
         ),
-      ],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(AppStrings.cancel),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.textOnPrimary,
+            ),
+            onPressed: _isLoading ? null : _handleSave,
+            child: Text(isEditing ? AppStrings.save : AppStrings.add),
+          ),
+        ],
+      ),
     );
   }
 

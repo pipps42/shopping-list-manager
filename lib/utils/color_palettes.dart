@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'theme_manager.dart';
+import 'dart:math' as math;
 
 /// ===== LAYER 1: BRAND COLORS (quello che cambia tra brand) =====
 
@@ -7,59 +9,46 @@ abstract class AppBrandPalette {
   String get name;
 
   // Colori che caratterizzano il brand
-  Color get primary; // Colore principale (verde Esselunga, blu Carrefour)
-  Color get secondary; // Colore secondario (rosso Esselunga, rosso Carrefour)
-  Color get accent; // Colore accento (giallo, bianco, ecc.)
+  Color get primary; // Colore principale
+  Color get secondary; // Colore secondario
+  Color get accent; // Colore accento
 
   // Colori specifici del brand per elementi UI
   Color get headerGradientStart => primary;
   Color get headerGradientEnd => primary.withOpacity(0.8);
-  Color get fabBackground => primary;
-  Color get chipSelected => primary.withOpacity(0.2);
-  Color get progressIndicator => primary;
+  Color get fabBackground => secondary;
+  Color get chipSelected => accent.withOpacity(0.2);
+  Color get progressIndicator => secondary;
 
-  // Swipe actions (possono essere brand-specific)
+  // Swipe actions (universali)
   Color get swipeComplete => const Color(0xFF4CAF50); // Verde universale
   Color get swipeDelete => const Color(0xFFE53935); // Rosso universale
 }
 
-/// Palette Esselunga
-class EsseLungaBrandPalette extends AppBrandPalette {
+/// ===== PALETTE FRESH MARKET - MODERNA E FUNZIONALE =====
+class FreshMarketBrandPalette extends AppBrandPalette {
   @override
-  String get name => 'Esselunga';
+  String get name => 'Fresh Market';
 
   @override
-  Color get primary => const Color(0xFFFF0000); // 🔴 ROSSO ACCESO
+  Color get primary => const Color(0xFF2E7D4A); // Verde foresta (reparti)
   @override
-  Color get secondary => const Color(0xFF00FF00); // 🟢 VERDE ACCESO
+  Color get secondary => const Color(0xFF1976D2); // Blu moderno (prodotti/azioni)
   @override
-  Color get accent => const Color(0xFF0000FF); // 🔵 BLU ACCESO
+  Color get accent => const Color(0xFFF57C00); // Arancione (accenti)
 }
 
-/// Palette Carrefour
-class CarrefourBrandPalette extends AppBrandPalette {
+/// ===== PALETTE HIGH CONTRAST - PER DEBUG/ACCESSIBILITÀ =====
+class HighContrastBrandPalette extends AppBrandPalette {
   @override
-  String get name => 'Carrefour';
+  String get name => 'High Contrast';
 
   @override
-  Color get primary => const Color(0xFF0066CC); // Blu Carrefour
+  Color get primary => const Color(0xFFE91E63); // Magenta forte
   @override
-  Color get secondary => const Color(0xFFE31E24); // Rosso Carrefour
+  Color get secondary => const Color(0xFF00BCD4); // Ciano forte
   @override
-  Color get accent => Colors.white; // Bianco
-}
-
-/// Palette Coop
-class CoopBrandPalette extends AppBrandPalette {
-  @override
-  String get name => 'Coop';
-
-  @override
-  Color get primary => const Color(0xFFFF6B35); // Arancione Coop
-  @override
-  Color get secondary => const Color(0xFF004225); // Verde scuro Coop
-  @override
-  Color get accent => const Color(0xFFFFA500); // Arancione chiaro
+  Color get accent => const Color(0xFFFF5722); // Arancione forte
 }
 
 /// ===== LAYER 2: UNIVERSAL COLORS (sempre uguali) =====
@@ -80,36 +69,56 @@ class AppUniversalColors {
   static Color get completedOverlay => Colors.grey.withOpacity(0.3);
 }
 
-/// ===== LAYER 3: SYSTEM COLORS (SICURI e senza context!) =====
+/// ===== LAYER 3: SYSTEM COLORS (ELEGANTI E FUNZIONALI!) =====
 
 class AppSystemColors {
   static AppThemeManager get _theme => AppThemeManager();
 
-  // 🎯 Fallback colors per quando il tema non è ancora inizializzato
-  /// SYSTEM COLORS DEBUG
-  static const Color _fallbackTextPrimary = Color(0xFF000000); // ⚫ NERO
-  static const Color _fallbackTextSecondary = Color(0xFFFF00FF); // 🟣 MAGENTA
-  static const Color _fallbackTextDisabled = Color(0xFF808080); // 🔘 GRIGIO
-  static const Color _fallbackBackground = Color(0xFFFFFFFF); // ⚪ BIANCO
-  static const Color _fallbackSurface = Color(0xFFFFFF00); // 🟡 GIALLO
-  static const Color _fallbackCard = Color(0xFF00FFFF); // 🔷 CIANO
-  static const Color _fallbackDialog = Color(0xFFFFA500); // 🟠 ARANCIONE
-  static const Color _fallbackBorder = Color(0xFF800080); // 🟪 VIOLA
-  static const Color _fallbackIcon = Color(0xFF8B4513); // 🟤 MARRONE
+  // 🎯 LIGHT THEME FALLBACKS - Eleganti e moderni
+  static const Color _lightTextPrimary = Color(0xFF1A1A1A); // Quasi nero
+  static const Color _lightTextSecondary = Color(0xFF6B7280); // Grigio medio
+  static const Color _lightTextDisabled = Color(0xFF9CA3AF); // Grigio chiaro
+  static const Color _lightBackground = Color(0xFFFAFAFA); // Grigio chiarissimo
+  static const Color _lightSurface = Color(0xFFFFFFFF); // Bianco puro
+  static const Color _lightCard = Color(0xFFFFFFFF); // Bianco puro
+  static const Color _lightDialog = Color(0xFFFFFFFF); // Bianco puro
+  static const Color _lightBorder = Color(0xFFE5E7EB); // Grigio bordi
+  static const Color _lightIcon = Color(0xFF4B5563); // Grigio icone
 
-  /// Colori di testo (SICURI!)
+  // 🌙 DARK THEME FALLBACKS - Material Design 3 inspired
+  static const Color _darkTextPrimary = Color(0xFFF9FAFB); // Quasi bianco
+  static const Color _darkTextSecondary = Color(0xFFD1D5DB); // Grigio chiaro
+  static const Color _darkTextDisabled = Color(0xFF6B7280); // Grigio medio
+  static const Color _darkBackground = Color(0xFF111827); // Quasi nero
+  static const Color _darkSurface = Color(0xFF1F2937); // Grigio scurissimo
+  static const Color _darkCard = Color(0xFF374151); // Grigio scuro
+  static const Color _darkDialog = Color(0xFF4B5563); // Grigio medio scuro
+  static const Color _darkBorder = Color(0xFF4B5563); // Grigio bordi scuri
+  static const Color _darkIcon = Color(0xFFD1D5DB); // Grigio chiaro icone
+
+  /// Helper per determinare se usare fallback dark o light
+  static bool get _shouldUseDarkFallback =>
+      _theme.isInitialized ? _theme.isDark : false;
+
+  /// Colori di testo (ELEGANTI!)
   static Color get textPrimary {
-    if (!_theme.isInitialized) return _fallbackTextPrimary;
+    if (!_theme.isInitialized) {
+      return _shouldUseDarkFallback ? _darkTextPrimary : _lightTextPrimary;
+    }
     return _theme.colorScheme.onSurface;
   }
 
   static Color get textSecondary {
-    if (!_theme.isInitialized) return _fallbackTextSecondary;
+    if (!_theme.isInitialized) {
+      return _shouldUseDarkFallback ? _darkTextSecondary : _lightTextSecondary;
+    }
     return _theme.colorScheme.onSurface.withOpacity(0.6);
   }
 
   static Color get textDisabled {
-    if (!_theme.isInitialized) return _fallbackTextDisabled;
+    if (!_theme.isInitialized) {
+      return _shouldUseDarkFallback ? _darkTextDisabled : _lightTextDisabled;
+    }
     return _theme.colorScheme.onSurface.withOpacity(0.4);
   }
 
@@ -118,41 +127,55 @@ class AppSystemColors {
     return _theme.colorScheme.onPrimary;
   }
 
-  /// Colori di background (SICURI!)
+  /// Colori di background (ELEGANTI!)
   static Color get background {
-    if (!_theme.isInitialized) return _fallbackBackground;
+    if (!_theme.isInitialized) {
+      return _shouldUseDarkFallback ? _darkBackground : _lightBackground;
+    }
     return _theme.colorScheme.background;
   }
 
   static Color get surface {
-    if (!_theme.isInitialized) return _fallbackSurface;
+    if (!_theme.isInitialized) {
+      return _shouldUseDarkFallback ? _darkSurface : _lightSurface;
+    }
     return _theme.colorScheme.surface;
   }
 
   static Color get cardBackground {
-    if (!_theme.isInitialized) return _fallbackCard;
+    if (!_theme.isInitialized) {
+      return _shouldUseDarkFallback ? _darkCard : _lightCard;
+    }
     return _theme.cardColor;
   }
 
   static Color get dialogBackground {
-    if (!_theme.isInitialized) return _fallbackDialog;
+    if (!_theme.isInitialized) {
+      return _shouldUseDarkFallback ? _darkDialog : _lightDialog;
+    }
     return _theme.dialogBackgroundColor;
   }
 
-  /// Colori di bordi e divider (SICURI!)
+  /// Colori di bordi e divider (ELEGANTI!)
   static Color get border {
-    if (!_theme.isInitialized) return _fallbackBorder;
+    if (!_theme.isInitialized) {
+      return _shouldUseDarkFallback ? _darkBorder : _lightBorder;
+    }
     return _theme.dividerColor;
   }
 
   static Color get divider {
-    if (!_theme.isInitialized) return _fallbackBorder;
+    if (!_theme.isInitialized) {
+      return _shouldUseDarkFallback ? _darkBorder : _lightBorder;
+    }
     return _theme.dividerColor;
   }
 
-  /// Colori icone (SICURI!)
+  /// Colori icone (ELEGANTI!)
   static Color get iconPrimary {
-    if (!_theme.isInitialized) return _fallbackIcon;
+    if (!_theme.isInitialized) {
+      return _shouldUseDarkFallback ? _darkIcon : _lightIcon;
+    }
     return _theme.iconColor ?? textPrimary;
   }
 
@@ -172,21 +195,24 @@ class AppSystemColors {
 /// ===== MANAGER E FACADE =====
 
 class BrandPaletteManager {
-  static AppBrandPalette _currentBrand = EsseLungaBrandPalette();
+  static AppBrandPalette _currentBrand =
+      FreshMarketBrandPalette(); // 🆕 Fresh Market default
 
   static AppBrandPalette get current => _currentBrand;
 
   static List<AppBrandPalette> get availableBrands => [
-    EsseLungaBrandPalette(),
-    CarrefourBrandPalette(),
-    CoopBrandPalette(),
+    FreshMarketBrandPalette(), // 🆕 Nuova palette principale
+    HighContrastBrandPalette(), // 🆕 Per debug/accessibilità
   ];
 
   static void setBrand(AppBrandPalette brand) {
     _currentBrand = brand;
     debugPrint('🎨 Brand cambiato a: ${brand.name}');
-    // TODO: Potresti integrare con Riverpod qui per notificare i cambi
   }
+
+  /// Shortcuts utili
+  static void setFreshMarket() => setBrand(FreshMarketBrandPalette());
+  static void enableHighContrast() => setBrand(HighContrastBrandPalette());
 }
 
 /// ===== FACADE UNIFICATO (SICURO!) =====
@@ -216,7 +242,7 @@ class AppColors {
   static const Color overlay = AppUniversalColors.overlay;
   static Color get completedOverlay => AppUniversalColors.completedOverlay;
 
-  // === SYSTEM COLORS (con fallback sicuri!) ===
+  // === SYSTEM COLORS (con fallback ELEGANTI!) ===
   static Color get textPrimary => AppSystemColors.textPrimary;
   static Color get textSecondary => AppSystemColors.textSecondary;
   static Color get textDisabled => AppSystemColors.textDisabled;
@@ -237,4 +263,34 @@ class AppColors {
   // === UTILITY HELPERS ===
   static bool get isDark => AppSystemColors.isDark;
   static bool get isLight => AppSystemColors.isLight;
+
+  // === HELPER PER ACCESSIBILITÀ ===
+
+  /// Verifica se il contrasto tra due colori è sufficiente (WCAG AA)
+  static bool hasGoodContrast(Color foreground, Color background) {
+    return _calculateContrast(foreground, background) >= 4.5;
+  }
+
+  /// Calcola il rapporto di contrasto tra due colori
+  static double _calculateContrast(Color foreground, Color background) {
+    final fgLuminance = _getLuminance(foreground);
+    final bgLuminance = _getLuminance(background);
+    final lightest = math.max(fgLuminance, bgLuminance);
+    final darkest = math.min(fgLuminance, bgLuminance);
+    return (lightest + 0.05) / (darkest + 0.05);
+  }
+
+  /// Calcola la luminanza relativa di un colore
+  static double _getLuminance(Color color) {
+    final r = _adjustColorValue(color.red / 255.0);
+    final g = _adjustColorValue(color.green / 255.0);
+    final b = _adjustColorValue(color.blue / 255.0);
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+
+  static double _adjustColorValue(double value) {
+    return value <= 0.03928
+        ? value / 12.92
+        : math.pow((value + 0.055) / 1.055, 2.4).toDouble();
+  }
 }

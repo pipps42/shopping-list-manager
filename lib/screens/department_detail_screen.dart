@@ -1,6 +1,7 @@
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_list_manager/utils/theme_aware_builder.dart';
 import '../providers/products_provider.dart';
 import '../providers/departments_provider.dart';
 import '../models/department.dart';
@@ -101,17 +102,19 @@ class DepartmentDetailScreen extends ConsumerWidget {
 
     showDialog(
       context: context,
-      builder: (context) => ProductFormDialog(
-        departments: departmentsState.value!,
-        defaultDepartmentId: department.id,
-        onSave: (name, departmentId, imagePath) async {
-          await ref
-              .read(productsProvider.notifier)
-              .addProduct(name, departmentId, imagePath);
+      builder: (context) => ThemeAwareBuilder(
+        builder: (context) => ProductFormDialog(
+          departments: departmentsState.value!,
+          defaultDepartmentId: department.id,
+          onSave: (name, departmentId, imagePath) async {
+            await ref
+                .read(productsProvider.notifier)
+                .addProduct(name, departmentId, imagePath);
 
-          // Refresh della lista prodotti per questo reparto
-          ref.invalidate(productsByDepartmentProvider(department.id!));
-        },
+            // Refresh della lista prodotti per questo reparto
+            ref.invalidate(productsByDepartmentProvider(department.id!));
+          },
+        ),
       ),
     );
   }
@@ -127,23 +130,25 @@ class DepartmentDetailScreen extends ConsumerWidget {
 
     showDialog(
       context: context,
-      builder: (context) => ProductFormDialog(
-        product: product,
-        departments: departmentsState.value!,
-        onSave: (name, departmentId, imagePath) async {
-          await ref
-              .read(productsProvider.notifier)
-              .updateProduct(
-                product.copyWith(
-                  name: name,
-                  departmentId: departmentId,
-                  imagePath: imagePath,
-                ),
-              );
+      builder: (context) => ThemeAwareBuilder(
+        builder: (context) => ProductFormDialog(
+          product: product,
+          departments: departmentsState.value!,
+          onSave: (name, departmentId, imagePath) async {
+            await ref
+                .read(productsProvider.notifier)
+                .updateProduct(
+                  product.copyWith(
+                    name: name,
+                    departmentId: departmentId,
+                    imagePath: imagePath,
+                  ),
+                );
 
-          // Refresh della lista prodotti per questo reparto
-          ref.invalidate(productsByDepartmentProvider(department.id!));
-        },
+            // Refresh della lista prodotti per questo reparto
+            ref.invalidate(productsByDepartmentProvider(department.id!));
+          },
+        ),
       ),
     );
   }
@@ -159,17 +164,21 @@ class DepartmentDetailScreen extends ConsumerWidget {
 
     showDialog(
       context: context,
-      builder: (context) => MoveProductDialog(
-        product: product,
-        departments: departmentsState.value!,
-        onMoveProduct: (newDepartment) async {
-          await ref
-              .read(productsProvider.notifier)
-              .updateProduct(product.copyWith(departmentId: newDepartment.id));
+      builder: (context) => ThemeAwareBuilder(
+        builder: (context) => MoveProductDialog(
+          product: product,
+          departments: departmentsState.value!,
+          onMoveProduct: (newDepartment) async {
+            await ref
+                .read(productsProvider.notifier)
+                .updateProduct(
+                  product.copyWith(departmentId: newDepartment.id),
+                );
 
-          // Refresh della lista prodotti per questo reparto
-          ref.invalidate(productsByDepartmentProvider(department.id!));
-        },
+            // Refresh della lista prodotti per questo reparto
+            ref.invalidate(productsByDepartmentProvider(department.id!));
+          },
+        ),
       ),
     );
   }
@@ -181,14 +190,18 @@ class DepartmentDetailScreen extends ConsumerWidget {
   ) {
     showDialog(
       context: context,
-      builder: (context) => DeleteProductDialog(
-        product: product,
-        onConfirmDelete: () async {
-          await ref.read(productsProvider.notifier).deleteProduct(product.id!);
+      builder: (context) => ThemeAwareBuilder(
+        builder: (context) => DeleteProductDialog(
+          product: product,
+          onConfirmDelete: () async {
+            await ref
+                .read(productsProvider.notifier)
+                .deleteProduct(product.id!);
 
-          // Refresh della lista prodotti per questo reparto
-          ref.invalidate(productsByDepartmentProvider(department.id!));
-        },
+            // Refresh della lista prodotti per questo reparto
+            ref.invalidate(productsByDepartmentProvider(department.id!));
+          },
+        ),
       ),
     );
   }

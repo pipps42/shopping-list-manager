@@ -1,6 +1,7 @@
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:shopping_list_manager/utils/theme_aware_builder.dart';
 import '../../models/department.dart';
 import '../../providers/image_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,41 +46,43 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
   Widget build(BuildContext context) {
     final isEditing = widget.department != null;
 
-    return AlertDialog(
-      title: Text(
-        isEditing ? AppStrings.editDepartment : AppStrings.addDepartment,
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Nome reparto
-          TextField(
-            controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: AppStrings.departmentNamePlaceholder,
-              border: OutlineInputBorder(),
+    return ThemeAwareBuilder(
+      builder: (context) => AlertDialog(
+        title: Text(
+          isEditing ? AppStrings.editDepartment : AppStrings.addDepartment,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Nome reparto
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: AppStrings.departmentNamePlaceholder,
+                border: OutlineInputBorder(),
+              ),
             ),
-          ),
-          const SizedBox(height: AppConstants.spacingM),
+            const SizedBox(height: AppConstants.spacingM),
 
-          // Sezione immagine
-          _buildImageSection(),
+            // Sezione immagine
+            _buildImageSection(),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppStrings.cancel),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.textOnPrimary,
+            ),
+            onPressed: _isLoading ? null : _handleSave,
+            child: Text(isEditing ? AppStrings.save : AppStrings.add),
+          ),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(AppStrings.cancel),
-        ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.textOnPrimary,
-          ),
-          onPressed: _isLoading ? null : _handleSave,
-          child: Text(isEditing ? AppStrings.save : AppStrings.add),
-        ),
-      ],
     );
   }
 
