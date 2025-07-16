@@ -1,10 +1,12 @@
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/department.dart';
+import '../../providers/products_provider.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
 
-class DepartmentTileWidget extends StatelessWidget {
+class DepartmentTileWidget extends ConsumerWidget {
   final Department department;
   final int index;
   final VoidCallback onView;
@@ -23,7 +25,7 @@ class DepartmentTileWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       key: Key('dept_${department.id}'),
       margin: const EdgeInsets.symmetric(
@@ -35,9 +37,8 @@ class DepartmentTileWidget extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Handle per drag
-            Icon(Icons.drag_handle, color: AppColors.textSecondary),
+            Icon(Icons.drag_handle, color: AppColors.textSecondary(context)),
             const SizedBox(width: AppConstants.spacingS),
-            // Immagine reparto
             _buildDepartmentImage(),
           ],
         ),
@@ -45,7 +46,7 @@ class DepartmentTileWidget extends StatelessWidget {
           department.name,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text('Posizione: ${index + 1}'),
+        subtitle: _buildProductsCount(ref),
         trailing: PopupMenuButton<String>(
           onSelected: (value) {
             switch (value) {
@@ -101,14 +102,27 @@ class DepartmentTileWidget extends StatelessWidget {
     );
   }
 
+  // Widget per mostrare il count dei prodotti
+  Widget _buildProductsCount(WidgetRef ref) {
+    final productsState = ref.watch(
+      productsByDepartmentProvider(department.id!),
+    );
+
+    return productsState.when(
+      data: (products) => Text('Prodotti: ${products.length}'),
+      loading: () => const Text('Prodotti: ...'),
+      error: (error, stack) => const Text('Prodotti: --'),
+    );
+  }
+
   Widget _buildDepartmentImage() {
     if (department.imagePath != null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
         child: Image.file(
           File(department.imagePath!),
-          width: AppConstants.imageL,
-          height: AppConstants.imageL,
+          width: AppConstants.imageXL,
+          height: AppConstants.imageXL,
           fit: BoxFit.cover,
           cacheWidth: AppConstants.imageCacheWidth,
           cacheHeight: AppConstants.imageCacheHeight,
@@ -122,13 +136,17 @@ class DepartmentTileWidget extends StatelessWidget {
 
   Widget _buildDefaultDepartmentIcon() {
     return Container(
-      width: AppConstants.imageL,
-      height: AppConstants.imageL,
+      width: AppConstants.imageXL,
+      height: AppConstants.imageXL,
       decoration: BoxDecoration(
-        color: AppColors.info.withOpacity(0.2),
+        color: AppColors.secondary.withOpacity(0.2),
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
-      child: Icon(Icons.store, size: AppConstants.iconM, color: AppColors.info),
+      child: Icon(
+        Icons.store,
+        size: AppConstants.iconL,
+        color: AppColors.secondary,
+      ),
     );
   }
 }

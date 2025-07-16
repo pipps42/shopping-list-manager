@@ -83,7 +83,16 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text(_titles[_selectedIndex]),
-        backgroundColor: AppColors.primary,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        foregroundColor: AppColors.textOnPrimary(context),
         leading: Builder(
           builder: (context) => IconButton(
             icon: const Icon(Icons.menu),
@@ -151,7 +160,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           DrawerHeader(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppColors.primary, AppColors.headerGradientEnd],
+                colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -161,7 +170,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 Icon(
                   Icons.shopping_bag,
                   size: AppConstants.iconXL,
-                  color: AppColors.iconPrimary,
+                  color: AppColors.textOnPrimary(context),
                 ),
                 const SizedBox(width: AppConstants.spacingM),
                 Expanded(
@@ -172,15 +181,17 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       Text(
                         'Lista Spesa',
                         style: TextStyle(
-                          color: AppColors.textOnPrimary,
+                          color: AppColors.textOnPrimary(context),
                           fontSize: AppConstants.fontTitle,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        'Esselunga',
+                        'Assistente alla spesa',
                         style: TextStyle(
-                          color: AppColors.textOnPrimary.withOpacity(0.7),
+                          color: AppColors.textOnPrimary(
+                            context,
+                          ).withOpacity(0.7),
                           fontSize: AppConstants.fontXL,
                         ),
                       ),
@@ -203,7 +214,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   leading: Icon(
                     item.icon,
                     color: isDisabled
-                        ? AppColors.textDisabled
+                        ? AppColors.textDisabled(context)
                         : isSelected
                         ? AppColors.primary
                         : null,
@@ -212,7 +223,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     item.title,
                     style: TextStyle(
                       color: isDisabled
-                          ? AppColors.textDisabled
+                          ? AppColors.textDisabled(context)
                           : isSelected
                           ? AppColors.primary
                           : null,
@@ -227,7 +238,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           'Presto',
                           style: TextStyle(
                             fontSize: AppConstants.fontM,
-                            color: AppColors.textDisabled,
+                            color: AppColors.textDisabled(context),
                           ),
                         )
                       : null,
@@ -241,7 +252,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             child: Text(
               'v1.0.0',
               style: TextStyle(
-                color: AppColors.textDisabled,
+                color: AppColors.textDisabled(context),
                 fontSize: AppConstants.fontM,
               ),
             ),
@@ -286,7 +297,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
-              foregroundColor: AppColors.textOnPrimary,
+              foregroundColor: AppColors.textOnPrimary(context),
             ),
             child: Text(AppStrings.clearList),
           ),
@@ -304,7 +315,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       // Mostra conferma
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(AppStrings.listCleared),
             backgroundColor: AppColors.success,
           ),

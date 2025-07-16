@@ -7,15 +7,17 @@ import 'color_palettes.dart';
 class UIHelpers {
   static Color getItemColor(ListItem item, BuildContext context) {
     if (item.isChecked) {
-      return AppColors.surface;
+      return AppColors.surface(context);
     }
-    return AppColors.cardBackground;
+    return AppColors.cardBackground(context);
   }
 
   static TextStyle getItemTextStyle(ListItem item, BuildContext context) {
     return TextStyle(
       decoration: item.isChecked ? TextDecoration.lineThrough : null,
-      color: item.isChecked ? AppColors.textSecondary : AppColors.textPrimary,
+      color: item.isChecked
+          ? AppColors.textSecondary(context)
+          : AppColors.textPrimary(context),
     );
   }
 

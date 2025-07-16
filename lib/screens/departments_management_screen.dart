@@ -1,3 +1,4 @@
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,6 +34,8 @@ class DepartmentsManagementScreen extends ConsumerWidget {
         heroTag: "departments_management_fab",
         onPressed: () => _showAddDepartmentDialog(context, ref),
         child: const Icon(Icons.add),
+        backgroundColor: AppColors.secondary,
+        foregroundColor: AppColors.textOnSecondary(context),
       ),
     );
   }

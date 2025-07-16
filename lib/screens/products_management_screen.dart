@@ -1,3 +1,4 @@
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -66,6 +67,8 @@ class _ProductsManagementScreenState
         ),
         floatingActionButton: FloatingActionButton(
           heroTag: "products_management_fab",
+          backgroundColor: AppColors.secondary,
+          foregroundColor: AppColors.textOnSecondary(context),
           onPressed: () {
             _clearFocus();
             _showAddProductDialog();

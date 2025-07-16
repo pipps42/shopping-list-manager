@@ -31,7 +31,7 @@ class EmptyStateWidget extends StatelessWidget {
             Icon(
               icon,
               size: iconSize ?? AppConstants.iconXXL,
-              color: iconColor ?? AppColors.textDisabled,
+              color: iconColor ?? AppColors.textDisabled(context),
             ),
             const SizedBox(height: AppConstants.spacingM),
             Text(
@@ -39,14 +39,17 @@ class EmptyStateWidget extends StatelessWidget {
               style: TextStyle(
                 fontSize: AppConstants.fontTitle,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textSecondary,
+                color: AppColors.textSecondary(context),
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppConstants.spacingS),
             Text(
               subtitle,
-              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontSize: 16,
+                color: AppColors.textSecondary(context),
+              ),
               textAlign: TextAlign.center,
             ),
             if (action != null) ...[

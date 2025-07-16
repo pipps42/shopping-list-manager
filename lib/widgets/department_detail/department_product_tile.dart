@@ -28,17 +28,14 @@ class DepartmentProductTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: AppConstants.paddingXS),
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppConstants.paddingM,
+          vertical: AppConstants.paddingS,
+        ),
         leading: _buildProductImage(),
         title: Text(
           product.name,
           style: const TextStyle(fontWeight: FontWeight.w500),
-        ),
-        subtitle: Text(
-          'Reparto:  {department.name}',
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: AppConstants.fontM,
-          ),
         ),
         trailing: PopupMenuButton<String>(
           onSelected: (value) {
@@ -119,13 +116,13 @@ class DepartmentProductTile extends StatelessWidget {
       width: AppConstants.imageL,
       height: AppConstants.imageL,
       decoration: BoxDecoration(
-        color: AppColors.success.withOpacity(0.2),
+        color: AppColors.primary.withOpacity(0.2),
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
       child: Icon(
         Icons.shopping_basket,
         size: AppConstants.iconM,
-        color: AppColors.success,
+        color: AppColors.primary,
       ),
     );
   }

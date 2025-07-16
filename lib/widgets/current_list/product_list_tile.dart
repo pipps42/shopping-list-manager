@@ -15,8 +15,8 @@ class ProductListTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Dismissible(
       key: Key('item_${item.id}'),
-      background: _buildSwipeBackground(false),
-      secondaryBackground: _buildSwipeBackground(true),
+      background: _buildSwipeBackground(context, false),
+      secondaryBackground: _buildSwipeBackground(context, true),
       confirmDismiss: (direction) async {
         if (direction == DismissDirection.startToEnd) {
           ref
@@ -32,22 +32,25 @@ class ProductListTile extends ConsumerWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          color: item.isChecked ? AppColors.surface : AppColors.background,
+          color: item.isChecked
+              ? AppColors.completedOverlay
+              : AppColors.cardBackground(context),
         ),
+        padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingS),
         child: ListTile(
           leading: _buildProductImage(),
           title: Text(
             item.productName ?? 'Prodotto sconosciuto',
             style: TextStyle(
               decoration: item.isChecked ? TextDecoration.lineThrough : null,
-              color: item.isChecked ? AppColors.textSecondary : null,
+              color: item.isChecked ? AppColors.textSecondary(context) : null,
             ),
           ),
           trailing: item.isChecked
               ? Icon(Icons.check_circle, color: AppColors.success)
               : Icon(
                   Icons.radio_button_unchecked,
-                  color: AppColors.textDisabled,
+                  color: AppColors.textDisabled(context),
                 ),
           onLongPress: () => _showRemoveDialog(context, ref),
         ),
@@ -61,8 +64,8 @@ class ProductListTile extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
         child: Image.file(
           File(item.productImagePath!),
-          width: AppConstants.imageM,
-          height: AppConstants.imageM,
+          width: AppConstants.imageXL,
+          height: AppConstants.imageXL,
           fit: BoxFit.cover,
           cacheWidth: AppConstants.imageCacheWidth,
           cacheHeight: AppConstants.imageCacheHeight,
@@ -75,24 +78,28 @@ class ProductListTile extends ConsumerWidget {
 
   Widget _buildDefaultIcon() {
     return Container(
-      width: AppConstants.imageM,
-      height: AppConstants.imageM,
+      width: AppConstants.imageXL,
+      height: AppConstants.imageXL,
       decoration: BoxDecoration(
-        color: AppColors.border,
+        color: AppColors.primary.withOpacity(0.2),
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
-      child: const Icon(Icons.shopping_basket, size: AppConstants.iconS),
+      child: Icon(
+        Icons.shopping_basket,
+        size: AppConstants.iconL,
+        color: AppColors.primary,
+      ),
     );
   }
 
-  Widget _buildSwipeBackground(bool isSecondary) {
+  Widget _buildSwipeBackground(BuildContext context, bool isSecondary) {
     return Container(
-      color: isSecondary ? AppColors.warning : AppColors.success,
+      color: isSecondary ? AppColors.swipeDelete : AppColors.success,
       alignment: isSecondary ? Alignment.centerRight : Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.paddingL),
       child: Icon(
         isSecondary ? Icons.undo : Icons.check,
-        color: AppColors.textOnPrimary,
+        color: AppColors.textOnPrimary(context),
         size: AppConstants.iconL,
       ),
     );
@@ -118,7 +125,7 @@ class ProductListTile extends ConsumerWidget {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
-              foregroundColor: AppColors.textOnPrimary,
+              foregroundColor: AppColors.textOnPrimary(context),
             ),
             child: Text(AppStrings.removeImage),
           ),

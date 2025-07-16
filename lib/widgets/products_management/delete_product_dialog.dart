@@ -30,7 +30,7 @@ class DeleteProductDialog extends StatelessWidget {
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.error,
-            foregroundColor: AppColors.textOnPrimary,
+            foregroundColor: AppColors.textOnPrimary(context),
           ),
           child: Text(AppStrings.delete),
         ),

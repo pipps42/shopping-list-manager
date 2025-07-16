@@ -1,3 +1,4 @@
+import 'package:shopping_list_manager/utils/color_palettes.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,6 +31,8 @@ class CurrentListScreen extends ConsumerWidget {
         heroTag: "current_list_fab",
         onPressed: () => _showAddProductDialog(context, ref),
         child: const Icon(Icons.add),
+        backgroundColor: AppColors.secondary,
+        foregroundColor: AppColors.textOnSecondary(context),
       ),
     );
   }
@@ -53,9 +56,9 @@ class CurrentListScreen extends ConsumerWidget {
       },
       child: ListView.builder(
         padding: const EdgeInsets.only(
-          top: AppConstants.paddingS,
-          left: AppConstants.paddingS,
-          right: AppConstants.paddingS,
+          top: AppConstants.paddingM,
+          left: AppConstants.paddingM,
+          right: AppConstants.paddingM,
           bottom: AppConstants.listBottomSpacing, // Spazio per il FAB
         ),
         itemCount: departments.length,
