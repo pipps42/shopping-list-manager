@@ -80,6 +80,18 @@ class AppConstants {
   static const int productNameMaxLength = 50;
   static const int departmentNameMinLength = 3;
   static const int departmentNameMaxLength = 30;
+
+  // Timeline constants
+  static const double timelineSeparatorMargin =
+      8.0; // Spacing dopo i separatori mese
+  static const double timelineListItemMargin = 2.0; // Spacing tra le card liste
+  static const double timelineHorizontalGap =
+      4.0; // Gap tra timeline e label mese
+  static const double timelineLineHeight = 60.0; // Altezza linea di connessione
+  static const double timelineItemHeight = 85.0; // Altezza elemento lista
+  static const double timelineSegmentWidth = 40.0; // Larghezza timeline
+  static const double timelineContentPadding =
+      6.0; // Padding verticale contenuto
 }
 
 class AppStrings {

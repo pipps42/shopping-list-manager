@@ -6,6 +6,7 @@ import '../providers/completed_lists_provider.dart';
 import '../widgets/common/empty_state_widget.dart';
 import '../widgets/common/error_state_widget.dart';
 import '../widgets/common/loading_widget.dart';
+import '../widgets/completed_lists/timeline_segment.dart';
 import '../widgets/completed_lists/completed_list_card.dart';
 import '../utils/constants.dart';
 import '../utils/color_palettes.dart';
@@ -57,23 +58,12 @@ class CompletedListsScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              // 🔥 FUTURE: Analytics/Statistics
-              // const PopupMenuItem(
-              //   value: 'analytics',
-              //   child: Row(
-              //     children: [
-              //       Icon(Icons.analytics),
-              //       SizedBox(width: AppConstants.spacingS),
-              //       Text('Statistiche'),
-              //     ],
-              //   ),
-              // ),
             ],
           ),
         ],
       ),
       body: completedListsState.when(
-        data: (lists) => _buildListView(context, ref, lists),
+        data: (lists) => _buildPixelPerfectTimeline(context, ref, lists),
         loading: () =>
             const LoadingWidget(message: 'Caricamento ultime liste...'),
         error: (error, stack) => ErrorStateWidget(
@@ -84,7 +74,7 @@ class CompletedListsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildListView(
+  Widget _buildPixelPerfectTimeline(
     BuildContext context,
     WidgetRef ref,
     List<CompletedListWithCount> listsWithCounts,
@@ -98,8 +88,7 @@ class CompletedListsScreen extends ConsumerWidget {
       );
     }
 
-    // Raggruppa liste per data per determinare quando mostrare l'orario
-    final listsWithTimeInfo = _prepareListsWithTimeInfo(listsWithCounts);
+    final flatItems = _prepareFlatItems(listsWithCounts);
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -107,18 +96,103 @@ class CompletedListsScreen extends ConsumerWidget {
       },
       child: ListView.builder(
         padding: const EdgeInsets.all(AppConstants.paddingM),
-        itemCount: listsWithTimeInfo.length,
+        itemCount: flatItems.length,
+        // Rimosso itemExtent - altezza dinamica basata sul contenuto
         itemBuilder: (context, index) {
-          final listInfo = listsWithTimeInfo[index];
-          return CompletedListCard(
-            shoppingList: listInfo.list,
-            showTime: listInfo.showTime,
-            productCount: listInfo.productCount,
-            onTap: () => _navigateToDetail(context, listInfo.list),
+          final item = flatItems[index];
+          final isFirst = index == 0;
+          final isLast = index == flatItems.length - 1;
+
+          return IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Timeline segment (si adatta all'altezza del contenuto)
+                TimelineSegment(
+                  isMonth: item is _MonthHeaderItem,
+                  isFirst: isFirst,
+                  isLast: isLast,
+                ),
+
+                // Contenuto senza padding fisso
+                Expanded(child: _buildItemContent(context, item)),
+              ],
+            ),
           );
         },
       ),
     );
+  }
+
+  Widget _buildItemContent(BuildContext context, _FlatItem item) {
+    if (item is _MonthHeaderItem) {
+      return Container(
+        padding: const EdgeInsets.symmetric(
+          vertical: AppConstants.timelineContentPadding,
+          horizontal: 8,
+        ),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            item.monthLabel,
+            style: TextStyle(
+              fontSize: AppConstants.fontL,
+              fontWeight: FontWeight.bold,
+              color: AppColors.secondary,
+            ),
+          ),
+        ),
+      );
+    } else if (item is _ListCardItem) {
+      return Padding(
+        padding: EdgeInsets.symmetric(
+          vertical: AppConstants.timelineContentPadding,
+        ),
+        child: CompletedListCard(
+          shoppingList: item.list,
+          showTime: item.showTime,
+          productCount: item.productCount,
+          onTap: () => _navigateToDetail(context, item.list),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
+  List<_FlatItem> _prepareFlatItems(
+    List<CompletedListWithCount> listsWithCounts,
+  ) {
+    final List<_FlatItem> flatItems = [];
+    final listsWithTimeInfo = _prepareListsWithTimeInfo(listsWithCounts);
+
+    for (int i = 0; i < listsWithTimeInfo.length; i++) {
+      final listInfo = listsWithTimeInfo[i];
+      final currentMonthKey = _getMonthKey(listInfo.list.completedAt!);
+
+      // Aggiungi la card della lista
+      flatItems.add(
+        _ListCardItem(
+          list: listInfo.list,
+          showTime: listInfo.showTime,
+          productCount: listInfo.productCount,
+        ),
+      );
+
+      // Controlla se la prossima lista è di un mese diverso
+      // Se sì, inserisci separatore del mese corrente (che sta "finendo")
+      if (i < listsWithTimeInfo.length - 1) {
+        final nextListInfo = listsWithTimeInfo[i + 1];
+        final nextMonthKey = _getMonthKey(nextListInfo.list.completedAt!);
+
+        if (currentMonthKey != nextMonthKey) {
+          // Inserisci separatore del mese che sta "finendo"
+          flatItems.add(_MonthHeaderItem(currentMonthKey));
+        }
+      }
+    }
+
+    return flatItems;
   }
 
   List<_ListWithTimeInfo> _prepareListsWithTimeInfo(
@@ -141,13 +215,15 @@ class CompletedListsScreen extends ConsumerWidget {
       if (listWithCount.list.completedAt != null) {
         final dateKey = _getDateKey(listWithCount.list.completedAt!);
         final listsInSameDate = groupedByDate[dateKey] ?? [];
+
+        // Mostra l'orario solo se ci sono più liste nello stesso giorno
         final showTime = listsInSameDate.length > 1;
 
         result.add(
           _ListWithTimeInfo(
             list: listWithCount.list,
+            productCount: listWithCount.productCount,
             showTime: showTime,
-            productCount: listWithCount.productCount, // ← Usa conteggio reale
           ),
         );
       }
@@ -156,8 +232,45 @@ class CompletedListsScreen extends ConsumerWidget {
     return result;
   }
 
-  String _getDateKey(DateTime date) {
-    return '${date.year}-${date.month}-${date.day}';
+  String _getMonthKey(DateTime dateTime) {
+    final now = DateTime.now();
+    final currentYear = now.year;
+
+    final monthNames = [
+      'Gennaio',
+      'Febbraio',
+      'Marzo',
+      'Aprile',
+      'Maggio',
+      'Giugno',
+      'Luglio',
+      'Agosto',
+      'Settembre',
+      'Ottobre',
+      'Novembre',
+      'Dicembre',
+    ];
+
+    final monthName = monthNames[dateTime.month - 1];
+
+    // Mostra l'anno solo se non è l'anno corrente
+    if (dateTime.year != currentYear) {
+      return '$monthName ${dateTime.year}';
+    } else {
+      return monthName;
+    }
+  }
+
+  String _getDateKey(DateTime dateTime) {
+    return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}';
+  }
+
+  void _handleMenuAction(BuildContext context, WidgetRef ref, String action) {
+    switch (action) {
+      case 'refresh':
+        ref.invalidate(completedListsProvider);
+        break;
+    }
   }
 
   void _navigateToDetail(BuildContext context, ShoppingList list) {
@@ -168,34 +281,36 @@ class CompletedListsScreen extends ConsumerWidget {
       ),
     );
   }
-
-  void _handleMenuAction(BuildContext context, WidgetRef ref, String action) {
-    switch (action) {
-      case 'refresh':
-        ref.invalidate(completedListsProvider);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Liste aggiornate'),
-            duration: Duration(seconds: 1),
-          ),
-        );
-        break;
-      // Future actions
-      // case 'analytics':
-      //   _showAnalytics(context, ref);
-      //   break;
-    }
-  }
 }
 
-class _ListWithTimeInfo {
+// Classi helper per gli elementi della lista piatta
+abstract class _FlatItem {}
+
+class _MonthHeaderItem extends _FlatItem {
+  final String monthLabel;
+  _MonthHeaderItem(this.monthLabel);
+}
+
+class _ListCardItem extends _FlatItem {
   final ShoppingList list;
   final bool showTime;
   final int productCount;
 
-  _ListWithTimeInfo({
+  _ListCardItem({
     required this.list,
     required this.showTime,
     required this.productCount,
+  });
+}
+
+class _ListWithTimeInfo {
+  final ShoppingList list;
+  final int productCount;
+  final bool showTime;
+
+  _ListWithTimeInfo({
+    required this.list,
+    required this.productCount,
+    required this.showTime,
   });
 }

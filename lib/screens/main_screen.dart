@@ -87,7 +87,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     return Scaffold(
       key: _scaffoldKey,
       // ✅ AppBar solo per le sezioni che non hanno il proprio AppBar
-      appBar: _selectedIndex != 0
+      appBar: _selectedIndex != 0 && _selectedIndex != 4
           ? AppBar(
               title: Text(_titles[_selectedIndex]),
               flexibleSpace: Container(
