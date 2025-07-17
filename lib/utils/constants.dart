@@ -105,7 +105,6 @@ class AppStrings {
   static const String productDeleted = 'Prodotto eliminato';
   static const String departmentAdded = 'Reparto aggiunto';
   static const String departmentDeleted = 'Reparto eliminato';
-  static const String listCleared = 'Lista svuotata con successo';
 
   // === CONFERME ===
   static const String confirmDelete = 'Sei sicuro di voler eliminare';
@@ -129,6 +128,8 @@ class AppStrings {
   static const String newProduct = 'Nuovo Prodotto';
   static const String addDepartment = 'Nuovo Reparto';
   static const String editDepartment = 'Modifica Reparto';
+  static const String loyaltyCards = 'Carte Fedeltà';
+  static const String lastLists = 'Ultime Liste';
 
   // === STATUS ===
   static const String loading = 'Caricamento...';
@@ -165,4 +166,29 @@ class AppStrings {
   static const String appFullName = 'Lista Spesa\nAssistente';
   static const String reorderInstructions =
       'Trascina per riordinare i reparti secondo il layout del supermercato';
+
+  // === COMPLETE LIST ===
+  static const String completeList = 'Completa Lista';
+  static const String howToComplete = 'Come vuoi completare la spesa?';
+  static const String markAllAsTaken = 'Ho preso tutto';
+  static const String markAllAsTakenSubtitle =
+      'Marca tutti i prodotti come acquistati';
+  static const String keepCurrentState = 'Ho preso solo i selezionati';
+  static const String keepCurrentStateSubtitle =
+      'Mantieni lo stato attuale dei prodotti';
+  static const String totalCost = 'Totale Spesa';
+  static const String enterTotalCost = 'Vuoi registrare quanto hai speso?';
+  static const String totalCostHint =
+      'Puoi aggiungere o modificare questo importo in seguito.';
+  static const String amount = 'Importo (€)';
+  static const String optional = 'Opzionale - lascia vuoto per saltare';
+  static const String skip = 'Salta';
+  static const String listCompleted = 'Lista completata con successo!';
+  static const String listIsEmpty =
+      'La lista è vuota! Aggiungi prodotti prima di completarla.';
+  static const String completionError = 'Errore nel completamento';
+  static const String invalidAmount = 'Inserisci un importo valido';
+  static const String listCleared = 'Lista svuotata con successo!';
+  static const String noItemsSelected =
+      'Non hai selezionato nessun prodotto! Seleziona almeno un prodotto o scegli "Ho preso tutto".';
 }

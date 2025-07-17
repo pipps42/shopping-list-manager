@@ -105,4 +105,33 @@ class CurrentListNotifier
       rethrow;
     }
   }
+
+  Future<void> completeCurrentList({
+    required bool markAllAsChecked,
+    double? totalCost,
+  }) async {
+    try {
+      await _databaseService.completeCurrentList(
+        markAllAsChecked: markAllAsChecked,
+        totalCost: totalCost,
+      );
+
+      // Ricarica la lista corrente (che ora sarà vuota)
+      await loadCurrentList();
+
+      // Invalida il provider degli ID
+      _ref.invalidate(currentListProductIdsProvider);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<bool> hasItemsInCurrentList() async {
+    return await _databaseService.hasItemsInCurrentList();
+  }
+
+  Future<Map<String, int>> getCurrentListStats() async {
+    return await _databaseService.getCurrentListStats();
+  }
 }
