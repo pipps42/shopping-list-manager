@@ -1,3 +1,4 @@
+import 'package:shopping_list_manager/models/loyalty_card.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/department.dart';
@@ -78,6 +79,16 @@ class DatabaseService {
       )
     ''');
 
+    // Tabella carte fedeltà
+    await db.execute('''
+      CREATE TABLE loyalty_cards(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        image_path TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      )
+    ''');
+
     // Inserisci dati iniziali
     await _insertInitialData(db);
   }
@@ -149,7 +160,7 @@ class DatabaseService {
     });
   }
 
-  // CRUD per Departments
+  // =========== CRUD per Departments ===========
   Future<int> insertDepartment(Department department) async {
     final db = await database;
     return await db.insert('departments', department.toMap());
@@ -212,7 +223,7 @@ class DatabaseService {
     });
   }
 
-  // CRUD per Products
+  // =========== CRUD per Products ===========
   Future<int> insertProduct(Product product) async {
     final db = await database;
     return await db.insert('products', product.toMap());
@@ -253,7 +264,7 @@ class DatabaseService {
     return await db.delete('products', where: 'id = ?', whereArgs: [id]);
   }
 
-  // CRUD per Shopping Lists
+  // =========== CRUD per Shopping Lists ===========
   Future<int> insertShoppingList(ShoppingList list) async {
     final db = await database;
     return await db.insert('shopping_lists', list.toMap());
@@ -280,7 +291,7 @@ class DatabaseService {
     );
   }
 
-  // CRUD per List Items
+  // =========== CRUD per List Items ===========
   Future<int> insertListItem(ListItem item) async {
     final db = await database;
     return await db.insert('list_items', item.toMap());
@@ -441,5 +452,47 @@ class DatabaseService {
     await insertShoppingList(
       ShoppingList(name: 'Lista Corrente', createdAt: DateTime.now()),
     );
+  }
+
+  // =========== CRUD per Loyalty Cards ===============
+  Future<int> insertLoyaltyCard(LoyaltyCard card) async {
+    final db = await database;
+    return await db.insert('loyalty_cards', card.toMap());
+  }
+
+  Future<List<LoyaltyCard>> getAllLoyaltyCards() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'loyalty_cards',
+      orderBy: 'created_at DESC',
+    );
+    return List.generate(maps.length, (i) => LoyaltyCard.fromMap(maps[i]));
+  }
+
+  Future<LoyaltyCard?> getLoyaltyCard(int id) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'loyalty_cards',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return LoyaltyCard.fromMap(maps.first);
+  }
+
+  Future<int> updateLoyaltyCard(LoyaltyCard card) async {
+    final db = await database;
+    return await db.update(
+      'loyalty_cards',
+      card.toMap(),
+      where: 'id = ?',
+      whereArgs: [card.id],
+    );
+  }
+
+  Future<int> deleteLoyaltyCard(int id) async {
+    final db = await database;
+    return await db.delete('loyalty_cards', where: 'id = ?', whereArgs: [id]);
   }
 }

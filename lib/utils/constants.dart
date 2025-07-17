@@ -92,6 +92,8 @@ class AppStrings {
   static const String ok = 'OK';
   static const String close = 'Chiudi';
   static const String confirm = 'Conferma';
+  static const String camera = 'Camera';
+  static const String gallery = 'Galleria';
 
   // === ERRORI ===
   static const String genericError = 'Si è verificato un errore';
