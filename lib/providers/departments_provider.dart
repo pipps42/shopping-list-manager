@@ -39,11 +39,15 @@ class DepartmentsNotifier extends StateNotifier<AsyncValue<List<Department>>> {
 
     await _databaseService.insertDepartment(department);
     await loadDepartments();
+    // Invalidate related providers to refresh data
+    _ref.invalidate(productsByDepartmentProvider);
   }
 
   Future<void> updateDepartment(Department department) async {
     await _databaseService.updateDepartment(department);
     await loadDepartments();
+    // Invalidate related providers to refresh data
+    _ref.invalidate(productsByDepartmentProvider);
   }
 
   Future<void> deleteDepartment(int id) async {

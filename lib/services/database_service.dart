@@ -399,7 +399,7 @@ class DatabaseService {
       'products',
       where: 'department_id = ?',
       whereArgs: [departmentId],
-      orderBy: 'name ASC',
+      orderBy: 'name COLLATE NOCASE ASC',
     );
     return List.generate(maps.length, (i) => Product.fromMap(maps[i]));
   }
@@ -408,7 +408,7 @@ class DatabaseService {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       'products',
-      orderBy: 'name ASC',
+      orderBy: 'name COLLATE NOCASE ASC',
     );
     return List.generate(maps.length, (i) => Product.fromMap(maps[i]));
   }
@@ -484,7 +484,7 @@ class DatabaseService {
       JOIN departments d ON p.department_id = d.id
       JOIN shopping_lists sl ON li.list_id = sl.id
       WHERE sl.completed_at IS NULL
-      ORDER BY d.order_index ASC, p.name ASC
+      ORDER BY d.order_index ASC, p.name COLLATE NOCASE ASC
     ''');
 
     final List<ListItem> items = List.generate(
@@ -776,7 +776,7 @@ class DatabaseService {
     JOIN departments d ON p.department_id = d.id
     JOIN shopping_lists sl ON li.list_id = sl.id
     WHERE sl.id = ? AND sl.completed_at IS NOT NULL
-    ORDER BY d.order_index ASC, p.name ASC
+    ORDER BY d.order_index ASC, p.name COLLATE NOCASE ASC
   ''',
       [listId],
     );

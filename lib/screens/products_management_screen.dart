@@ -130,7 +130,7 @@ class _ProductsManagementScreenState
       }
 
       return true;
-    }).toList()..sort((a, b) => a.name.compareTo(b.name));
+    }).toList();
   }
 
   Widget _buildEmptyState() {

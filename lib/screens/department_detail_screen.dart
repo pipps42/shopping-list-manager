@@ -108,9 +108,6 @@ class DepartmentDetailScreen extends ConsumerWidget {
           await ref
               .read(productsProvider.notifier)
               .addProduct(name, departmentId, imagePath);
-
-          // Refresh della lista prodotti per questo reparto
-          ref.invalidate(productsByDepartmentProvider(department.id!));
         },
       ),
     );
@@ -140,9 +137,6 @@ class DepartmentDetailScreen extends ConsumerWidget {
                   imagePath: imagePath,
                 ),
               );
-
-          // Refresh della lista prodotti per questo reparto
-          ref.invalidate(productsByDepartmentProvider(department.id!));
         },
       ),
     );
@@ -166,9 +160,6 @@ class DepartmentDetailScreen extends ConsumerWidget {
           await ref
               .read(productsProvider.notifier)
               .updateProduct(product.copyWith(departmentId: newDepartment.id));
-
-          // Refresh della lista prodotti per questo reparto
-          ref.invalidate(productsByDepartmentProvider(department.id!));
         },
       ),
     );
@@ -185,9 +176,6 @@ class DepartmentDetailScreen extends ConsumerWidget {
         product: product,
         onConfirmDelete: () async {
           await ref.read(productsProvider.notifier).deleteProduct(product.id!);
-
-          // Refresh della lista prodotti per questo reparto
-          ref.invalidate(productsByDepartmentProvider(department.id!));
         },
       ),
     );

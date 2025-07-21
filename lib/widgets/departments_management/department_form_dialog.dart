@@ -59,6 +59,7 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
               labelText: AppStrings.departmentNamePlaceholder,
               border: OutlineInputBorder(),
             ),
+            textCapitalization: TextCapitalization.words,
           ),
           const SizedBox(height: AppConstants.spacingM),
 

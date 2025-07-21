@@ -69,6 +69,7 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
                 labelText: AppStrings.productNamePlaceholder,
                 border: OutlineInputBorder(),
               ),
+              textCapitalization: TextCapitalization.words,
             ),
             const SizedBox(height: AppConstants.spacingM),
 

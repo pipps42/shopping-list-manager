@@ -53,15 +53,18 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<Product>>> {
     await _databaseService.insertProduct(product);
     await loadProducts();
     // Invalidate related providers to refresh data
+    _ref.invalidate(productsByDepartmentProvider);
     _ref.invalidate(currentListProductIdsProvider);
   }
 
   Future<void> updateProduct(Product product) async {
     await _databaseService.updateProduct(product);
     await loadProducts();
+
     // Invalidate related providers to refresh data
     _ref.invalidate(currentListProvider);
     _ref.invalidate(currentListProductIdsProvider);
+    _ref.invalidate(productsByDepartmentProvider);
   }
 
   Future<void> deleteProduct(int id) async {
@@ -70,6 +73,7 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<Product>>> {
     // Invalidate related providers to refresh data
     _ref.invalidate(currentListProvider);
     _ref.invalidate(currentListProductIdsProvider);
+    _ref.invalidate(productsByDepartmentProvider);
   }
 }
 
