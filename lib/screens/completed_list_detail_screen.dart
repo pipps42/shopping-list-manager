@@ -1,6 +1,6 @@
-// lib/screens/completed_list_detail_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_list_manager/widgets/common/app_bar_gradient.dart';
 import '../models/shopping_list.dart';
 import '../models/department_with_products.dart';
 import '../providers/completed_lists_provider.dart';
@@ -23,73 +23,54 @@ class CompletedListDetailScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              _formatAppBarTitle(),
-              style: const TextStyle(fontSize: AppConstants.fontXL),
-            ),
-            if (shoppingList.totalCost != null)
-              Text(
+      appBar: AppBarGradientWithPopupMenu<String>(
+        title: Text(
+          _formatAppBarTitle(),
+          style: const TextStyle(fontSize: AppConstants.fontXL),
+        ),
+        subtitle: shoppingList.totalCost != null
+            ? Text(
                 '€${shoppingList.totalCost!.toStringAsFixed(2)}',
                 style: TextStyle(
                   fontSize: AppConstants.fontM,
                   color: AppColors.textOnPrimary(context).withOpacity(0.8),
                   fontWeight: FontWeight.normal,
                 ),
-              ),
-          ],
-        ),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              )
+            : null,
+        menuItems: [
+          const PopupMenuItem(
+            value: 'refresh',
+            child: Row(
+              children: [
+                Icon(Icons.refresh),
+                SizedBox(width: AppConstants.spacingS),
+                Text(AppStrings.refresh),
+              ],
             ),
           ),
-        ),
-        foregroundColor: AppColors.textOnPrimary(context),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) => _handleMenuAction(context, ref, value),
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'refresh',
-                child: Row(
-                  children: [
-                    Icon(Icons.refresh),
-                    SizedBox(width: AppConstants.spacingS),
-                    Text('Aggiorna'),
-                  ],
-                ),
-              ),
-              // 🔥 FUTURE: More actions
-              // const PopupMenuItem(
-              //   value: 'reorder',
-              //   child: Row(
-              //     children: [
-              //       Icon(Icons.add_shopping_cart),
-              //       SizedBox(width: AppConstants.spacingS),
-              //       Text('Ricompra'),
-              //     ],
-              //   ),
-              // ),
-              // const PopupMenuItem(
-              //   value: 'share',
-              //   child: Row(
-              //     children: [
-              //       Icon(Icons.share),
-              //       SizedBox(width: AppConstants.spacingS),
-              //       Text('Condividi'),
-              //     ],
-              //   ),
-              // ),
-            ],
+          const PopupMenuItem(
+            value: 'reorder',
+            child: Row(
+              children: [
+                Icon(Icons.add_shopping_cart),
+                SizedBox(width: AppConstants.spacingS),
+                Text(AppStrings.buyAgain),
+              ],
+            ),
+          ),
+          const PopupMenuItem(
+            value: 'share',
+            child: Row(
+              children: [
+                Icon(Icons.share),
+                SizedBox(width: AppConstants.spacingS),
+                Text(AppStrings.share),
+              ],
+            ),
           ),
         ],
+        onMenuSelected: (value) => _handleMenuAction(context, ref, value),
       ),
       body: detailState.when(
         data: (departments) => _buildDetailView(context, ref, departments),
@@ -112,7 +93,7 @@ class CompletedListDetailScreen extends ConsumerWidget {
     if (departments.isEmpty) {
       return const EmptyStateWidget(
         icon: Icons.shopping_basket_outlined,
-        title: 'Lista vuota',
+        title: AppStrings.emptyList,
         subtitle: 'Questa lista non contiene prodotti.',
       );
     }
@@ -178,7 +159,7 @@ class CompletedListDetailScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Lista completata',
+                  AppStrings.listCompleted,
                   style: TextStyle(
                     fontSize: AppConstants.fontL,
                     fontWeight: FontWeight.bold,
@@ -221,7 +202,7 @@ class CompletedListDetailScreen extends ConsumerWidget {
   }
 
   String _formatAppBarTitle() {
-    if (shoppingList.completedAt == null) return 'Lista Completata';
+    if (shoppingList.completedAt == null) return AppStrings.listCompleted;
 
     final now = DateTime.now();
     final completedDate = shoppingList.completedAt!;

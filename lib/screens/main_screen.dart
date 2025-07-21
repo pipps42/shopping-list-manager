@@ -2,6 +2,7 @@ import 'package:shopping_list_manager/screens/completed_lists_screen.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_list_manager/widgets/common/app_bar_gradient.dart';
 import 'current_list_screen.dart';
 import 'departments_management_screen.dart';
 import 'products_management_screen.dart';
@@ -88,32 +89,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       key: _scaffoldKey,
       // AppBar solo per le sezioni che non hanno il proprio AppBar
       appBar: _selectedIndex != 0 && _selectedIndex != 4
-          ? AppBar(
-              title: Text(_titles[_selectedIndex]),
-              flexibleSpace: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary,
-                      AppColors.primary.withOpacity(0.8),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-              ),
-              foregroundColor: AppColors.textOnPrimary(context),
-              leading: Builder(
-                builder: (context) => IconButton(
-                  icon: const Icon(Icons.menu),
-                  onPressed: () => {
-                    _onDrawerOpened(),
-                    Scaffold.of(context).openDrawer(),
-                  },
-                ),
-              ),
+          ? AppBarGradient(
+              title: _titles[_selectedIndex],
+              showDrawer: true,
+              onDrawerPressed: () {
+                _onDrawerOpened();
+                _scaffoldKey.currentState?.openDrawer();
+              },
             )
-          : null, // CurrentListScreen ha il suo AppBar
+          : null,
       drawer: _buildDrawer(),
       drawerEdgeDragWidth: (MediaQuery.of(context).size.width * 0.2).clamp(
         50.0,
@@ -230,7 +214,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           Padding(
             padding: const EdgeInsets.all(AppConstants.paddingM),
             child: Text(
-              'v1.0.0',
+              AppConstants.appVersion,
               style: TextStyle(
                 color: AppColors.textDisabled(context),
                 fontSize: AppConstants.fontM,
