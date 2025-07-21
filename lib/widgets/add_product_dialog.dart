@@ -2,6 +2,7 @@ import 'package:shopping_list_manager/utils/constants.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_list_manager/widgets/common/app_search_bar.dart';
 import '../providers/products_provider.dart';
 import '../providers/departments_provider.dart';
 import '../providers/current_list_provider.dart';
@@ -29,145 +30,92 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
   final FocusNode _searchFocusNode = FocusNode();
 
   @override
-  void initState() {
-    super.initState();
-    _searchController.addListener(() {
-      setState(() {
-        _hasSearchText = _searchController.text.isNotEmpty;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _searchFocusNode.dispose();
-    super.dispose();
-  }
-
-  void _clearFocus() {
-    _searchFocusNode.unfocus();
-    FocusScope.of(context).requestFocus(FocusNode());
-  }
-
-  @override
   Widget build(BuildContext context) {
     final departmentsState = ref.watch(departmentsProvider);
     final productsState = ref.watch(productsProvider);
 
     return Dialog(
-      child: GestureDetector(
-        // Wrapper per tap fuori
-        onTap: () => _clearFocus(),
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.9,
-          height: MediaQuery.of(context).size.height * 0.8,
-          padding: const EdgeInsets.all(AppConstants.paddingM),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                children: [
-                  const Expanded(
-                    child: Text(
-                      AppStrings.addProduct,
-                      style: TextStyle(
-                        fontSize: AppConstants.fontXXXL,
-                        fontWeight: FontWeight.bold,
-                      ),
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.9,
+        height: MediaQuery.of(context).size.height * 0.8,
+        padding: const EdgeInsets.all(AppConstants.paddingM),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    AppStrings.addProduct,
+                    style: TextStyle(
+                      fontSize: AppConstants.fontXXXL,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  IconButton(
-                    onPressed: () {
-                      _clearFocus();
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppConstants.spacingM),
-
-              // Barra di ricerca
-              TextField(
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                decoration: InputDecoration(
-                  hintText: AppStrings.searchProductPlaceholder,
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: _hasSearchText
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() {
-                              searchQuery = '';
-                            });
-                            _clearFocus();
-                          },
-                          tooltip: 'Cancella ricerca',
-                        )
-                      : null,
-                  border: const OutlineInputBorder(),
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    searchQuery = value.toLowerCase();
-                  });
-                },
-                onTapOutside: (event) => _clearFocus(),
-                onEditingComplete: () => _clearFocus(),
-              ),
-              const SizedBox(height: AppConstants.spacingM),
-
-              // Filtro per reparto
-              departmentsState.when(
-                data: (departments) =>
-                    _buildDepartmentFilter(context, departments),
-                loading: () => const LoadingWidget(
-                  message: AppStrings.loadingDepartments,
-                  size: AppConstants.iconS,
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
                 ),
-                error: (error, stack) => Padding(
-                  padding: EdgeInsets.all(AppConstants.paddingS),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.error,
-                        color: AppColors.error,
-                        size: AppConstants.iconS,
-                      ),
-                      const SizedBox(width: AppConstants.spacingS),
-                      Expanded(
-                        child: Text(
-                          'Errore reparti: $error',
-                          style: TextStyle(
-                            color: AppColors.error,
-                            fontSize: AppConstants.fontM,
-                          ),
+              ],
+            ),
+            const SizedBox(height: AppConstants.spacingM),
+
+            // Barra di ricerca
+            AppSearchBar(
+              placeholder: AppStrings.searchProductPlaceholder,
+              onChanged: (value) =>
+                  setState(() => searchQuery = value.toLowerCase()),
+            ),
+            const SizedBox(height: AppConstants.spacingM),
+
+            // Filtro per reparto
+            departmentsState.when(
+              data: (departments) =>
+                  _buildDepartmentFilter(context, departments),
+              loading: () => const LoadingWidget(
+                message: AppStrings.loadingDepartments,
+                size: AppConstants.iconS,
+              ),
+              error: (error, stack) => Padding(
+                padding: EdgeInsets.all(AppConstants.paddingS),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.error,
+                      color: AppColors.error,
+                      size: AppConstants.iconS,
+                    ),
+                    const SizedBox(width: AppConstants.spacingS),
+                    Expanded(
+                      child: Text(
+                        'Errore reparti: $error',
+                        style: TextStyle(
+                          color: AppColors.error,
+                          fontSize: AppConstants.fontM,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: AppConstants.spacingM),
+            ),
+            const SizedBox(height: AppConstants.spacingM),
 
-              // Lista prodotti
-              Expanded(
-                child: productsState.when(
-                  data: (products) => _buildProductsList(products),
-                  loading: () =>
-                      const LoadingWidget(message: AppStrings.loadingProducts),
-                  error: (error, stack) => ErrorStateWidget(
-                    message: 'Errore nel caricamento dei prodotti: $error',
-                    icon: Icons.inventory_2_outlined,
-                  ),
+            // Lista prodotti
+            Expanded(
+              child: productsState.when(
+                data: (products) => _buildProductsList(products),
+                loading: () =>
+                    const LoadingWidget(message: AppStrings.loadingProducts),
+                error: (error, stack) => ErrorStateWidget(
+                  message: 'Errore nel caricamento dei prodotti: $error',
+                  icon: Icons.inventory_2_outlined,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
