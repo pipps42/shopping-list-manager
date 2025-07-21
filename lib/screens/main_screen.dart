@@ -86,7 +86,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      // ✅ AppBar solo per le sezioni che non hanno il proprio AppBar
+      // AppBar solo per le sezioni che non hanno il proprio AppBar
       appBar: _selectedIndex != 0 && _selectedIndex != 4
           ? AppBar(
               title: Text(_titles[_selectedIndex]),
@@ -115,6 +115,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             )
           : null, // CurrentListScreen ha il suo AppBar
       drawer: _buildDrawer(),
+      drawerEdgeDragWidth: (MediaQuery.of(context).size.width * 0.2).clamp(
+        50.0,
+        100.0,
+      ),
       body: GestureDetector(
         // Wrapper per catturare tap fuori
         onTap: () {
