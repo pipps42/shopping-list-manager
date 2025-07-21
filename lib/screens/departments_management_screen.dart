@@ -53,27 +53,19 @@ class DepartmentsManagementScreen extends ConsumerWidget {
       );
     }
 
-    return Column(
-      children: [
-        // Header con istruzioni
-        const ReorderInstructionsWidget(),
+    return CustomScrollView(
+      slivers: [
+        // Header a tutta larghezza che scrolla via
+        SliverToBoxAdapter(child: const ReorderInstructionsWidget()),
 
-        // Lista riordinabile
-        Expanded(
-          child: ReorderableListView.builder(
-            padding: const EdgeInsets.only(
-              top: AppConstants.paddingS,
-              left: AppConstants.paddingS,
-              right: AppConstants.paddingS,
-              bottom: AppConstants.listBottomSpacing, // Spazio per il FAB
-            ),
-            itemCount: departments.length,
-            onReorder: (oldIndex, newIndex) =>
-                _onReorder(ref, departments, oldIndex, newIndex),
-            itemBuilder: (context, index) {
-              final department = departments[index];
-              return DepartmentTileWidget(
-                key: Key('dept_${department.id}'),
+        // Lista con padding solo sui tiles
+        SliverReorderableList(
+          itemBuilder: (context, index) {
+            final department = departments[index];
+            return ReorderableDelayedDragStartListener(
+              key: Key('dept_${department.id}'),
+              index: index,
+              child: DepartmentTileWidget(
                 department: department,
                 index: index,
                 onView: () => _navigateToDepartmentDetail(context, department),
@@ -81,9 +73,17 @@ class DepartmentsManagementScreen extends ConsumerWidget {
                     _showEditDepartmentDialog(context, ref, department),
                 onDelete: () =>
                     _showDeleteDepartmentDialog(context, ref, department),
-              );
-            },
-          ),
+              ),
+            );
+          },
+          itemCount: departments.length,
+          onReorder: (oldIndex, newIndex) =>
+              _onReorder(ref, departments, oldIndex, newIndex),
+        ),
+
+        // Spazio per FAB
+        SliverToBoxAdapter(
+          child: SizedBox(height: AppConstants.listBottomSpacing),
         ),
       ],
     );

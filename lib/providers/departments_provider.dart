@@ -65,5 +65,9 @@ class DepartmentsNotifier extends StateNotifier<AsyncValue<List<Department>>> {
 
     // Quindi salva nel database
     await _databaseService.reorderDepartments(reorderedDepartments);
+    // Invalidate related providers to refresh data
+    _ref.invalidate(productsProvider);
+    _ref.invalidate(currentListProvider);
+    _ref.invalidate(currentListProductIdsProvider);
   }
 }

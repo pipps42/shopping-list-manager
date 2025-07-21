@@ -24,7 +24,12 @@ class ReorderInstructionsWidget extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppConstants.paddingM),
-      color: bgColor,
+      decoration: BoxDecoration(
+        color: bgColor,
+        border: Border(
+          bottom: BorderSide(color: AppColors.info.withOpacity(0.3), width: 1),
+        ),
+      ),
       child: Row(
         children: [
           Icon(icon, color: txtColor),
