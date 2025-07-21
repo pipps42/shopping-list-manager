@@ -1,6 +1,6 @@
-// lib/screens/completed_lists_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_list_manager/widgets/common/app_bar_gradient.dart';
 import '../models/shopping_list.dart';
 import '../providers/completed_lists_provider.dart';
 import '../widgets/common/empty_state_widget.dart';
@@ -20,47 +20,45 @@ class CompletedListsScreen extends ConsumerWidget {
     final completedListsState = ref.watch(completedListsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ultime Liste'),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+      appBar: AppBarGradientWithPopupMenu<String>(
+        title: AppStrings.lastLists,
+        showDrawer: true,
+        menuItems: [
+          const PopupMenuItem(
+            value: 'refresh',
+            child: Row(
+              children: [
+                Icon(Icons.refresh, color: AppColors.secondary),
+                SizedBox(width: AppConstants.spacingS),
+                Text(AppStrings.refresh),
+              ],
             ),
           ),
-        ),
-        foregroundColor: AppColors.textOnPrimary(context),
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {
-            try {
-              Scaffold.of(context).openDrawer();
-            } catch (e) {
-              final scaffoldState = context
-                  .findAncestorStateOfType<ScaffoldState>();
-              scaffoldState?.openDrawer();
-            }
-          },
-        ),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) => _handleMenuAction(context, ref, value),
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'refresh',
-                child: Row(
-                  children: [
-                    Icon(Icons.refresh),
-                    SizedBox(width: AppConstants.spacingS),
-                    Text('Aggiorna'),
-                  ],
+          const PopupMenuItem(
+            value: 'export',
+            child: Row(
+              children: [
+                Icon(Icons.upload, color: AppColors.secondary),
+                SizedBox(width: AppConstants.spacingS),
+                Text(AppStrings.export),
+              ],
+            ),
+          ),
+          const PopupMenuItem(
+            value: 'clear_completed',
+            child: Row(
+              children: [
+                Icon(Icons.delete_sweep, color: AppColors.error),
+                SizedBox(width: AppConstants.spacingS),
+                Text(
+                  AppStrings.deleteLastLists,
+                  style: TextStyle(color: AppColors.error),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
+        onMenuSelected: (value) => _handleMenuAction(context, ref, value),
       ),
       body: completedListsState.when(
         data: (lists) => _buildPixelPerfectTimeline(context, ref, lists),

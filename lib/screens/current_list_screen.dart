@@ -1,8 +1,8 @@
-// lib/screens/current_list_screen.dart (AGGIORNATO)
 import 'package:shopping_list_manager/utils/color_palettes.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_list_manager/widgets/common/app_bar_gradient.dart';
 import '../providers/current_list_provider.dart';
 import '../models/department_with_products.dart';
 import '../widgets/add_product_dialog.dart';
@@ -20,62 +20,35 @@ class CurrentListScreen extends ConsumerWidget {
     final currentListState = ref.watch(currentListProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppStrings.currentList),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+      appBar: AppBarGradientWithPopupMenu<String>(
+        title: AppStrings.currentList,
+        showDrawer: true,
+        menuItems: [
+          const PopupMenuItem(
+            value: 'complete_list',
+            child: Row(
+              children: [
+                Icon(Icons.check_circle, color: AppColors.success),
+                SizedBox(width: AppConstants.spacingS),
+                Text(AppStrings.completeList),
+              ],
             ),
           ),
-        ),
-        foregroundColor: AppColors.textOnPrimary(context),
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {
-            // Usa Scaffold.of(context) per trovare il Scaffold parent con drawer
-            try {
-              Scaffold.of(context).openDrawer();
-            } catch (e) {
-              // Fallback: trova manualmente il Scaffold parent
-              final scaffoldState = context
-                  .findAncestorStateOfType<ScaffoldState>();
-              scaffoldState?.openDrawer();
-            }
-          },
-        ),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) => _handleMenuAction(context, ref, value),
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'complete_list',
-                child: Row(
-                  children: [
-                    Icon(Icons.check_circle, color: AppColors.success),
-                    SizedBox(width: AppConstants.spacingS),
-                    Text(AppStrings.completeList),
-                  ],
+          const PopupMenuItem(
+            value: 'clear_all',
+            child: Row(
+              children: [
+                Icon(Icons.clear_all, color: AppColors.error),
+                SizedBox(width: AppConstants.spacingS),
+                Text(
+                  AppStrings.clearList,
+                  style: TextStyle(color: AppColors.error),
                 ),
-              ),
-              const PopupMenuItem(
-                value: 'clear_all',
-                child: Row(
-                  children: [
-                    Icon(Icons.clear_all, color: AppColors.error),
-                    SizedBox(width: AppConstants.spacingS),
-                    Text(
-                      AppStrings.clearList,
-                      style: TextStyle(color: AppColors.error),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
+        onMenuSelected: (value) => _handleMenuAction(context, ref, value),
       ),
       body: currentListState.when(
         data: (departmentsWithProducts) =>

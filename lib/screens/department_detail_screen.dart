@@ -2,6 +2,7 @@ import 'package:shopping_list_manager/utils/color_palettes.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_list_manager/widgets/common/app_bar_gradient.dart';
 import '../providers/products_provider.dart';
 import '../providers/departments_provider.dart';
 import '../models/department.dart';
@@ -26,19 +27,7 @@ class DepartmentDetailScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(department.name),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        foregroundColor: AppColors.textOnPrimary(context),
-      ),
+      appBar: AppBarGradient(title: department.name),
       body: productsState.when(
         data: (products) => _buildProductsList(context, ref, products),
         loading: () =>

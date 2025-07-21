@@ -1,5 +1,6 @@
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:shopping_list_manager/widgets/common/app_search_bar.dart';
 import '../../models/department.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
 
@@ -24,35 +25,12 @@ class ProductFiltersWidget extends StatefulWidget {
 }
 
 class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
-  late TextEditingController _searchController;
-  late FocusNode _searchFocusNode;
   int? _selectedDepartmentId;
-  bool _hasSearchText = false;
 
   @override
   void initState() {
     super.initState();
-    _searchController = TextEditingController(text: widget.initialSearchQuery);
-    _searchFocusNode = FocusNode();
     _selectedDepartmentId = widget.initialSelectedDepartmentId;
-    _hasSearchText = widget.initialSearchQuery.isNotEmpty;
-    _searchController.addListener(() {
-      setState(() {
-        _hasSearchText = _searchController.text.isNotEmpty;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _searchFocusNode.dispose();
-    super.dispose();
-  }
-
-  void _clearFocus() {
-    _searchFocusNode.unfocus();
-    FocusScope.of(context).requestFocus(FocusNode());
   }
 
   @override
@@ -66,32 +44,10 @@ class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
       child: Column(
         children: [
           // Barra di ricerca
-          TextField(
-            controller: _searchController,
-            focusNode: _searchFocusNode,
-            decoration: InputDecoration(
-              hintText: AppStrings.searchPlaceholder,
-              prefixIcon: const Icon(Icons.search),
-              suffixIcon:
-                  _hasSearchText // Mostra X solo quando c'è testo
-                  ? IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        _searchController.clear();
-                        widget.onSearchChanged('');
-                        _clearFocus();
-                      },
-                      tooltip: 'Cancella ricerca',
-                    )
-                  : null,
-              border: const OutlineInputBorder(),
-              isDense: true,
-            ),
-            onChanged: (value) {
-              widget.onSearchChanged(value.toLowerCase());
-            },
-            onTapOutside: (event) => _clearFocus(),
-            onEditingComplete: () => _clearFocus(),
+          AppSearchBar(
+            placeholder: AppStrings.searchPlaceholder,
+            initialValue: widget.initialSearchQuery,
+            onChanged: (value) => widget.onSearchChanged(value.toLowerCase()),
           ),
           const SizedBox(height: AppConstants.spacingL),
           // Filtro reparti
