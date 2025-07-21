@@ -37,13 +37,14 @@ class FullScreenImageViewer extends StatelessWidget {
           child: InteractiveViewer(
             panEnabled: true,
             boundaryMargin: const EdgeInsets.all(20),
-            minScale: 0.5,
-            maxScale: 3.0,
+            minScale: 1,
+            maxScale: 4.0,
             child: Center(
               child: File(imagePath).existsSync()
                   ? Image.file(
                       File(imagePath),
-                      fit: BoxFit.contain,
+                      fit: BoxFit.fitWidth,
+                      width: double.infinity,
                       errorBuilder: (context, error, stackTrace) =>
                           _buildErrorWidget(context),
                     )

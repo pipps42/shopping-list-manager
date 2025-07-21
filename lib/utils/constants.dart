@@ -66,8 +66,8 @@ class AppConstants {
   static const double thumbnailSize = imageM;
 
   // Immagini
-  static const int maxImageWidth = 800;
-  static const int maxImageHeight = 800;
+  static const int maxImageWidth = 300;
+  static const int maxImageHeight = 300;
   static const int imageQuality = 85;
   static const int imageCacheWidth = 100;
   static const int imageCacheHeight = 100;
@@ -162,7 +162,7 @@ class AppStrings {
   // === ACTIONS ===
   static const String clearList = 'Svuota lista';
   static const String moveProduct = 'Cambia reparto';
-  static const String chooseImage = 'Scegli immagine';
+  static const String chooseImage = 'Seleziona un\'immagine';
   static const String removeImage = 'Rimuovi';
   static const String viewProducts = 'Visualizza prodotti';
 

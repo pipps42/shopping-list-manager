@@ -25,9 +25,6 @@ class AddProductDialog extends ConsumerStatefulWidget {
 class _AddProductDialogState extends ConsumerState<AddProductDialog> {
   Department? selectedDepartment;
   String searchQuery = '';
-  bool _hasSearchText = false;
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
