@@ -26,6 +26,14 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
     super.initState();
     _nameController = TextEditingController(text: widget.card?.name ?? '');
     _selectedImagePath = widget.card?.imagePath;
+
+    // Aggiungi listener per aggiornare UI quando cambia il testo
+    _nameController.addListener(() {
+      setState(() {
+        // Il rebuild farà sì che _canSave venga ricalcolato
+        // e il bottone si abiliti/disabiliti di conseguenza
+      });
+    });
   }
 
   @override
@@ -40,77 +48,92 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(_isEditing ? 'Modifica Carta' : 'Nuova Carta Fedeltà'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Campo nome
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Nome della carta',
-                hintText: 'es. Carta Fidaty, Carta Insieme...',
-                border: OutlineInputBorder(),
-              ),
-              textCapitalization: TextCapitalization.words,
-              enabled: !_isLoading,
-            ),
-            const SizedBox(height: AppConstants.spacingL),
-
-            // Sezione immagine
-            const Text(
-              'Immagine della carta:',
-              style: TextStyle(
-                fontSize: AppConstants.fontL,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: AppConstants.spacingM),
-
-            // Anteprima immagine
-            _buildImagePreview(),
-            const SizedBox(height: AppConstants.spacingM),
-
-            // Pulsanti per scegliere immagine
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _isLoading
-                        ? null
-                        : () => _pickImage(ImageSource.gallery),
-                    icon: const Icon(Icons.photo_library),
-                    label: const Text(AppStrings.gallery),
+      content: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.8,
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Campo nome
+              SizedBox(
+                width: double.maxFinite,
+                child: TextField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nome della carta',
+                    hintText: 'es. Carta Fidaty, Carta Insieme...',
+                    border: OutlineInputBorder(),
                   ),
+                  textCapitalization: TextCapitalization.words,
+                  enabled: !_isLoading,
                 ),
-                const SizedBox(width: AppConstants.spacingM),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _isLoading
-                        ? null
-                        : () => _pickImage(ImageSource.camera),
-                    icon: const Icon(Icons.camera_alt),
-                    label: const Text(AppStrings.camera),
-                  ),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: AppConstants.spacingL),
 
-            if (_selectedImagePath != null) ...[
-              const SizedBox(height: AppConstants.spacingS),
-              Center(
-                child: TextButton.icon(
-                  onPressed: _isLoading ? null : _removeImage,
-                  icon: const Icon(Icons.delete, color: AppColors.error),
-                  label: const Text(
-                    'Rimuovi immagine',
-                    style: TextStyle(color: AppColors.error),
+              // Sezione immagine
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Immagine della carta:',
+                  style: TextStyle(
+                    fontSize: AppConstants.fontL,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
+              const SizedBox(height: AppConstants.spacingM),
+
+              // Anteprima immagine con dimensioni fisse
+              _buildImagePreview(),
+              const SizedBox(height: AppConstants.spacingM),
+
+              // Pulsanti per scegliere immagine
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _isLoading
+                          ? null
+                          : () => _pickImage(ImageSource.camera),
+                      icon: const Icon(Icons.camera_alt),
+                      label: const Text(
+                        AppStrings.camera,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppConstants.spacingM),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _isLoading
+                          ? null
+                          : () => _pickImage(ImageSource.gallery),
+                      icon: const Icon(Icons.photo_library),
+                      label: const Text('Galleria'),
+                    ),
+                  ),
+                ],
+              ),
+
+              // Pulsante rimuovi se c'è un'immagine
+              if (_selectedImagePath != null && !_isLoading)
+                Padding(
+                  padding: const EdgeInsets.only(top: AppConstants.spacingM),
+                  child: TextButton.icon(
+                    onPressed: _removeImage,
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('Rimuovi immagine'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.error,
+                    ),
+                  ),
+                ),
             ],
-          ],
+          ),
         ),
       ),
       actions: [
@@ -126,11 +149,11 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
           ),
           child: _isLoading
               ? const SizedBox(
-                  width: 20,
-                  height: 20,
+                  width: 16,
+                  height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Text(_isEditing ? 'Salva' : 'Aggiungi'),
+              : Text(_isEditing ? 'Modifica' : 'Aggiungi'),
         ),
       ],
     );
@@ -138,36 +161,15 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
 
   Widget _buildImagePreview() {
     if (_selectedImagePath == null) {
-      return Container(
-        height: 150,
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[400]!),
-          borderRadius: BorderRadius.circular(AppConstants.radiusM),
-          color: Colors.grey[100],
-        ),
-        child: const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.credit_card,
-              size: AppConstants.iconXXL,
-              color: Colors.grey,
-            ),
-            SizedBox(height: AppConstants.spacingS),
-            Text(
-              'Nessuna immagine selezionata',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ],
-        ),
-      );
+      return _buildEmptyPreview();
     }
 
     return Container(
-      height: 150,
+      width: double.maxFinite,
+      height: 150, // Altezza fissa
       decoration: BoxDecoration(
+        border: Border.all(color: AppColors.border(context)),
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
-        border: Border.all(color: Colors.grey[400]!),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
@@ -176,6 +178,7 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
                 File(_selectedImagePath!),
                 fit: BoxFit.cover,
                 width: double.infinity,
+                height: 150, // Altezza fissa
                 errorBuilder: (context, error, stackTrace) =>
                     _buildErrorPreview(),
               )
@@ -184,9 +187,34 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
     );
   }
 
+  Widget _buildEmptyPreview() {
+    return Container(
+      width: double.maxFinite,
+      height: 150, // Altezza fissa
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.border(context)),
+        borderRadius: BorderRadius.circular(AppConstants.radiusM),
+        color: Colors.grey[50],
+      ),
+      child: const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.add_photo_alternate_outlined,
+            size: AppConstants.iconXL,
+            color: Colors.grey,
+          ),
+          SizedBox(height: AppConstants.spacingS),
+          Text('Seleziona un\'immagine', style: TextStyle(color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+
   Widget _buildErrorPreview() {
     return Container(
-      height: 150,
+      width: double.maxFinite,
+      height: 150, // Altezza fissa
       color: Colors.grey[200],
       child: const Column(
         mainAxisAlignment: MainAxisAlignment.center,
