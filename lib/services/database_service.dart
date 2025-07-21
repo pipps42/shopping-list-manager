@@ -6,6 +6,9 @@ import '../models/product.dart';
 import '../models/shopping_list.dart';
 import '../models/list_item.dart';
 import '../models/department_with_products.dart';
+import '../models/recipe.dart';
+import '../models/recipe_ingredient.dart';
+import '../models/recipe_with_ingredients.dart';
 
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
@@ -86,6 +89,31 @@ class DatabaseService {
         name TEXT NOT NULL,
         image_path TEXT NOT NULL,
         created_at TEXT NOT NULL
+      )
+    ''');
+
+    // Tabella ricette
+    await db.execute('''
+      CREATE TABLE recipes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        description TEXT,
+        image_path TEXT,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+
+    // Tabella ingredienti delle ricette
+    await db.execute('''
+      CREATE TABLE recipe_ingredients (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        recipe_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+        quantity TEXT,
+        notes TEXT,
+        FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE,
+        FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
+        UNIQUE(recipe_id, product_id)
       )
     ''');
 
@@ -863,5 +891,179 @@ class DatabaseService {
     }
 
     return counts;
+  }
+
+  // =========== CRUD per Recipes ===========
+  Future<int> insertRecipe(Recipe recipe) async {
+    final db = await database;
+    return await db.insert('recipes', recipe.toMap());
+  }
+
+  Future<List<Recipe>> getAllRecipes() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'recipes',
+      orderBy: 'name COLLATE NOCASE ASC',
+    );
+    return List.generate(maps.length, (i) => Recipe.fromMap(maps[i]));
+  }
+
+  Future<Recipe?> getRecipe(int id) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'recipes',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return Recipe.fromMap(maps.first);
+  }
+
+  Future<int> updateRecipe(Recipe recipe) async {
+    final db = await database;
+    return await db.update(
+      'recipes',
+      recipe.toMap(),
+      where: 'id = ?',
+      whereArgs: [recipe.id],
+    );
+  }
+
+  Future<int> deleteRecipe(int id) async {
+    final db = await database;
+    return await db.transaction((txn) async {
+      // Prima elimina tutti gli ingredienti
+      await txn.delete(
+        'recipe_ingredients',
+        where: 'recipe_id = ?',
+        whereArgs: [id],
+      );
+      // Poi elimina la ricetta
+      return await txn.delete('recipes', where: 'id = ?', whereArgs: [id]);
+    });
+  }
+
+  // =========== CRUD per Recipe Ingredients ===========
+  Future<int> insertRecipeIngredient(RecipeIngredient ingredient) async {
+    final db = await database;
+    return await db.insert('recipe_ingredients', ingredient.toMap());
+  }
+
+  Future<List<RecipeIngredient>> getRecipeIngredients(int recipeId) async {
+    final db = await database;
+
+    // Query con JOIN per ottenere anche i dati del prodotto e reparto
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      '''
+    SELECT 
+      ri.*,
+      p.name as product_name,
+      p.image_path as product_image_path,
+      d.id as department_id,
+      d.name as department_name
+    FROM recipe_ingredients ri
+    JOIN products p ON ri.product_id = p.id
+    JOIN departments d ON p.department_id = d.id
+    WHERE ri.recipe_id = ?
+    ORDER BY d.order_index ASC, p.name COLLATE NOCASE ASC
+  ''',
+      [recipeId],
+    );
+
+    return List.generate(maps.length, (i) => RecipeIngredient.fromMap(maps[i]));
+  }
+
+  Future<RecipeWithIngredients?> getRecipeWithIngredients(int recipeId) async {
+    final recipe = await getRecipe(recipeId);
+    if (recipe == null) return null;
+
+    final ingredients = await getRecipeIngredients(recipeId);
+    return RecipeWithIngredients(recipe: recipe, ingredients: ingredients);
+  }
+
+  Future<List<RecipeWithIngredients>> getAllRecipesWithIngredients() async {
+    final recipes = await getAllRecipes();
+    final List<RecipeWithIngredients> result = [];
+
+    for (final recipe in recipes) {
+      final ingredients = await getRecipeIngredients(recipe.id!);
+      result.add(
+        RecipeWithIngredients(recipe: recipe, ingredients: ingredients),
+      );
+    }
+
+    return result;
+  }
+
+  Future<int> updateRecipeIngredient(RecipeIngredient ingredient) async {
+    final db = await database;
+    return await db.update(
+      'recipe_ingredients',
+      ingredient.toMap(),
+      where: 'id = ?',
+      whereArgs: [ingredient.id],
+    );
+  }
+
+  Future<int> deleteRecipeIngredient(int id) async {
+    final db = await database;
+    return await db.delete(
+      'recipe_ingredients',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<bool> removeProductFromRecipe(int recipeId, int productId) async {
+    final db = await database;
+    final deletedRows = await db.delete(
+      'recipe_ingredients',
+      where: 'recipe_id = ? AND product_id = ?',
+      whereArgs: [recipeId, productId],
+    );
+    return deletedRows > 0;
+  }
+
+  Future<bool> addProductToRecipe(
+    int recipeId,
+    int productId, {
+    String? quantity,
+    String? notes,
+  }) async {
+    try {
+      final ingredient = RecipeIngredient(
+        recipeId: recipeId,
+        productId: productId,
+        quantity: quantity,
+        notes: notes,
+      );
+      await insertRecipeIngredient(ingredient);
+      return true;
+    } catch (e) {
+      // Potrebbe fallire per UNIQUE constraint se il prodotto è già nella ricetta
+      return false;
+    }
+  }
+
+  // Metodo helper per verificare se prodotti sono nella current list
+  Future<Set<int>> getProductIdsInCurrentList(Set<int> productIds) async {
+    if (productIds.isEmpty) return {};
+
+    final db = await database;
+    final currentList = await getCurrentShoppingList();
+    if (currentList == null) return {};
+
+    final placeholders = List.filled(productIds.length, '?').join(',');
+    final result = await db.rawQuery(
+      '''
+    SELECT DISTINCT product_id 
+    FROM list_items 
+    WHERE list_id = ? AND product_id IN ($placeholders)
+  ''',
+      [currentList.id, ...productIds],
+    );
+
+    return result.map((row) => row['product_id'] as int).toSet();
   }
 }

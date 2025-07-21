@@ -12,10 +12,30 @@ import 'common/loading_widget.dart';
 import 'common/empty_state_widget.dart';
 import 'common/error_state_widget.dart';
 
-class AddProductDialog extends ConsumerStatefulWidget {
+/* class AddProductDialog extends ConsumerStatefulWidget {
   final Function(int productId) onProductSelected;
 
   const AddProductDialog({super.key, required this.onProductSelected});
+
+  @override
+  ConsumerState<AddProductDialog> createState() => _AddProductDialogState();
+} */
+class AddProductDialog extends ConsumerStatefulWidget {
+  final Function(int) onProductSelected;
+  final String? title;
+  final String? subtitle;
+  final Set<int>? excludeProductIds; // Prodotti da nascondere/disabilitare
+  final Set<int>?
+  preselectedProductIds; // Prodotti già selezionati (per ricette)
+
+  const AddProductDialog({
+    super.key,
+    required this.onProductSelected,
+    this.title,
+    this.subtitle,
+    this.excludeProductIds,
+    this.preselectedProductIds,
+  });
 
   @override
   ConsumerState<AddProductDialog> createState() => _AddProductDialogState();
@@ -67,7 +87,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header
-              Row(
+              /* Row(
                 children: [
                   const Expanded(
                     child: Text(
@@ -86,7 +106,8 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
                     icon: const Icon(Icons.close),
                   ),
                 ],
-              ),
+              ), */
+              _buildHeader(context),
               const SizedBox(height: AppConstants.spacingM),
 
               // Barra di ricerca
@@ -169,6 +190,58 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppConstants.paddingM),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(AppConstants.borderRadius),
+          topRight: Radius.circular(AppConstants.borderRadius),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.add_shopping_cart,
+            color: Colors.white,
+            size: AppConstants.iconL,
+          ),
+          const SizedBox(width: AppConstants.spacingM),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.title ?? AppStrings.addProduct,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: AppConstants.spacingXS),
+                Text(
+                  widget.subtitle ?? 'Seleziona i prodotti da aggiungere',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.close, color: Colors.white),
+          ),
+        ],
       ),
     );
   }
@@ -272,7 +345,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     );
   }
 
-  Widget _buildProductTile(Product product) {
+  /*   Widget _buildProductTile(Product product) {
     final productIdsInList = ref.watch(currentListProductIdsProvider);
 
     return productIdsInList.when(
@@ -304,6 +377,66 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
           'Errore',
           style: TextStyle(color: AppColors.error, fontSize: 12),
         ),
+      ),
+    );
+  } */
+  Widget _buildProductTile(Product product) {
+    final productIdsInList = ref.watch(currentListProductIdsProvider);
+
+    // Controlla se il prodotto deve essere escluso
+    final isExcluded = widget.excludeProductIds?.contains(product.id!) ?? false;
+    if (isExcluded) return const SizedBox.shrink();
+
+    return productIdsInList.when(
+      data: (productIds) {
+        final isInList = productIds.contains(product.id!);
+        final isPreselected =
+            widget.preselectedProductIds?.contains(product.id!) ?? false;
+
+        // Determina lo stato dell'icona e del comportamento
+        IconData icon;
+        Color? iconColor;
+        bool isEnabled;
+
+        if (isInList || isPreselected) {
+          icon = Icons.check_circle;
+          iconColor = AppColors.success;
+          isEnabled = false; // Disabilita se già nella lista o preselezionato
+        } else {
+          icon = Icons.add_circle_outline;
+          iconColor = null;
+          isEnabled = true;
+        }
+
+        return ListTile(
+          leading: _buildProductImage(product),
+          title: Text(
+            product.name,
+            style: TextStyle(
+              color: isEnabled ? null : AppColors.textSecondary(context),
+            ),
+          ),
+          subtitle: _buildDepartmentName(context, product.departmentId),
+          trailing: Icon(icon, color: iconColor),
+          onTap: isEnabled ? () => widget.onProductSelected(product.id!) : null,
+          enabled: isEnabled,
+        );
+      },
+      loading: () => ListTile(
+        leading: _buildProductImage(product),
+        title: Text(product.name),
+        subtitle: _buildDepartmentName(context, product.departmentId),
+        trailing: const SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      ),
+      error: (error, stack) => ListTile(
+        leading: _buildProductImage(product),
+        title: Text(product.name),
+        subtitle: Text('Errore: $error'),
+        trailing: const Icon(Icons.error, color: AppColors.error),
       ),
     );
   }
@@ -362,6 +495,47 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
       },
       loading: () => const LoadingWidget(message: '...'),
       error: (error, stack) => const Text('Errore'),
+    );
+  }
+
+  // ===== FACTORY METHODS PER CASI D'USO SPECIFICI =====
+  /// Factory per aggiungere prodotti alla lista corrente
+  static Widget forCurrentList({required Function(int) onProductSelected}) {
+    return AddProductDialog(
+      onProductSelected: onProductSelected,
+      title: AppStrings.addProduct,
+      subtitle: 'Seleziona i prodotti da aggiungere alla lista',
+    );
+  }
+
+  /// Factory per aggiungere ingredienti a una ricetta
+  static Widget forRecipeIngredients({
+    required Function(int) onProductSelected,
+    required String recipeName,
+    Set<int>? existingIngredients,
+  }) {
+    return AddProductDialog(
+      onProductSelected: onProductSelected,
+      title: 'Aggiungi Ingredienti',
+      subtitle: 'Seleziona gli ingredienti per "$recipeName"',
+      preselectedProductIds: existingIngredients,
+    );
+  }
+
+  /// Factory per filtrare prodotti specifici
+  static Widget withFilters({
+    required Function(int) onProductSelected,
+    String? title,
+    String? subtitle,
+    Set<int>? excludeProducts,
+    Set<int>? preselectedProducts,
+  }) {
+    return AddProductDialog(
+      onProductSelected: onProductSelected,
+      title: title,
+      subtitle: subtitle,
+      excludeProductIds: excludeProducts,
+      preselectedProductIds: preselectedProducts,
     );
   }
 }

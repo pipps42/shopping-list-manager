@@ -203,4 +203,33 @@ class AppStrings {
   static const String listCleared = 'Lista svuotata con successo!';
   static const String noItemsSelected =
       'Non hai selezionato nessun prodotto! Seleziona almeno un prodotto o scegli "Ho preso tutto".';
+
+  // === RICETTE ===
+  static const String recipes = 'Ricette';
+  static const String newRecipe = 'Nuova Ricetta';
+  static const String editRecipe = 'Modifica Ricetta';
+  static const String deleteRecipe = 'Elimina Ricetta';
+  static const String recipeAdded = 'Ricetta aggiunta';
+  static const String recipeDeleted = 'Ricetta eliminata';
+  static const String recipeUpdated = 'Ricetta modificata';
+  static const String recipeName = 'Nome ricetta';
+  static const String recipeDescription = 'Descrizione';
+  static const String recipeIngredients = 'Ingredienti';
+  static const String addIngredients = 'Aggiungi Ingredienti';
+  static const String emptyRecipes = 'Nessuna ricetta';
+  static const String emptyRecipesSubtitle =
+      'Aggiungi la tua prima ricetta con il pulsante +';
+  static const String loadingRecipes = 'Caricamento ricette...';
+  static const String searchRecipesPlaceholder = 'Cerca ricette...';
+  static const String ingredientQuantity = 'Quantità';
+  static const String ingredientNotes = 'Note';
+  static const String addToShoppingList = 'Aggiungi alla Lista';
+  static const String addAllIngredients = 'Aggiungi Tutti';
+  static const String ingredientAddedToList = 'Ingrediente aggiunto alla lista';
+  static const String allIngredientsAdded =
+      'Tutti gli ingredienti aggiunti alla lista';
+  static const String recipeNameRequired =
+      'Il nome della ricetta è obbligatorio';
+  static const String confirmDeleteRecipe =
+      'Sei sicuro di voler eliminare questa ricetta?';
 }

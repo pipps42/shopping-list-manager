@@ -6,6 +6,7 @@ import 'current_list_screen.dart';
 import 'departments_management_screen.dart';
 import 'products_management_screen.dart';
 import 'loyalty_cards_screen.dart';
+import 'recipes_screen.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
@@ -23,6 +24,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     const CurrentListScreen(),
     const DepartmentsManagementScreen(),
     const ProductsManagementScreen(),
+    const RecipesScreen(),
     const LoyaltyCardsScreen(),
     const CompletedListsScreen(),
   ];
@@ -31,6 +33,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     AppStrings.currentList,
     AppStrings.departmentManagement,
     AppStrings.productManagement,
+    AppStrings.recipes,
     AppStrings.loyaltyCards,
     AppStrings.lastLists,
   ];
@@ -52,11 +55,16 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       index: 2,
     ),
     DrawerItem(
-      icon: Icons.credit_card,
-      title: AppStrings.loyaltyCards,
+      icon: Icons.restaurant_menu,
+      title: AppStrings.recipes,
       index: 3,
     ),
-    DrawerItem(icon: Icons.history, title: AppStrings.lastLists, index: 4),
+    DrawerItem(
+      icon: Icons.credit_card,
+      title: AppStrings.loyaltyCards,
+      index: 4,
+    ),
+    DrawerItem(icon: Icons.history, title: AppStrings.lastLists, index: 5),
   ];
 
   void _onTabChanged(int index) {
