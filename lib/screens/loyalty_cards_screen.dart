@@ -1,4 +1,3 @@
-// lib/screens/loyalty_cards_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/loyalty_card.dart';
@@ -62,7 +61,7 @@ class LoyaltyCardsScreen extends ConsumerWidget {
       child: GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.8,
+          childAspectRatio: 0.75,
           crossAxisSpacing: AppConstants.paddingM,
           mainAxisSpacing: AppConstants.paddingM,
         ),

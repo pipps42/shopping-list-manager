@@ -48,6 +48,7 @@ class DepartmentsNotifier extends StateNotifier<AsyncValue<List<Department>>> {
     await loadDepartments();
     // Invalidate related providers to refresh data
     _ref.invalidate(productsByDepartmentProvider);
+    _ref.invalidate(currentListProvider);
   }
 
   Future<void> deleteDepartment(int id) async {

@@ -39,7 +39,7 @@ class Department {
       id: id ?? this.id,
       name: name ?? this.name,
       orderIndex: orderIndex ?? this.orderIndex,
-      imagePath: imagePath ?? this.imagePath,
+      imagePath: imagePath,
     );
   }
 }

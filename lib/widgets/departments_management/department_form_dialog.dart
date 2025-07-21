@@ -1,8 +1,7 @@
 import 'package:shopping_list_manager/utils/constants.dart';
-import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:shopping_list_manager/widgets/common/app_image_uploader.dart';
 import '../../models/department.dart';
-import '../../providers/image_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
 
@@ -64,7 +63,17 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
           const SizedBox(height: AppConstants.spacingM),
 
           // Sezione immagine
-          _buildImageSection(),
+          AppImageUploader(
+            imagePath: _selectedImagePath,
+            onImageSelected: (path) =>
+                setState(() => _selectedImagePath = path),
+            onImageRemoved: () => setState(() => _selectedImagePath = null),
+            title: 'Icona del reparto',
+            fallbackIcon: Icons.store,
+            previewHeight: 100,
+            previewWidth: 100,
+            buttonsLayout: ButtonsLayout.beside,
+          ),
         ],
       ),
       actions: [
@@ -82,92 +91,6 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
         ),
       ],
     );
-  }
-
-  Widget _buildImageSection() {
-    return Row(
-      children: [
-        // Preview immagine
-        if (_selectedImagePath != null)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.file(
-              File(_selectedImagePath!),
-              width: AppConstants.imageXL,
-              height: AppConstants.imageXL,
-              fit: BoxFit.cover,
-              cacheWidth: AppConstants.imageCacheWidth,
-              cacheHeight: AppConstants.imageCacheHeight,
-            ),
-          )
-        else
-          Container(
-            width: AppConstants.imageXL,
-            height: AppConstants.imageXL,
-            decoration: BoxDecoration(
-              color: AppColors.border(context),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.store, size: AppConstants.iconL),
-          ),
-        const SizedBox(width: AppConstants.spacingM),
-
-        // Bottoni gestione immagine
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
-                  foregroundColor: AppColors.textOnSecondary(context),
-                ),
-                onPressed: _isLoading ? null : _handlePickImage,
-                icon: const Icon(Icons.camera_alt),
-                label: Text(AppStrings.chooseImage),
-              ),
-              if (_selectedImagePath != null)
-                TextButton.icon(
-                  onPressed: _handleRemoveImage,
-                  icon: const Icon(Icons.delete, color: AppColors.error),
-                  label: const Text(
-                    AppStrings.removeImage,
-                    style: TextStyle(color: AppColors.error),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _handlePickImage() async {
-    setState(() => _isLoading = true);
-
-    try {
-      final imagePath = await ref.read(imageServiceProvider).pickAndSaveImage();
-
-      if (imagePath != null) {
-        setState(() {
-          _selectedImagePath = imagePath;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Errore nella selezione immagine: $e')),
-        );
-      }
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  void _handleRemoveImage() {
-    setState(() {
-      _selectedImagePath = null;
-    });
   }
 
   void _handleSave() {

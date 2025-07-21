@@ -1,6 +1,5 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:shopping_list_manager/widgets/common/app_image_uploader.dart';
 import '../../models/loyalty_card.dart';
 import '../../utils/constants.dart';
 import '../../utils/color_palettes.dart';
@@ -17,7 +16,6 @@ class AddLoyaltyCardDialog extends StatefulWidget {
 
 class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
   late final TextEditingController _nameController;
-  final ImagePicker _picker = ImagePicker();
   String? _selectedImagePath;
   bool _isLoading = false;
 
@@ -74,64 +72,19 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
               const SizedBox(height: AppConstants.spacingL),
 
               // Sezione immagine
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Immagine della carta:',
-                  style: TextStyle(
-                    fontSize: AppConstants.fontL,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+              AppImageUploader(
+                imagePath: _selectedImagePath,
+                onImageSelected: (path) =>
+                    setState(() => _selectedImagePath = path),
+                onImageRemoved: () => setState(() => _selectedImagePath = null),
+                title: 'Immagine della carta',
+                fallbackIcon: Icons.credit_card,
+                previewHeight: 150,
+                buttonsLayout: ButtonsLayout.below,
+                maxWidth: 1200,
+                maxHeight: 1200,
+                imageQuality: 90,
               ),
-              const SizedBox(height: AppConstants.spacingM),
-
-              // Anteprima immagine con dimensioni fisse
-              _buildImagePreview(),
-              const SizedBox(height: AppConstants.spacingM),
-
-              // Pulsanti per scegliere immagine
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _isLoading
-                          ? null
-                          : () => _pickImage(ImageSource.camera),
-                      icon: const Icon(Icons.camera_alt),
-                      label: const Text(
-                        AppStrings.camera,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: AppConstants.spacingM),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _isLoading
-                          ? null
-                          : () => _pickImage(ImageSource.gallery),
-                      icon: const Icon(Icons.photo_library),
-                      label: const Text('Galleria'),
-                    ),
-                  ),
-                ],
-              ),
-
-              // Pulsante rimuovi se c'è un'immagine
-              if (_selectedImagePath != null && !_isLoading)
-                Padding(
-                  padding: const EdgeInsets.only(top: AppConstants.spacingM),
-                  child: TextButton.icon(
-                    onPressed: _removeImage,
-                    icon: const Icon(Icons.delete_outline),
-                    label: const Text('Rimuovi immagine'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.error,
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
@@ -139,7 +92,7 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
       actions: [
         TextButton(
           onPressed: _isLoading ? null : () => Navigator.pop(context),
-          child: const Text('Annulla'),
+          child: const Text(AppStrings.cancel),
         ),
         ElevatedButton(
           onPressed: _canSave && !_isLoading ? _saveCard : null,
@@ -153,114 +106,10 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Text(_isEditing ? 'Modifica' : 'Aggiungi'),
+              : Text(_isEditing ? AppStrings.edit : AppStrings.add),
         ),
       ],
     );
-  }
-
-  Widget _buildImagePreview() {
-    if (_selectedImagePath == null) {
-      return _buildEmptyPreview();
-    }
-
-    return Container(
-      width: double.maxFinite,
-      height: 150, // Altezza fissa
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.border(context)),
-        borderRadius: BorderRadius.circular(AppConstants.radiusM),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppConstants.radiusM),
-        child: File(_selectedImagePath!).existsSync()
-            ? Image.file(
-                File(_selectedImagePath!),
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: 150, // Altezza fissa
-                errorBuilder: (context, error, stackTrace) =>
-                    _buildErrorPreview(),
-              )
-            : _buildErrorPreview(),
-      ),
-    );
-  }
-
-  Widget _buildEmptyPreview() {
-    return Container(
-      width: double.maxFinite,
-      height: 150, // Altezza fissa
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.border(context)),
-        borderRadius: BorderRadius.circular(AppConstants.radiusM),
-        color: Colors.grey[50],
-      ),
-      child: const Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.add_photo_alternate_outlined,
-            size: AppConstants.iconXL,
-            color: Colors.grey,
-          ),
-          SizedBox(height: AppConstants.spacingS),
-          Text('Seleziona un\'immagine', style: TextStyle(color: Colors.grey)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildErrorPreview() {
-    return Container(
-      width: double.maxFinite,
-      height: 150, // Altezza fissa
-      color: Colors.grey[200],
-      child: const Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.error_outline,
-            size: AppConstants.iconXL,
-            color: Colors.grey,
-          ),
-          SizedBox(height: AppConstants.spacingS),
-          Text('Errore nel caricamento', style: TextStyle(color: Colors.grey)),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _pickImage(ImageSource source) async {
-    try {
-      setState(() => _isLoading = true);
-
-      final XFile? image = await _picker.pickImage(
-        source: source,
-        maxWidth: 1200,
-        maxHeight: 1200,
-        imageQuality: 85,
-      );
-
-      if (image != null) {
-        setState(() => _selectedImagePath = image.path);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Errore nella selezione dell\'immagine: $e'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  void _removeImage() {
-    setState(() => _selectedImagePath = null);
   }
 
   bool get _canSave {

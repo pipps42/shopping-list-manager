@@ -39,7 +39,7 @@ class Product {
       id: id ?? this.id,
       name: name ?? this.name,
       departmentId: departmentId ?? this.departmentId,
-      imagePath: imagePath ?? this.imagePath,
+      imagePath: imagePath,
     );
   }
 }

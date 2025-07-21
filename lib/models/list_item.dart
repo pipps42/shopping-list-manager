@@ -69,7 +69,7 @@ class ListItem {
       isChecked: isChecked ?? this.isChecked,
       addedAt: addedAt ?? this.addedAt,
       productName: productName ?? this.productName,
-      productImagePath: productImagePath ?? this.productImagePath,
+      productImagePath: productImagePath,
       departmentId: departmentId ?? this.departmentId,
       departmentName: departmentName ?? this.departmentName,
       departmentOrder: departmentOrder ?? this.departmentOrder,
