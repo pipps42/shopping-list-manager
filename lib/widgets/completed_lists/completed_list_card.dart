@@ -8,6 +8,8 @@ class CompletedListCard extends StatelessWidget {
   final bool showTime;
   final int productCount;
   final VoidCallback onTap;
+  final VoidCallback? onEditPrice;
+  final VoidCallback? onDelete;
 
   const CompletedListCard({
     super.key,
@@ -15,10 +17,15 @@ class CompletedListCard extends StatelessWidget {
     required this.showTime,
     required this.productCount,
     required this.onTap,
+    this.onEditPrice,
+    this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Crea una chiave unica per ogni istanza della card
+    final popupKey = GlobalKey<PopupMenuButtonState<String>>();
+    
     return Card(
       margin: EdgeInsets.zero, // Nessun margin, gestito dal parent
       elevation: 2,
@@ -27,6 +34,10 @@ class CompletedListCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: onTap,
+        onLongPress: () {
+          // Attiva il PopupMenuButton programmaticamente
+          popupKey.currentState?.showButtonMenu();
+        },
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
         child: Padding(
           padding: const EdgeInsets.all(AppConstants.paddingM),
@@ -63,46 +74,46 @@ class CompletedListCard extends StatelessWidget {
                 ),
               ),
 
-              // Numero prodotti
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppConstants.paddingS,
-                  vertical: AppConstants.paddingXS,
-                ),
-                margin: const EdgeInsets.only(right: AppConstants.paddingM),
-                decoration: BoxDecoration(
-                  color: AppColors.secondary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(AppConstants.radiusS),
-                  border: Border.all(
-                    color: AppColors.secondary.withOpacity(0.3),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.shopping_basket_outlined,
-                      color: AppColors.secondary,
-                      size: AppConstants.iconS,
-                    ),
-                    const SizedBox(width: AppConstants.spacingXS),
-                    Text(
-                      '$productCount',
-                      style: TextStyle(
-                        fontSize: AppConstants.fontM,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.secondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Prezzo
+              // Numero prodotti e prezzo
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
+                  // Numero prodotti
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppConstants.paddingS,
+                      vertical: AppConstants.paddingXS,
+                    ),
+                    margin: const EdgeInsets.only(bottom: AppConstants.spacingS),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(AppConstants.radiusS),
+                      border: Border.all(
+                        color: AppColors.secondary.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.shopping_basket_outlined,
+                          color: AppColors.secondary,
+                          size: AppConstants.iconS,
+                        ),
+                        const SizedBox(width: AppConstants.spacingXS),
+                        Text(
+                          '$productCount',
+                          style: TextStyle(
+                            fontSize: AppConstants.fontM,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.secondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Prezzo
                   if (shoppingList.totalCost != null) ...[
                     Text(
                       '€${shoppingList.totalCost!.toStringAsFixed(2)}',
@@ -124,6 +135,46 @@ class CompletedListCard extends StatelessWidget {
                   ],
                 ],
               ),
+
+              // Bottone menu contestuale
+              if (onEditPrice != null || onDelete != null)
+                PopupMenuButton<String>(
+                  key: popupKey,
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'edit_price':
+                        onEditPrice?.call();
+                        break;
+                      case 'delete':
+                        onDelete?.call();
+                        break;
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    if (onEditPrice != null)
+                      const PopupMenuItem<String>(
+                        value: 'edit_price',
+                        child: Row(
+                          children: [
+                            Icon(Icons.euro, color: AppColors.secondary),
+                            SizedBox(width: AppConstants.spacingS),
+                            Text('Modifica prezzo'),
+                          ],
+                        ),
+                      ),
+                    if (onDelete != null)
+                      const PopupMenuItem<String>(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, color: AppColors.error),
+                            SizedBox(width: AppConstants.spacingS),
+                            Text('Elimina lista', style: TextStyle(color: AppColors.error)),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
             ],
           ),
         ),

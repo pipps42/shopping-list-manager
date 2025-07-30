@@ -1,7 +1,7 @@
 class AppConstants {
   // App Info
-  static const String appName = 'Lista Spesa Esselunga';
-  static const String appVersion = '1.0.0';
+  static const String appName = 'Lista Spesa';
+  static const String appVersion = 'v0.1.0';
 
   // Colori Esselunga
   static const int esseLungaGreen = 0xFF00A651;
@@ -95,30 +95,40 @@ class AppConstants {
 }
 
 class AppStrings {
-  // === AZIONI ===
+  // === ACTIONS ===
   static const String add = 'Aggiungi';
   static const String edit = 'Modifica';
   static const String delete = 'Elimina';
   static const String cancel = 'Annulla';
   static const String save = 'Salva';
+  static const String refresh = 'Aggiorna';
   static const String ok = 'OK';
   static const String close = 'Chiudi';
   static const String confirm = 'Conferma';
   static const String camera = 'Camera';
   static const String gallery = 'Galleria';
+  static const String chooseImage = 'Seleziona un\'immagine';
+  static const String removeImage = 'Rimuovi';
+  static const String export = 'Esporta';
+  static const String share = 'Condividi';
+  static const String clearList = 'Svuota lista';
+  static const String moveProduct = 'Cambia reparto';
+  static const String viewProducts = 'Visualizza prodotti';
+  static const String deleteLastLists = 'Cancella Tutte';
+  static const String buyAgain = 'Ricompra';
 
-  // === ERRORI ===
+  // === ERRORS ===
   static const String genericError = 'Si è verificato un errore';
   static const String loadingError = 'Errore nel caricamento';
   static const String networkError = 'Errore di connessione';
 
-  // === MESSAGGI ===
+  // === MESSAGES ===
   static const String productAdded = 'Prodotto aggiunto';
   static const String productDeleted = 'Prodotto eliminato';
   static const String departmentAdded = 'Reparto aggiunto';
   static const String departmentDeleted = 'Reparto eliminato';
 
-  // === CONFERME ===
+  // === CONFIRMS ===
   static const String confirmDelete = 'Sei sicuro di voler eliminare';
   static const String confirmClearList =
       'Sei sicuro di voler rimuovere tutti i prodotti dalla lista corrente?';
@@ -132,14 +142,14 @@ class AppStrings {
   static const String departmentNamePlaceholder = 'Nome reparto';
 
   // === TITLES ===
-  static const String currentList = 'Lista Corrente';
-  static const String departmentManagement = 'Gestione Reparti';
-  static const String productManagement = 'Gestione Prodotti';
+  static const String currentList = 'Lista';
+  static const String departmentManagement = 'Reparti';
+  static const String addDepartment = 'Nuovo Reparto';
+  static const String editDepartment = 'Modifica Reparto';
+  static const String productManagement = 'Prodotti';
   static const String addProduct = 'Aggiungi Prodotto';
   static const String editProduct = 'Modifica Prodotto';
   static const String newProduct = 'Nuovo Prodotto';
-  static const String addDepartment = 'Nuovo Reparto';
-  static const String editDepartment = 'Modifica Reparto';
   static const String loyaltyCards = 'Carte Fedeltà';
   static const String lastLists = 'Ultime Liste';
 
@@ -159,13 +169,6 @@ class AppStrings {
   static const String emptyDepartmentsSubtitle =
       'Aggiungi il primo reparto con il pulsante +';
 
-  // === ACTIONS ===
-  static const String clearList = 'Svuota lista';
-  static const String moveProduct = 'Cambia reparto';
-  static const String chooseImage = 'Seleziona un\'immagine';
-  static const String removeImage = 'Rimuovi';
-  static const String viewProducts = 'Visualizza prodotti';
-
   // === VALIDATION ===
   static const String fieldRequired = 'Campo obbligatorio';
   static const String productNameRequired =
@@ -175,7 +178,8 @@ class AppStrings {
   static const String selectDepartment = 'Seleziona un reparto';
 
   // === INFO ===
-  static const String appFullName = 'Lista Spesa\nAssistente';
+  static const String appName = 'Assistente Spesa';
+  static const String appSubtitle = 'Organizza la spesa per reparti';
   static const String reorderInstructions =
       'Trascina per riordinare i reparti secondo il layout del supermercato';
 
@@ -195,12 +199,12 @@ class AppStrings {
   static const String amount = 'Importo (€)';
   static const String optional = 'Opzionale - lascia vuoto per saltare';
   static const String skip = 'Salta';
-  static const String listCompleted = 'Lista completata con successo!';
+  static const String listCompleted = 'Lista completata con successo';
   static const String listIsEmpty =
       'La lista è vuota! Aggiungi prodotti prima di completarla.';
   static const String completionError = 'Errore nel completamento';
   static const String invalidAmount = 'Inserisci un importo valido';
-  static const String listCleared = 'Lista svuotata con successo!';
+  static const String listCleared = 'Lista svuotata con successo';
   static const String noItemsSelected =
       'Non hai selezionato nessun prodotto! Seleziona almeno un prodotto o scegli "Ho preso tutto".';
 }

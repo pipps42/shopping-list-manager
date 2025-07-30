@@ -1,6 +1,6 @@
-// lib/screens/completed_lists_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_list_manager/widgets/common/app_bar_gradient.dart';
 import '../models/shopping_list.dart';
 import '../providers/completed_lists_provider.dart';
 import '../widgets/common/empty_state_widget.dart';
@@ -20,47 +20,40 @@ class CompletedListsScreen extends ConsumerWidget {
     final completedListsState = ref.watch(completedListsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ultime Liste'),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+      appBar: AppBarGradientWithPopupMenu<String>(
+        title: AppStrings.lastLists,
+        showDrawer: true,
+        onDrawerPressed: () {
+          final scaffoldState = context
+              .findAncestorStateOfType<ScaffoldState>();
+          scaffoldState?.openDrawer();
+        },
+        menuItems: [
+          const PopupMenuItem(
+            value: 'export',
+            child: Row(
+              children: [
+                Icon(Icons.upload, color: AppColors.secondary),
+                SizedBox(width: AppConstants.spacingS),
+                Text(AppStrings.export),
+              ],
             ),
           ),
-        ),
-        foregroundColor: AppColors.textOnPrimary(context),
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {
-            try {
-              Scaffold.of(context).openDrawer();
-            } catch (e) {
-              final scaffoldState = context
-                  .findAncestorStateOfType<ScaffoldState>();
-              scaffoldState?.openDrawer();
-            }
-          },
-        ),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) => _handleMenuAction(context, ref, value),
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'refresh',
-                child: Row(
-                  children: [
-                    Icon(Icons.refresh),
-                    SizedBox(width: AppConstants.spacingS),
-                    Text('Aggiorna'),
-                  ],
+          const PopupMenuItem(
+            value: 'clear_completed',
+            child: Row(
+              children: [
+                Icon(Icons.delete_sweep, color: AppColors.error),
+                SizedBox(width: AppConstants.spacingS),
+                Text(
+                  AppStrings.deleteLastLists,
+                  style: TextStyle(color: AppColors.error),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
+        onMenuSelected: (value) => _handleMenuAction(context, ref, value),
       ),
       body: completedListsState.when(
         data: (lists) => _buildPixelPerfectTimeline(context, ref, lists),
@@ -115,7 +108,7 @@ class CompletedListsScreen extends ConsumerWidget {
                 ),
 
                 // Contenuto senza padding fisso
-                Expanded(child: _buildItemContent(context, item)),
+                Expanded(child: _buildItemContent(context, ref, item)),
               ],
             ),
           );
@@ -124,7 +117,7 @@ class CompletedListsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildItemContent(BuildContext context, _FlatItem item) {
+  Widget _buildItemContent(BuildContext context, WidgetRef ref, _FlatItem item) {
     if (item is _MonthHeaderItem) {
       return Container(
         padding: const EdgeInsets.symmetric(
@@ -153,6 +146,8 @@ class CompletedListsScreen extends ConsumerWidget {
           showTime: item.showTime,
           productCount: item.productCount,
           onTap: () => _navigateToDetail(context, item.list),
+          onEditPrice: () => _showEditPriceDialog(context, ref, item.list),
+          onDelete: () => _showDeleteListDialog(context, ref, item.list),
         ),
       );
     }
@@ -267,8 +262,8 @@ class CompletedListsScreen extends ConsumerWidget {
 
   void _handleMenuAction(BuildContext context, WidgetRef ref, String action) {
     switch (action) {
-      case 'refresh':
-        ref.invalidate(completedListsProvider);
+      case 'clear_completed':
+        _showDeleteAllDialog(context, ref);
         break;
     }
   }
@@ -280,6 +275,185 @@ class CompletedListsScreen extends ConsumerWidget {
         builder: (context) => CompletedListDetailScreen(shoppingList: list),
       ),
     );
+  }
+
+  void _showEditPriceDialog(BuildContext context, WidgetRef ref, ShoppingList list) {
+    final TextEditingController priceController = TextEditingController(
+      text: list.totalCost?.toStringAsFixed(2) ?? '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Modifica prezzo'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Lista: ${list.name}'),
+            const SizedBox(height: AppConstants.spacingM),
+            TextField(
+              controller: priceController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'Prezzo totale',
+                prefixText: '€ ',
+                border: OutlineInputBorder(),
+              ),
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annulla'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.textOnPrimary(context),
+            ),
+            onPressed: () async {
+              final priceText = priceController.text.trim();
+              double? price;
+              
+              if (priceText.isNotEmpty) {
+                price = double.tryParse(priceText.replaceAll(',', '.'));
+                if (price == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Prezzo non valido')),
+                  );
+                  return;
+                }
+              }
+              
+              try {
+                await ref.read(completedListsProvider.notifier)
+                    .updateCompletedListPrice(list.id!, price);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Prezzo aggiornato')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Errore: $e')),
+                );
+              }
+            },
+            child: const Text('Salva'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteListDialog(BuildContext context, WidgetRef ref, ShoppingList list) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Elimina lista'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Sei sicuro di voler eliminare questa lista?'),
+            const SizedBox(height: AppConstants.spacingM),
+            Text(
+              'Lista: ${list.name}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            if (list.totalCost != null)
+              Text('Prezzo: €${list.totalCost!.toStringAsFixed(2)}'),
+            const SizedBox(height: AppConstants.spacingM),
+            const Text(
+              'Questa azione non può essere annullata.',
+              style: TextStyle(color: AppColors.error),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annulla'),
+          ),
+          TextButton(
+            onPressed: () async {
+              try {
+                await ref.read(completedListsProvider.notifier)
+                    .deleteCompletedList(list.id!);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Lista eliminata')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Errore: $e')),
+                );
+              }
+            },
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Elimina'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteAllDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancella tutte le liste'),
+        content: const Text(
+          'Sei sicuro di voler eliminare tutte le liste completate?\n\n'
+          'Questa azione non può essere annullata.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annulla'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _deleteAllCompletedLists(context, ref);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: AppColors.textOnPrimary(context),
+            ),
+            child: const Text('Cancella tutte'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteAllCompletedLists(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    try {
+      await ref.read(completedListsProvider.notifier).deleteAllCompletedLists();
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Tutte le liste sono state eliminate'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Errore nell\'eliminazione: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 }
 

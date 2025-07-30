@@ -5,6 +5,7 @@ import 'package:shopping_list_manager/widgets/common/app_image_uploader.dart';
 import '../../models/product.dart';
 import '../../models/department.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
+import 'move_product_dialog.dart';
 
 class ProductFormDialog extends ConsumerStatefulWidget {
   final Product? product;
@@ -73,26 +74,7 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
             const SizedBox(height: AppConstants.spacingM),
 
             // Selezione reparto
-            DropdownButtonFormField<int>(
-              value: _selectedDepartmentId,
-              decoration: const InputDecoration(
-                labelText: 'Reparto',
-                border: OutlineInputBorder(),
-              ),
-              items: widget.departments
-                  .map(
-                    (dept) => DropdownMenuItem(
-                      value: dept.id,
-                      child: Text(dept.name),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedDepartmentId = value;
-                });
-              },
-            ),
+            _buildDepartmentSelector(),
             const SizedBox(height: AppConstants.spacingM),
 
             // Sezione immagine
@@ -124,6 +106,63 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
           child: Text(isEditing ? AppStrings.save : AppStrings.add),
         ),
       ],
+    );
+  }
+
+  Widget _buildDepartmentSelector() {
+    final selectedDepartment = widget.departments
+        .firstWhere((dept) => dept.id == _selectedDepartmentId,
+            orElse: () => widget.departments.first);
+
+    return InkWell(
+      onTap: _showDepartmentSelection,
+      child: InputDecorator(
+        decoration: const InputDecoration(
+          labelText: 'Reparto',
+          border: OutlineInputBorder(),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                selectedDepartment.name,
+                style: const TextStyle(
+                  fontSize: AppConstants.fontL,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.arrow_drop_down,
+              color: AppColors.textSecondary(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showDepartmentSelection() {
+    // Creo un prodotto temporaneo per la modale
+    final tempProduct = Product(
+      id: widget.product?.id ?? 0,
+      name: _nameController.text.isNotEmpty ? _nameController.text : 'Prodotto',
+      departmentId: _selectedDepartmentId ?? widget.departments.first.id!,
+      imagePath: _selectedImagePath,
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => MoveProductDialog(
+        product: tempProduct,
+        departments: widget.departments,
+        onMoveProduct: (department) {
+          setState(() {
+            _selectedDepartmentId = department.id;
+          });
+        },
+        isSelection: true,
+      ),
     );
   }
 

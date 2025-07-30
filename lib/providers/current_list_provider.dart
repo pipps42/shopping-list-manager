@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/department_with_products.dart';
 import '../services/database_service.dart';
 import 'database_provider.dart';
+import 'list_type_provider.dart';
+import 'completed_lists_provider.dart';
 
 final currentListProvider =
     StateNotifierProvider<
@@ -13,7 +15,8 @@ final currentListProvider =
 
 final currentListProductIdsProvider = FutureProvider<Set<int>>((ref) async {
   final databaseService = ref.watch(databaseServiceProvider);
-  final departments = await databaseService.getCurrentListGroupedByDepartment();
+  final currentListType = ref.watch(currentListTypeProvider);
+  final departments = await databaseService.getCurrentListGroupedByDepartment(currentListType);
 
   // Estrai tutti gli ID dei prodotti dalla lista corrente
   final productIds = departments
@@ -32,13 +35,21 @@ class CurrentListNotifier
   CurrentListNotifier(this._databaseService, this._ref)
     : super(const AsyncValue.loading()) {
     loadCurrentList();
+    
+    // Ascolta i cambiamenti del tipo di lista
+    _ref.listen<String>(currentListTypeProvider, (previous, next) {
+      if (previous != next) {
+        loadCurrentList(next);
+      }
+    });
   }
 
-  Future<void> loadCurrentList() async {
+  Future<void> loadCurrentList([String? listType]) async {
     try {
       state = const AsyncValue.loading();
+      final currentListType = listType ?? _ref.read(currentListTypeProvider);
       final departmentsWithProducts = await _databaseService
-          .getCurrentListGroupedByDepartment();
+          .getCurrentListGroupedByDepartment(currentListType);
       state = AsyncValue.data(departmentsWithProducts);
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
@@ -47,7 +58,8 @@ class CurrentListNotifier
 
   Future<void> addProductToList(int productId) async {
     try {
-      final success = await _databaseService.addProductToCurrentList(productId);
+      final currentListType = _ref.read(currentListTypeProvider);
+      final success = await _databaseService.addProductToCurrentList(productId, currentListType);
       if (success) {
         await loadCurrentList();
         _ref.invalidate(currentListProductIdsProvider);
@@ -66,7 +78,8 @@ class CurrentListNotifier
   }
 
   Future<bool> isProductInList(int productId) async {
-    return await _databaseService.isProductInCurrentList(productId);
+    final currentListType = _ref.read(currentListTypeProvider);
+    return await _databaseService.isProductInCurrentList(productId, currentListType);
   }
 
   Future<void> toggleItemChecked(int itemId, bool isChecked) async {
@@ -96,7 +109,8 @@ class CurrentListNotifier
 
   Future<void> clearAllItems() async {
     try {
-      await _databaseService.clearCurrentList();
+      final currentListType = _ref.read(currentListTypeProvider);
+      await _databaseService.clearCurrentList(currentListType);
       await loadCurrentList();
       // Invalida il provider degli ID
       _ref.invalidate(currentListProductIdsProvider);
@@ -111,9 +125,11 @@ class CurrentListNotifier
     double? totalCost,
   }) async {
     try {
+      final currentListType = _ref.read(currentListTypeProvider);
       await _databaseService.completeCurrentList(
         markAllAsChecked: markAllAsChecked,
         totalCost: totalCost,
+        listType: currentListType,
       );
 
       // Ricarica la lista corrente (che ora sarà vuota)
@@ -121,6 +137,9 @@ class CurrentListNotifier
 
       // Invalida il provider degli ID
       _ref.invalidate(currentListProductIdsProvider);
+      
+      // Invalida il provider delle liste completate per aggiornare automaticamente
+      _ref.invalidate(completedListsProvider);
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
       rethrow;
@@ -128,10 +147,12 @@ class CurrentListNotifier
   }
 
   Future<bool> hasItemsInCurrentList() async {
-    return await _databaseService.hasItemsInCurrentList();
+    final currentListType = _ref.read(currentListTypeProvider);
+    return await _databaseService.hasItemsInCurrentList(currentListType);
   }
 
   Future<Map<String, int>> getCurrentListStats() async {
-    return await _databaseService.getCurrentListStats();
+    final currentListType = _ref.read(currentListTypeProvider);
+    return await _databaseService.getCurrentListStats(currentListType);
   }
 }

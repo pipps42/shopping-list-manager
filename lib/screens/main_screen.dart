@@ -2,11 +2,13 @@ import 'package:shopping_list_manager/screens/completed_lists_screen.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopping_list_manager/widgets/common/app_bar_gradient.dart';
 import 'current_list_screen.dart';
 import 'departments_management_screen.dart';
 import 'products_management_screen.dart';
 import 'loyalty_cards_screen.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
+import 'package:shopping_list_manager/providers/list_type_provider.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -88,32 +90,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       key: _scaffoldKey,
       // AppBar solo per le sezioni che non hanno il proprio AppBar
       appBar: _selectedIndex != 0 && _selectedIndex != 4
-          ? AppBar(
-              title: Text(_titles[_selectedIndex]),
-              flexibleSpace: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary,
-                      AppColors.primary.withOpacity(0.8),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-              ),
-              foregroundColor: AppColors.textOnPrimary(context),
-              leading: Builder(
-                builder: (context) => IconButton(
-                  icon: const Icon(Icons.menu),
-                  onPressed: () => {
-                    _onDrawerOpened(),
-                    Scaffold.of(context).openDrawer(),
-                  },
-                ),
-              ),
+          ? AppBarGradient(
+              title: _titles[_selectedIndex],
+              showDrawer: true,
+              onDrawerPressed: () {
+                _onDrawerOpened();
+                _scaffoldKey.currentState?.openDrawer();
+              },
             )
-          : null, // CurrentListScreen ha il suo AppBar
+          : null,
       drawer: _buildDrawer(),
       drawerEdgeDragWidth: (MediaQuery.of(context).size.width * 0.2).clamp(
         50.0,
@@ -159,7 +144,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Lista Spesa',
+                        AppStrings.appName,
                         style: TextStyle(
                           color: AppColors.textOnPrimary(context),
                           fontSize: AppConstants.fontTitle,
@@ -167,12 +152,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         ),
                       ),
                       Text(
-                        'Assistente alla spesa',
+                        AppStrings.appSubtitle,
                         style: TextStyle(
                           color: AppColors.textOnPrimary(
                             context,
                           ).withOpacity(0.7),
-                          fontSize: AppConstants.fontXL,
+                          fontSize: AppConstants.fontL,
                         ),
                       ),
                     ],
@@ -182,55 +167,19 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
+            child: ListView(
               padding: EdgeInsets.zero,
-              itemCount: _drawerItems.length,
-              itemBuilder: (context, index) {
-                final item = _drawerItems[index];
-                final isSelected = _selectedIndex == item.index;
-                final isDisabled = item.index == -1;
-
-                return ListTile(
-                  leading: Icon(
-                    item.icon,
-                    color: isDisabled
-                        ? AppColors.textDisabled(context)
-                        : isSelected
-                        ? AppColors.primary
-                        : null,
-                  ),
-                  title: Text(
-                    item.title,
-                    style: TextStyle(
-                      color: isDisabled
-                          ? AppColors.textDisabled(context)
-                          : isSelected
-                          ? AppColors.primary
-                          : null,
-                      fontWeight: isSelected ? FontWeight.bold : null,
-                    ),
-                  ),
-                  selected: isSelected,
-                  enabled: !isDisabled,
-                  onTap: isDisabled ? null : () => _onTabChanged(item.index),
-                  trailing: isDisabled
-                      ? Text(
-                          'Presto',
-                          style: TextStyle(
-                            fontSize: AppConstants.fontM,
-                            color: AppColors.textDisabled(context),
-                          ),
-                        )
-                      : null,
-                );
-              },
+              children: [
+                _buildListExpansionTile(),
+                ..._drawerItems.skip(1).map((item) => _buildDrawerItem(item)),
+              ],
             ),
           ),
           const Divider(),
           Padding(
             padding: const EdgeInsets.all(AppConstants.paddingM),
             child: Text(
-              'v1.0.0',
+              AppConstants.appVersion,
               style: TextStyle(
                 color: AppColors.textDisabled(context),
                 fontSize: AppConstants.fontM,
@@ -239,6 +188,121 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildListExpansionTile() {
+    final isListSelected = _selectedIndex == 0;
+
+    return Theme(
+      data: Theme.of(context).copyWith(
+        dividerColor: Colors.transparent, // Rimuove le linee grigie
+      ),
+      child: ExpansionTile(
+        leading: Icon(
+          Icons.shopping_cart,
+          color: isListSelected ? AppColors.primary : null,
+        ),
+        title: Text(
+          'Liste',
+          style: TextStyle(
+            color: isListSelected ? AppColors.primary : null,
+            fontWeight: isListSelected ? FontWeight.bold : null,
+          ),
+        ),
+        initiallyExpanded: isListSelected,
+        children: [
+          _buildListTypeItem('weekly', 'Spesa Settimanale'),
+          _buildListTypeItem('monthly', 'Spesa Mensile'),
+          _buildListTypeItem('occasional', 'Spesa Occasionale'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildListTypeItem(String listType, String title) {
+    return Consumer(
+      builder: (context, ref, child) {
+        final currentListType = ref.watch(currentListTypeProvider);
+        final isCurrentType = currentListType == listType;
+        final isListScreenSelected = _selectedIndex == 0;
+        
+        return Padding(
+          padding: const EdgeInsets.only(left: AppConstants.paddingL),
+          child: ListTile(
+            leading: Icon(
+              _getListTypeIcon(listType),
+              color: isCurrentType && isListScreenSelected ? AppColors.primary : null,
+            ),
+            title: Text(
+              title,
+              style: TextStyle(
+                color: isCurrentType && isListScreenSelected ? AppColors.primary : null,
+                fontWeight: isCurrentType && isListScreenSelected ? FontWeight.bold : null,
+              ),
+            ),
+            selected: isCurrentType && isListScreenSelected,
+            onTap: () {
+              // Cambia il tipo di lista
+              ref.read(currentListTypeProvider.notifier).state = listType;
+              // Vai alla schermata lista
+              _onTabChanged(0);
+            },
+          ),
+        );
+      },
+    );
+  }
+  
+  IconData _getListTypeIcon(String listType) {
+    switch (listType) {
+      case 'weekly':
+        return Icons.today; // Icona giorno del calendario
+      case 'monthly':
+        return Icons.calendar_month; // Icona calendario mensile
+      case 'occasional':
+        return Icons.shopping_bag; // Icona busta della spesa
+      default:
+        return Icons.list;
+    }
+  }
+
+  Widget _buildDrawerItem(DrawerItem item) {
+    final isSelected = _selectedIndex == item.index;
+    final isDisabled = item.index == -1;
+
+    return ListTile(
+      leading: Icon(
+        item.icon,
+        color: isDisabled
+            ? AppColors.textDisabled(context)
+            : isSelected
+            ? AppColors.primary
+            : null,
+      ),
+      title: Text(
+        item.title,
+        style: TextStyle(
+          color: isDisabled
+              ? AppColors.textDisabled(context)
+              : isSelected
+              ? AppColors.primary
+              : null,
+          fontWeight: isSelected ? FontWeight.bold : null,
+        ),
+      ),
+      selected: isSelected,
+      enabled: !isDisabled,
+      onTap: isDisabled ? null : () => _onTabChanged(item.index),
+      trailing: isDisabled
+          ? Text(
+              'Presto',
+              style: TextStyle(
+                fontSize: AppConstants.fontM,
+                color: AppColors.textDisabled(context),
+              ),
+            )
+          : null,
     );
   }
 }
