@@ -4,6 +4,7 @@ class ShoppingList {
   final DateTime createdAt;
   final DateTime? completedAt;
   final double? totalCost;
+  final String listType;
 
   ShoppingList({
     this.id,
@@ -11,6 +12,7 @@ class ShoppingList {
     required this.createdAt,
     this.completedAt,
     this.totalCost,
+    this.listType = 'weekly',
   });
 
   Map<String, dynamic> toMap() {
@@ -20,6 +22,7 @@ class ShoppingList {
       'created_at': createdAt.millisecondsSinceEpoch,
       'completed_at': completedAt?.millisecondsSinceEpoch,
       'total_cost': totalCost,
+      'list_type': listType,
     };
   }
 
@@ -32,6 +35,7 @@ class ShoppingList {
           ? DateTime.fromMillisecondsSinceEpoch(map['completed_at'])
           : null,
       totalCost: map['total_cost']?.toDouble(),
+      listType: map['list_type'] ?? 'weekly',
     );
   }
 
@@ -41,6 +45,7 @@ class ShoppingList {
     DateTime? createdAt,
     DateTime? completedAt,
     double? totalCost,
+    String? listType,
   }) {
     return ShoppingList(
       id: id ?? this.id,
@@ -48,6 +53,7 @@ class ShoppingList {
       createdAt: createdAt ?? this.createdAt,
       completedAt: completedAt ?? this.completedAt,
       totalCost: totalCost ?? this.totalCost,
+      listType: listType ?? this.listType,
     );
   }
 

@@ -62,7 +62,8 @@ class DatabaseService {
         name TEXT NOT NULL,
         created_at INTEGER NOT NULL,
         completed_at INTEGER,
-        total_cost REAL
+        total_cost REAL,
+        list_type TEXT NOT NULL DEFAULT 'weekly'
       )
     ''');
 
@@ -317,10 +318,23 @@ class DatabaseService {
       });
     }
 
-    // === LISTA CORRENTE (VUOTA) ===
+    // === LISTE CORRENTI (VUOTE) ===
     await db.insert('shopping_lists', {
-      'name': 'Lista Corrente',
+      'name': 'Spesa Settimanale',
       'created_at': now.millisecondsSinceEpoch,
+      'list_type': 'weekly',
+    });
+
+    await db.insert('shopping_lists', {
+      'name': 'Spesa Mensile',
+      'created_at': now.millisecondsSinceEpoch,
+      'list_type': 'monthly',
+    });
+
+    await db.insert('shopping_lists', {
+      'name': 'Spesa Occasionale',
+      'created_at': now.millisecondsSinceEpoch,
+      'list_type': 'occasional',
     });
   }
 
@@ -434,11 +448,14 @@ class DatabaseService {
     return await db.insert('shopping_lists', list.toMap());
   }
 
-  Future<ShoppingList?> getCurrentShoppingList() async {
+  Future<ShoppingList?> getCurrentShoppingList([String? listType]) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       'shopping_lists',
-      where: 'completed_at IS NULL',
+      where: listType != null 
+        ? 'completed_at IS NULL AND list_type = ?'
+        : 'completed_at IS NULL',
+      whereArgs: listType != null ? [listType] : null,
       limit: 1,
     );
     if (maps.isEmpty) return null;
@@ -462,7 +479,7 @@ class DatabaseService {
   }
 
   Future<List<DepartmentWithProducts>>
-  getCurrentListGroupedByDepartment() async {
+  getCurrentListGroupedByDepartment([String? listType]) async {
     final db = await database;
 
     // Query con JOIN per ottenere tutti i dati necessari
@@ -484,8 +501,9 @@ class DatabaseService {
       JOIN departments d ON p.department_id = d.id
       JOIN shopping_lists sl ON li.list_id = sl.id
       WHERE sl.completed_at IS NULL
+      ${listType != null ? 'AND sl.list_type = ?' : ''}
       ORDER BY d.order_index ASC, p.name COLLATE NOCASE ASC
-    ''');
+    ''', listType != null ? [listType] : []);
 
     final List<ListItem> items = List.generate(
       maps.length,
@@ -530,9 +548,9 @@ class DatabaseService {
     );
   }
 
-  Future<bool> isProductInCurrentList(int productId) async {
+  Future<bool> isProductInCurrentList(int productId, [String? listType]) async {
     final db = await database;
-    final currentList = await getCurrentShoppingList();
+    final currentList = await getCurrentShoppingList(listType);
     if (currentList == null) return false;
 
     final count = Sqflite.firstIntValue(
@@ -549,9 +567,9 @@ class DatabaseService {
     return await db.delete('list_items', where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<void> clearCurrentList() async {
+  Future<void> clearCurrentList([String? listType]) async {
     final db = await database;
-    final currentList = await getCurrentShoppingList();
+    final currentList = await getCurrentShoppingList(listType);
 
     if (currentList == null) {
       throw Exception('Nessuna lista corrente trovata');
@@ -565,13 +583,13 @@ class DatabaseService {
     );
   }
 
-  Future<bool> addProductToCurrentList(int productId) async {
-    final currentList = await getCurrentShoppingList();
+  Future<bool> addProductToCurrentList(int productId, [String? listType]) async {
+    final currentList = await getCurrentShoppingList(listType);
     if (currentList == null) {
       throw Exception('Nessuna lista corrente trovata');
     }
 
-    final exists = await isProductInCurrentList(productId);
+    final exists = await isProductInCurrentList(productId, listType);
     if (exists) {
       return false;
     }
@@ -600,9 +618,10 @@ class DatabaseService {
   Future<void> completeCurrentList({
     required bool markAllAsChecked,
     double? totalCost,
+    String? listType,
   }) async {
     final db = await database;
-    final currentList = await getCurrentShoppingList();
+    final currentList = await getCurrentShoppingList(listType);
 
     if (currentList == null) {
       throw Exception('Nessuna lista corrente trovata');
@@ -637,10 +656,13 @@ class DatabaseService {
         whereArgs: [currentList.id],
       );
 
-      // 4. Crea una nuova lista corrente vuota
+      // 4. Crea una nuova lista corrente vuota dello stesso tipo
+      final newListType = listType ?? 'weekly';
+      final listName = _getListNameByType(newListType);
       await txn.insert('shopping_lists', {
-        'name': 'Lista Corrente',
+        'name': listName,
         'created_at': DateTime.now().millisecondsSinceEpoch,
+        'list_type': newListType,
       });
     });
   }
@@ -666,9 +688,9 @@ class DatabaseService {
     return count ?? 0;
   }
 
-  Future<bool> hasItemsInCurrentList() async {
+  Future<bool> hasItemsInCurrentList([String? listType]) async {
     final db = await database;
-    final currentList = await getCurrentShoppingList();
+    final currentList = await getCurrentShoppingList(listType);
 
     if (currentList == null) return false;
 
@@ -680,9 +702,9 @@ class DatabaseService {
     return (count ?? 0) > 0;
   }
 
-  Future<Map<String, int>> getCurrentListStats() async {
+  Future<Map<String, int>> getCurrentListStats([String? listType]) async {
     final db = await database;
-    final currentList = await getCurrentShoppingList();
+    final currentList = await getCurrentShoppingList(listType);
 
     if (currentList == null) {
       return {'total': 0, 'checked': 0, 'unchecked': 0};
@@ -863,6 +885,19 @@ class DatabaseService {
     }
 
     return counts;
+  }
+
+  String _getListNameByType(String listType) {
+    switch (listType) {
+      case 'weekly':
+        return 'Spesa Settimanale';
+      case 'monthly':
+        return 'Spesa Mensile';
+      case 'occasional':
+        return 'Spesa Occasionale';
+      default:
+        return 'Lista Corrente';
+    }
   }
 
   Future<void> deleteAllCompletedLists() async {

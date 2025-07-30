@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopping_list_manager/widgets/common/app_bar_gradient.dart';
 import '../providers/current_list_provider.dart';
+import '../providers/list_type_provider.dart';
 import '../models/department_with_products.dart';
 import '../widgets/add_product_dialog.dart';
 import '../widgets/common/empty_state_widget.dart';
@@ -18,10 +19,12 @@ class CurrentListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentListState = ref.watch(currentListProvider);
+    final currentListType = ref.watch(currentListTypeProvider);
+    final listTypeName = getListTypeName(currentListType);
 
     return Scaffold(
       appBar: AppBarGradientWithPopupMenu<String>(
-        title: AppStrings.currentList,
+        title: listTypeName,
         showDrawer: true,
         onDrawerPressed: () {
           final scaffoldState = context

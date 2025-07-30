@@ -30,16 +30,6 @@ class CompletedListsScreen extends ConsumerWidget {
         },
         menuItems: [
           const PopupMenuItem(
-            value: 'refresh',
-            child: Row(
-              children: [
-                Icon(Icons.refresh, color: AppColors.secondary),
-                SizedBox(width: AppConstants.spacingS),
-                Text(AppStrings.refresh),
-              ],
-            ),
-          ),
-          const PopupMenuItem(
             value: 'export',
             child: Row(
               children: [
@@ -270,9 +260,6 @@ class CompletedListsScreen extends ConsumerWidget {
 
   void _handleMenuAction(BuildContext context, WidgetRef ref, String action) {
     switch (action) {
-      case 'refresh':
-        ref.invalidate(completedListsProvider);
-        break;
       case 'clear_completed':
         _showDeleteAllDialog(context, ref);
         break;
