@@ -108,7 +108,7 @@ class CompletedListsScreen extends ConsumerWidget {
                 ),
 
                 // Contenuto senza padding fisso
-                Expanded(child: _buildItemContent(context, item)),
+                Expanded(child: _buildItemContent(context, ref, item)),
               ],
             ),
           );
@@ -117,7 +117,7 @@ class CompletedListsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildItemContent(BuildContext context, _FlatItem item) {
+  Widget _buildItemContent(BuildContext context, WidgetRef ref, _FlatItem item) {
     if (item is _MonthHeaderItem) {
       return Container(
         padding: const EdgeInsets.symmetric(
@@ -146,6 +146,8 @@ class CompletedListsScreen extends ConsumerWidget {
           showTime: item.showTime,
           productCount: item.productCount,
           onTap: () => _navigateToDetail(context, item.list),
+          onEditPrice: () => _showEditPriceDialog(context, ref, item.list),
+          onDelete: () => _showDeleteListDialog(context, ref, item.list),
         ),
       );
     }
@@ -271,6 +273,128 @@ class CompletedListsScreen extends ConsumerWidget {
       context,
       MaterialPageRoute(
         builder: (context) => CompletedListDetailScreen(shoppingList: list),
+      ),
+    );
+  }
+
+  void _showEditPriceDialog(BuildContext context, WidgetRef ref, ShoppingList list) {
+    final TextEditingController priceController = TextEditingController(
+      text: list.totalCost?.toStringAsFixed(2) ?? '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Modifica prezzo'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Lista: ${list.name}'),
+            const SizedBox(height: AppConstants.spacingM),
+            TextField(
+              controller: priceController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'Prezzo totale',
+                prefixText: '€ ',
+                border: OutlineInputBorder(),
+              ),
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annulla'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.textOnPrimary(context),
+            ),
+            onPressed: () async {
+              final priceText = priceController.text.trim();
+              double? price;
+              
+              if (priceText.isNotEmpty) {
+                price = double.tryParse(priceText.replaceAll(',', '.'));
+                if (price == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Prezzo non valido')),
+                  );
+                  return;
+                }
+              }
+              
+              try {
+                await ref.read(completedListsProvider.notifier)
+                    .updateCompletedListPrice(list.id!, price);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Prezzo aggiornato')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Errore: $e')),
+                );
+              }
+            },
+            child: const Text('Salva'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteListDialog(BuildContext context, WidgetRef ref, ShoppingList list) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Elimina lista'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Sei sicuro di voler eliminare questa lista?'),
+            const SizedBox(height: AppConstants.spacingM),
+            Text(
+              'Lista: ${list.name}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            if (list.totalCost != null)
+              Text('Prezzo: €${list.totalCost!.toStringAsFixed(2)}'),
+            const SizedBox(height: AppConstants.spacingM),
+            const Text(
+              'Questa azione non può essere annullata.',
+              style: TextStyle(color: AppColors.error),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annulla'),
+          ),
+          TextButton(
+            onPressed: () async {
+              try {
+                await ref.read(completedListsProvider.notifier)
+                    .deleteCompletedList(list.id!);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Lista eliminata')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Errore: $e')),
+                );
+              }
+            },
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Elimina'),
+          ),
+        ],
       ),
     );
   }

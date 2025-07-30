@@ -40,32 +40,12 @@ class CompletedListDetailScreen extends ConsumerWidget {
             : null,
         menuItems: [
           const PopupMenuItem(
-            value: 'refresh',
-            child: Row(
-              children: [
-                Icon(Icons.refresh),
-                SizedBox(width: AppConstants.spacingS),
-                Text(AppStrings.refresh),
-              ],
-            ),
-          ),
-          const PopupMenuItem(
             value: 'reorder',
             child: Row(
               children: [
                 Icon(Icons.add_shopping_cart),
                 SizedBox(width: AppConstants.spacingS),
                 Text(AppStrings.buyAgain),
-              ],
-            ),
-          ),
-          const PopupMenuItem(
-            value: 'share',
-            child: Row(
-              children: [
-                Icon(Icons.share),
-                SizedBox(width: AppConstants.spacingS),
-                Text(AppStrings.share),
               ],
             ),
           ),
@@ -111,14 +91,10 @@ class CompletedListDetailScreen extends ConsumerWidget {
         ),
         itemCount: departments.length,
         itemBuilder: (context, index) =>
-            DepartmentCard(
-              department: departments[index],
-              readOnly: true,
-            ),
+            DepartmentCard(department: departments[index], readOnly: true),
       ),
     );
   }
-
 
   String _formatAppBarTitle() {
     if (shoppingList.completedAt == null) return AppStrings.listCompleted;
@@ -176,21 +152,9 @@ class CompletedListDetailScreen extends ConsumerWidget {
 
   void _handleMenuAction(BuildContext context, WidgetRef ref, String action) {
     switch (action) {
-      case 'refresh':
-        ref.invalidate(completedListDetailProvider(shoppingList.id!));
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Dettagli aggiornati'),
-            duration: Duration(seconds: 1),
-          ),
-        );
-        break;
       // Future actions
       // case 'reorder':
       //   _reorderItems(context, ref);
-      //   break;
-      // case 'share':
-      //   _shareList(context);
       //   break;
     }
   }

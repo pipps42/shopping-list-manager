@@ -900,6 +900,28 @@ class DatabaseService {
     }
   }
 
+  Future<void> deleteCompletedList(int listId) async {
+    final db = await database;
+
+    await db.transaction((txn) async {
+      // 1. Elimina tutti gli items della lista
+      await txn.delete('list_items', where: 'list_id = ?', whereArgs: [listId]);
+
+      // 2. Elimina la lista
+      await txn.delete('shopping_lists', where: 'id = ?', whereArgs: [listId]);
+    });
+  }
+
+  Future<void> updateCompletedListPrice(int listId, double? totalCost) async {
+    final db = await database;
+    await db.update(
+      'shopping_lists',
+      {'total_cost': totalCost},
+      where: 'id = ?',
+      whereArgs: [listId],
+    );
+  }
+
   Future<void> deleteAllCompletedLists() async {
     final db = await database;
 
