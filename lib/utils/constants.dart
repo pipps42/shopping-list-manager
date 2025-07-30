@@ -1,7 +1,7 @@
 class AppConstants {
   // App Info
   static const String appName = 'Lista Spesa';
-  static const String appVersion = 'v1.0.0';
+  static const String appVersion = 'v0.1.0';
 
   // Colori Esselunga
   static const int esseLungaGreen = 0xFF00A651;
@@ -142,14 +142,14 @@ class AppStrings {
   static const String departmentNamePlaceholder = 'Nome reparto';
 
   // === TITLES ===
-  static const String currentList = 'Lista Corrente';
-  static const String departmentManagement = 'Gestione Reparti';
-  static const String productManagement = 'Gestione Prodotti';
+  static const String currentList = 'Lista';
+  static const String departmentManagement = 'Reparti';
+  static const String addDepartment = 'Nuovo Reparto';
+  static const String editDepartment = 'Modifica Reparto';
+  static const String productManagement = 'Prodotti';
   static const String addProduct = 'Aggiungi Prodotto';
   static const String editProduct = 'Modifica Prodotto';
   static const String newProduct = 'Nuovo Prodotto';
-  static const String addDepartment = 'Nuovo Reparto';
-  static const String editDepartment = 'Modifica Reparto';
   static const String loyaltyCards = 'Carte Fedeltà';
   static const String lastLists = 'Ultime Liste';
 
@@ -178,7 +178,8 @@ class AppStrings {
   static const String selectDepartment = 'Seleziona un reparto';
 
   // === INFO ===
-  static const String appFullName = 'Lista Spesa\nAssistente';
+  static const String appName = 'Assistente Spesa';
+  static const String appSubtitle = 'Organizza la spesa per reparti';
   static const String reorderInstructions =
       'Trascina per riordinare i reparti secondo il layout del supermercato';
 

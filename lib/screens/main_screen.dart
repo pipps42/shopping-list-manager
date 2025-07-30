@@ -143,7 +143,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Lista Spesa',
+                        AppStrings.appName,
                         style: TextStyle(
                           color: AppColors.textOnPrimary(context),
                           fontSize: AppConstants.fontTitle,
@@ -151,12 +151,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         ),
                       ),
                       Text(
-                        'Assistente alla spesa',
+                        AppStrings.appSubtitle,
                         style: TextStyle(
                           color: AppColors.textOnPrimary(
                             context,
                           ).withOpacity(0.7),
-                          fontSize: AppConstants.fontXL,
+                          fontSize: AppConstants.fontL,
                         ),
                       ),
                     ],

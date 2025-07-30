@@ -61,6 +61,18 @@ class CompletedListsNotifier
   }
 
   Future<void> refresh() => loadCompletedLists();
+
+  Future<void> deleteAllCompletedLists() async {
+    try {
+      await _databaseService.deleteAllCompletedLists();
+
+      // Aggiorna immediatamente lo stato con una lista vuota
+      state = const AsyncValue.data([]);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      rethrow;
+    }
+  }
 }
 
 class CompletedListWithCount {

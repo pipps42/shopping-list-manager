@@ -864,4 +864,21 @@ class DatabaseService {
 
     return counts;
   }
+
+  Future<void> deleteAllCompletedLists() async {
+    final db = await database;
+
+    await db.transaction((txn) async {
+      // 1. Elimina tutti gli items delle liste completate
+      await txn.rawDelete('''
+      DELETE FROM list_items 
+      WHERE list_id IN (
+        SELECT id FROM shopping_lists WHERE completed_at IS NOT NULL
+      )
+    ''');
+
+      // 2. Elimina tutte le liste completate
+      await txn.delete('shopping_lists', where: 'completed_at IS NOT NULL');
+    });
+  }
 }

@@ -23,6 +23,11 @@ class CompletedListsScreen extends ConsumerWidget {
       appBar: AppBarGradientWithPopupMenu<String>(
         title: AppStrings.lastLists,
         showDrawer: true,
+        onDrawerPressed: () {
+          final scaffoldState = context
+              .findAncestorStateOfType<ScaffoldState>();
+          scaffoldState?.openDrawer();
+        },
         menuItems: [
           const PopupMenuItem(
             value: 'refresh',
@@ -268,6 +273,9 @@ class CompletedListsScreen extends ConsumerWidget {
       case 'refresh':
         ref.invalidate(completedListsProvider);
         break;
+      case 'clear_completed':
+        _showDeleteAllDialog(context, ref);
+        break;
     }
   }
 
@@ -278,6 +286,63 @@ class CompletedListsScreen extends ConsumerWidget {
         builder: (context) => CompletedListDetailScreen(shoppingList: list),
       ),
     );
+  }
+
+  void _showDeleteAllDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancella tutte le liste'),
+        content: const Text(
+          'Sei sicuro di voler eliminare tutte le liste completate?\n\n'
+          'Questa azione non può essere annullata.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annulla'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _deleteAllCompletedLists(context, ref);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: AppColors.textOnPrimary(context),
+            ),
+            child: const Text('Cancella tutte'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteAllCompletedLists(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    try {
+      await ref.read(completedListsProvider.notifier).deleteAllCompletedLists();
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Tutte le liste sono state eliminate'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Errore nell\'eliminazione: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 }
 

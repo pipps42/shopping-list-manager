@@ -23,6 +23,11 @@ class CurrentListScreen extends ConsumerWidget {
       appBar: AppBarGradientWithPopupMenu<String>(
         title: AppStrings.currentList,
         showDrawer: true,
+        onDrawerPressed: () {
+          final scaffoldState = context
+              .findAncestorStateOfType<ScaffoldState>();
+          scaffoldState?.openDrawer();
+        },
         menuItems: [
           const PopupMenuItem(
             value: 'complete_list',
