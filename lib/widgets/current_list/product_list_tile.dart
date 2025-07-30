@@ -8,11 +8,20 @@ import 'package:shopping_list_manager/utils/color_palettes.dart';
 
 class ProductListTile extends ConsumerWidget {
   final ListItem item;
+  final bool readOnly;
 
-  const ProductListTile({super.key, required this.item});
+  const ProductListTile({
+    super.key, 
+    required this.item,
+    this.readOnly = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (readOnly) {
+      return _buildReadOnlyTile(context);
+    }
+
     return Dismissible(
       key: Key('item_${item.id}'),
       background: _buildSwipeBackground(context, false),
@@ -53,6 +62,26 @@ class ProductListTile extends ConsumerWidget {
                   color: AppColors.textDisabled(context),
                 ),
           onLongPress: () => _showRemoveDialog(context, ref),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReadOnlyTile(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground(context),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingS),
+      child: ListTile(
+        leading: _buildProductImage(),
+        title: Text(
+          item.productName ?? 'Prodotto sconosciuto',
+          style: TextStyle(
+            fontSize: AppConstants.fontL,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textPrimary(context),
+          ),
         ),
       ),
     );
@@ -106,6 +135,8 @@ class ProductListTile extends ConsumerWidget {
   }
 
   void _showRemoveDialog(BuildContext context, WidgetRef ref) {
+    if (readOnly) return; // Non mostrare dialog se in modalità read-only
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

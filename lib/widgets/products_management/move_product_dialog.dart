@@ -9,26 +9,30 @@ class MoveProductDialog extends StatelessWidget {
   final Product product;
   final List<Department> departments;
   final Function(Department department) onMoveProduct;
+  final bool isSelection;
 
   const MoveProductDialog({
     super.key,
     required this.product,
     required this.departments,
     required this.onMoveProduct,
+    this.isSelection = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text(AppStrings.moveProduct),
+      title: Text(isSelection ? 'Seleziona reparto' : AppStrings.moveProduct),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Sposta "${product.name}" in:'),
+          Text(isSelection 
+            ? 'Seleziona il reparto per "${product.name}":'
+            : 'Sposta "${product.name}" in:'),
           const SizedBox(height: AppConstants.spacingM),
           SizedBox(
-            height: 200,
+            height: 400,
             width: double.maxFinite,
             child: ListView.builder(
               itemCount: departments.length,
@@ -49,14 +53,16 @@ class MoveProductDialog extends StatelessWidget {
                           onMoveProduct(dept);
                           Navigator.pop(context);
 
-                          // Mostra snackbar di conferma
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                '${product.name} spostato in ${dept.name}',
+                          // Mostra snackbar di conferma solo se non è selezione
+                          if (!isSelection) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '${product.name} spostato in ${dept.name}',
+                                ),
                               ),
-                            ),
-                          );
+                            );
+                          }
                         },
                 );
               },

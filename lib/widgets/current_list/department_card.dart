@@ -126,8 +126,13 @@ import 'package:shopping_list_manager/utils/color_palettes.dart';
 
 class DepartmentCard extends StatefulWidget {
   final DepartmentWithProducts department;
+  final bool readOnly;
 
-  const DepartmentCard({super.key, required this.department});
+  const DepartmentCard({
+    super.key, 
+    required this.department,
+    this.readOnly = false,
+  });
 
   @override
   State<DepartmentCard> createState() => _DepartmentCardState();
@@ -217,7 +222,10 @@ class _DepartmentCardState extends State<DepartmentCard>
                   -1.0, // ← Allineamento al top per collasso dall'alto verso il basso
               child: Column(
                 children: widget.department.items
-                    .map((item) => ProductListTile(item: item))
+                    .map((item) => ProductListTile(
+                      item: item,
+                      readOnly: widget.readOnly,
+                    ))
                     .toList(),
               ),
             ),
@@ -337,7 +345,7 @@ class _DepartmentCardState extends State<DepartmentCard>
         borderRadius: BorderRadius.circular(AppConstants.radiusL),
       ),
       child: Text(
-        '$completed/$total',
+        widget.readOnly ? '$total' : '$completed/$total',
         style: TextStyle(
           fontSize: AppConstants.fontL,
           fontWeight: FontWeight.bold,

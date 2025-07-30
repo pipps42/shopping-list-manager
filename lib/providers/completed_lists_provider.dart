@@ -61,6 +61,42 @@ class CompletedListsNotifier
   }
 
   Future<void> refresh() => loadCompletedLists();
+
+  Future<void> deleteCompletedList(int listId) async {
+    try {
+      await _databaseService.deleteCompletedList(listId);
+      
+      // Ricarica le liste per aggiornare la UI
+      await loadCompletedLists();
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<void> updateCompletedListPrice(int listId, double? totalCost) async {
+    try {
+      await _databaseService.updateCompletedListPrice(listId, totalCost);
+      
+      // Ricarica le liste per aggiornare la UI
+      await loadCompletedLists();
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAllCompletedLists() async {
+    try {
+      await _databaseService.deleteAllCompletedLists();
+
+      // Aggiorna immediatamente lo stato con una lista vuota
+      state = const AsyncValue.data([]);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      rethrow;
+    }
+  }
 }
 
 class CompletedListWithCount {
