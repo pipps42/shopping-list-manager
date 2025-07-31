@@ -217,7 +217,6 @@ class AppStrings {
   static const String recipeDeleted = 'Ricetta eliminata';
   static const String recipeUpdated = 'Ricetta modificata';
   static const String recipeName = 'Nome ricetta';
-  static const String recipeDescription = 'Descrizione';
   static const String recipeIngredients = 'Ingredienti';
   static const String addIngredients = 'Aggiungi Ingredienti';
   static const String emptyRecipes = 'Nessuna ricetta';

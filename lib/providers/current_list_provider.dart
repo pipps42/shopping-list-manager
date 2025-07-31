@@ -146,6 +146,7 @@ class CurrentListNotifier
       await loadCurrentList();
       // Invalida il provider degli ID
       _ref.invalidate(currentListProductIdsProvider);
+      _ref.invalidate(listProductIdsProvider(currentListType));
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
       rethrow;
@@ -169,6 +170,7 @@ class CurrentListNotifier
 
       // Invalida il provider degli ID
       _ref.invalidate(currentListProductIdsProvider);
+      _ref.invalidate(listProductIdsProvider(currentListType));
       
       // Invalida il provider delle liste completate per aggiornare automaticamente
       _ref.invalidate(completedListsProvider);

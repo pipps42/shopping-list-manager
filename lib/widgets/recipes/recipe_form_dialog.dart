@@ -17,7 +17,6 @@ class RecipeFormDialog extends ConsumerStatefulWidget {
 
 class _RecipeFormDialogState extends ConsumerState<RecipeFormDialog> {
   late TextEditingController _nameController;
-  late TextEditingController _descriptionController;
   String? _selectedImagePath;
   bool _isLoading = false;
 
@@ -27,16 +26,12 @@ class _RecipeFormDialogState extends ConsumerState<RecipeFormDialog> {
     _nameController = TextEditingController(
       text: widget.recipe?.name ?? '',
     );
-    _descriptionController = TextEditingController(
-      text: widget.recipe?.description ?? '',
-    );
     _selectedImagePath = widget.recipe?.imagePath;
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _descriptionController.dispose();
     super.dispose();
   }
 
@@ -60,18 +55,6 @@ class _RecipeFormDialogState extends ConsumerState<RecipeFormDialog> {
                 border: OutlineInputBorder(),
               ),
               textCapitalization: TextCapitalization.words,
-            ),
-            const SizedBox(height: AppConstants.spacingM),
-
-            // Descrizione
-            TextField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: AppStrings.recipeDescription,
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-              textCapitalization: TextCapitalization.sentences,
             ),
             const SizedBox(height: AppConstants.spacingM),
 
@@ -120,9 +103,7 @@ class _RecipeFormDialogState extends ConsumerState<RecipeFormDialog> {
     final recipe = Recipe(
       id: widget.recipe?.id,
       name: name,
-      description: _descriptionController.text.trim().isEmpty
-          ? null
-          : _descriptionController.text.trim(),
+      description: null,
       imagePath: _selectedImagePath,
       createdAt:
           widget.recipe?.createdAt ?? DateTime.now().millisecondsSinceEpoch,
