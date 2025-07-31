@@ -11,6 +11,15 @@ import 'recipes_screen.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
 import 'package:shopping_list_manager/providers/list_type_provider.dart';
 
+enum DrawerSection {
+  currentList,
+  departmentManagement,
+  productManagement,
+  recipes,
+  loyaltyCards,
+  lastLists,
+}
+
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
 
@@ -21,6 +30,27 @@ class MainScreen extends ConsumerStatefulWidget {
 class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  
+  // Mapping da indice a sezione del drawer
+  static const Map<int, DrawerSection> _indexToSection = {
+    0: DrawerSection.currentList,
+    1: DrawerSection.departmentManagement,
+    2: DrawerSection.productManagement,
+    3: DrawerSection.recipes,
+    4: DrawerSection.loyaltyCards,
+    5: DrawerSection.lastLists,
+  };
+  
+  // Sezioni che hanno la propria AppBar personalizzata
+  static const Set<DrawerSection> _sectionsWithCustomAppBar = {
+    DrawerSection.currentList,
+    DrawerSection.lastLists,
+  };
+  
+  bool _hasCustomAppBar(int index) {
+    final section = _indexToSection[index];
+    return section != null && _sectionsWithCustomAppBar.contains(section);
+  }
 
   final List<Widget> _screens = [
     const CurrentListScreen(),
@@ -97,7 +127,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     return Scaffold(
       key: _scaffoldKey,
       // AppBar solo per le sezioni che non hanno il proprio AppBar
-      appBar: _selectedIndex != 0 && _selectedIndex != 4
+      appBar: !_hasCustomAppBar(_selectedIndex)
           ? AppBarGradient(
               title: _titles[_selectedIndex],
               showDrawer: true,
@@ -133,7 +163,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           DrawerHeader(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+                colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -164,7 +194,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         style: TextStyle(
                           color: AppColors.textOnPrimary(
                             context,
-                          ).withOpacity(0.7),
+                          ).withValues(alpha: 0.7),
                           fontSize: AppConstants.fontL,
                         ),
                       ),
@@ -200,7 +230,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   Widget _buildListExpansionTile() {
-    final isListSelected = _selectedIndex == 0;
+    final currentSection = _indexToSection[_selectedIndex];
+    final isListSelected = currentSection == DrawerSection.currentList;
 
     return Theme(
       data: Theme.of(context).copyWith(
@@ -233,7 +264,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       builder: (context, ref, child) {
         final currentListType = ref.watch(currentListTypeProvider);
         final isCurrentType = currentListType == listType;
-        final isListScreenSelected = _selectedIndex == 0;
+        final currentSection = _indexToSection[_selectedIndex];
+        final isListScreenSelected = currentSection == DrawerSection.currentList;
         
         return Padding(
           padding: const EdgeInsets.only(left: AppConstants.paddingL),
