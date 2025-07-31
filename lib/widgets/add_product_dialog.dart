@@ -6,6 +6,7 @@ import 'package:shopping_list_manager/widgets/common/app_search_bar.dart';
 import '../providers/products_provider.dart';
 import '../providers/departments_provider.dart';
 import '../providers/current_list_provider.dart';
+import '../providers/recipes_provider.dart';
 import '../models/product.dart';
 import '../models/department.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
@@ -13,13 +14,104 @@ import 'common/loading_widget.dart';
 import 'common/empty_state_widget.dart';
 import 'common/error_state_widget.dart';
 
-class AddProductDialog extends ConsumerStatefulWidget {
+/* class AddProductDialog extends ConsumerStatefulWidget {
   final Function(int productId) onProductSelected;
 
   const AddProductDialog({super.key, required this.onProductSelected});
 
   @override
   ConsumerState<AddProductDialog> createState() => _AddProductDialogState();
+} */
+class AddProductDialog extends ConsumerStatefulWidget {
+  final Function(int) onProductSelected;
+  final Function(int)? onProductRemoved; // Callback per rimuovere prodotti
+  final String? title;
+  final String? subtitle;
+  final Set<int>? excludeProductIds; // Prodotti da nascondere/disabilitare
+  final Set<int>?
+  preselectedProductIds; // Prodotti già selezionati (per ricette)
+  final int? recipeId; // ID ricetta per reattività ingredienti
+
+  const AddProductDialog({
+    super.key,
+    required this.onProductSelected,
+    this.onProductRemoved,
+    this.title,
+    this.subtitle,
+    this.excludeProductIds,
+    this.preselectedProductIds,
+    this.recipeId,
+  });
+
+  @override
+  ConsumerState<AddProductDialog> createState() => _AddProductDialogState();
+
+  // ===== FACTORY METHODS PER CASI D'USO SPECIFICI =====
+  /// Factory per aggiungere prodotti alla lista corrente
+  static Widget forCurrentList({
+    required Function(int) onProductSelected,
+    Function(int)? onProductRemoved,
+  }) {
+    return AddProductDialog(
+      onProductSelected: onProductSelected,
+      onProductRemoved: onProductRemoved,
+      title: AppStrings.addProduct,
+      subtitle: 'Seleziona i prodotti da aggiungere alla lista',
+    );
+  }
+
+  /// Factory per aggiungere ingredienti a una ricetta
+  static Widget forRecipeIngredients({
+    required Function(int) onProductSelected,
+    Function(int)? onProductRemoved,
+    required String recipeName,
+    Set<int>? existingIngredients,
+  }) {
+    return AddProductDialog(
+      onProductSelected: onProductSelected,
+      onProductRemoved: onProductRemoved,
+      title: 'Aggiungi Ingredienti',
+      subtitle: 'Seleziona gli ingredienti per "$recipeName"',
+      preselectedProductIds: existingIngredients,
+    );
+  }
+
+  /// Factory per gestire ingredienti di una ricetta
+  static Widget forRecipeIngredientManagement({
+    required Function(int) onProductSelected,
+    Function(int)? onProductRemoved,
+    required String recipeName,
+    required int recipeId,
+    Set<int>? currentIngredients,
+  }) {
+    return AddProductDialog(
+      onProductSelected: onProductSelected,
+      onProductRemoved: onProductRemoved,
+      title: 'Gestisci Ingredienti',
+      subtitle: 'Seleziona gli ingredienti per "$recipeName"',
+      preselectedProductIds: currentIngredients,
+      recipeId: recipeId,
+    );
+  }
+
+  /// Factory per filtrare prodotti specifici
+  static Widget withFilters({
+    required Function(int) onProductSelected,
+    Function(int)? onProductRemoved,
+    String? title,
+    String? subtitle,
+    Set<int>? excludeProducts,
+    Set<int>? preselectedProducts,
+  }) {
+    return AddProductDialog(
+      onProductSelected: onProductSelected,
+      onProductRemoved: onProductRemoved,
+      title: title,
+      subtitle: subtitle,
+      excludeProductIds: excludeProducts,
+      preselectedProductIds: preselectedProducts,
+    );
+  }
 }
 
 class _AddProductDialogState extends ConsumerState<AddProductDialog> {
@@ -217,7 +309,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     );
   }
 
-  Widget _buildProductTile(Product product) {
+  /*   Widget _buildProductTile(Product product) {
     final productIdsInList = ref.watch(currentListProductIdsProvider);
 
     return productIdsInList.when(
@@ -251,6 +343,130 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
         ),
       ),
     );
+  } */
+  Widget _buildProductTile(Product product) {
+    final productIdsInList = ref.watch(currentListProductIdsProvider);
+
+    // Controlla se il prodotto deve essere escluso
+    final isExcluded = widget.excludeProductIds?.contains(product.id!) ?? false;
+    if (isExcluded) return const SizedBox.shrink();
+
+    // Se abbiamo un recipeId, usa il provider dedicato per gli ingredienti
+    if (widget.recipeId != null) {
+      final recipeIngredientsState = ref.watch(recipeIngredientProductIdsProvider(widget.recipeId!));
+      
+      return recipeIngredientsState.when(
+        data: (recipeIngredientIds) {
+          final isInRecipe = recipeIngredientIds.contains(product.id!);
+          
+          if (isInRecipe) {
+            return _buildCheckedProductTile(product);
+          } else {
+            return _buildUncheckedProductTile(product);
+          }
+        },
+        loading: () => ListTile(
+          leading: _buildProductImage(product),
+          title: Text(product.name),
+          subtitle: _buildDepartmentName(context, product.departmentId),
+          trailing: const SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+        error: (error, stack) => ListTile(
+          leading: _buildProductImage(product),
+          title: Text(product.name),
+          subtitle: Text('Errore: $error'),
+          trailing: const Icon(Icons.error, color: AppColors.error),
+        ),
+      );
+    }
+
+    // Logica per current list (usa productIdsInList)
+    return productIdsInList.when(
+      data: (productIds) {
+        final isInList = productIds.contains(product.id!);
+        final isPreselected =
+            widget.preselectedProductIds?.contains(product.id!) ?? false;
+
+        // Il prodotto è "checkato" se è nella lista corrente o preselezionato
+        final isChecked = isInList || isPreselected;
+
+        if (isChecked) {
+          return _buildCheckedProductTile(product);
+        } else {
+          return _buildUncheckedProductTile(product);
+        }
+      },
+      loading: () => ListTile(
+        leading: _buildProductImage(product),
+        title: Text(product.name),
+        subtitle: _buildDepartmentName(context, product.departmentId),
+        trailing: const SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      ),
+      error: (error, stack) => ListTile(
+        leading: _buildProductImage(product),
+        title: Text(product.name),
+        subtitle: Text('Errore: $error'),
+        trailing: const Icon(Icons.error, color: AppColors.error),
+      ),
+    );
+  }
+
+  Widget _buildUncheckedProductTile(Product product) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 1.0),
+      child: ListTile(
+        leading: _buildProductImage(product),
+        title: Text(product.name),
+        subtitle: _buildDepartmentName(context, product.departmentId),
+        trailing: const Icon(Icons.add_circle_outline),
+        onTap: () => widget.onProductSelected(product.id!),
+      ),
+    );
+  }
+
+  Widget _buildCheckedProductTile(Product product) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 1.0),
+      decoration: BoxDecoration(
+        color: AppColors.success.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+      ),
+      child: ListTile(
+        leading: _buildProductImage(product),
+        title: Text(
+          product.name,
+          style: TextStyle(
+            color: AppColors.textSecondary(context),
+          ),
+        ),
+        subtitle: _buildDepartmentName(context, product.departmentId),
+        trailing: widget.onProductRemoved != null
+            ? Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                  onTap: () => widget.onProductRemoved!(product.id!),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      Icons.remove_circle_outline,
+                      color: AppColors.error,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              )
+            : null,
+      ),
+    );
   }
 
   Widget _buildProductImage(Product product) {
@@ -276,7 +492,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
       width: AppConstants.imageM,
       height: AppConstants.imageM,
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.2),
+        color: AppColors.primary.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
       ),
       child: Icon(

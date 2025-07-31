@@ -27,6 +27,20 @@ final currentListProductIdsProvider = FutureProvider<Set<int>>((ref) async {
   return productIds;
 });
 
+// Provider per gli ID dei prodotti di una lista specifica
+final listProductIdsProvider = FutureProvider.family<Set<int>, String>((ref, listType) async {
+  final databaseService = ref.watch(databaseServiceProvider);
+  final departments = await databaseService.getCurrentListGroupedByDepartment(listType);
+
+  // Estrai tutti gli ID dei prodotti dalla lista specifica
+  final productIds = departments
+      .expand((dept) => dept.items) // Flatten tutti gli items
+      .map((item) => item.productId) // Estrai solo gli ID
+      .toSet(); // Converti in Set per performance O(1) lookup
+
+  return productIds;
+});
+
 class CurrentListNotifier
     extends StateNotifier<AsyncValue<List<DepartmentWithProducts>>> {
   final DatabaseService _databaseService;
@@ -56,18 +70,22 @@ class CurrentListNotifier
     }
   }
 
-  Future<void> addProductToList(int productId) async {
+  Future<void> addProductToList(int productId, [String? targetListType]) async {
     try {
-      final currentListType = _ref.read(currentListTypeProvider);
-      final success = await _databaseService.addProductToCurrentList(productId, currentListType);
+      final String listType = targetListType ?? _ref.read(currentListTypeProvider);
+      final success = await _databaseService.addProductToCurrentList(productId, listType);
       if (success) {
-        await loadCurrentList();
+        // Solo ricarica se è la lista attualmente visualizzata
+        final currentListType = _ref.read(currentListTypeProvider);
+        if (listType == currentListType) {
+          await loadCurrentList();
+        }
         _ref.invalidate(currentListProductIdsProvider);
+        _ref.invalidate(listProductIdsProvider(listType));
       }
-      // Opzionalmente mostra messaggio di successo/errore
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
-      rethrow; // Permetti al UI di gestire l'errore
+      rethrow;
     }
   }
 
@@ -75,6 +93,20 @@ class CurrentListNotifier
     await _databaseService.deleteListItem(itemId);
     await loadCurrentList();
     _ref.invalidate(currentListProductIdsProvider);
+  }
+
+  Future<void> removeProductFromList(int productId, [String? targetListType]) async {
+    final String listType = targetListType ?? _ref.read(currentListTypeProvider);
+    await _databaseService.removeProductFromCurrentList(productId, listType);
+    
+    // Solo ricarica se è la lista attualmente visualizzata
+    final currentListType = _ref.read(currentListTypeProvider);
+    if (listType == currentListType) {
+      await loadCurrentList();
+    }
+    
+    _ref.invalidate(currentListProductIdsProvider);
+    _ref.invalidate(listProductIdsProvider(listType));
   }
 
   Future<bool> isProductInList(int productId) async {
@@ -114,6 +146,7 @@ class CurrentListNotifier
       await loadCurrentList();
       // Invalida il provider degli ID
       _ref.invalidate(currentListProductIdsProvider);
+      _ref.invalidate(listProductIdsProvider(currentListType));
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
       rethrow;
@@ -137,6 +170,7 @@ class CurrentListNotifier
 
       // Invalida il provider degli ID
       _ref.invalidate(currentListProductIdsProvider);
+      _ref.invalidate(listProductIdsProvider(currentListType));
       
       // Invalida il provider delle liste completate per aggiornare automaticamente
       _ref.invalidate(completedListsProvider);
