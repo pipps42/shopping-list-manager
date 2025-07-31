@@ -49,9 +49,7 @@ class _RecipeIngredientsDialogState
             const SizedBox(height: AppConstants.spacingM),
 
             // Contenuto
-            Expanded(
-              child: _buildIngredientsList(ingredients),
-            ),
+            Expanded(child: _buildIngredientsList(ingredients)),
           ],
         ),
       ),
@@ -75,7 +73,9 @@ class _RecipeIngredientsDialogState
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-                child: recipe.imagePath != null && File(recipe.imagePath!).existsSync()
+                child:
+                    recipe.imagePath != null &&
+                        File(recipe.imagePath!).existsSync()
                     ? Image.file(
                         File(recipe.imagePath!),
                         fit: BoxFit.cover,
@@ -90,7 +90,7 @@ class _RecipeIngredientsDialogState
               ),
             ),
             const SizedBox(width: AppConstants.spacingM),
-            
+
             // Nome ricetta
             Expanded(
               child: Text(
@@ -101,7 +101,7 @@ class _RecipeIngredientsDialogState
                 ),
               ),
             ),
-            
+
             // Bottone chiudi
             IconButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -109,9 +109,9 @@ class _RecipeIngredientsDialogState
             ),
           ],
         ),
-        
+
         const SizedBox(height: AppConstants.spacingS),
-        
+
         // Seconda riga: Descrizione
         Text(
           'Aggiungi ingredienti alla lista selezionata',
@@ -120,9 +120,9 @@ class _RecipeIngredientsDialogState
             color: AppColors.textSecondary(context),
           ),
         ),
-        
+
         const SizedBox(height: AppConstants.spacingM),
-        
+
         // Terza riga: Dropdown selezione lista
         _buildListSelector(),
       ],
@@ -206,17 +206,20 @@ class _RecipeIngredientsDialogState
         leading: _buildProductImage(ingredient.productImagePath),
         title: Text(
           ingredient.productName ?? 'Prodotto sconosciuto',
-          style: TextStyle(
-            color: AppColors.textSecondary(context),
-          ),
+          style: TextStyle(color: AppColors.textSecondary(context)),
         ),
         subtitle: _buildIngredientSubtitle(ingredient),
         trailing: widget.onProductRemoved != null
             ? Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-                  onTap: () => widget.onProductRemoved!(ingredient.productId, _selectedListType),
+                  borderRadius: BorderRadius.circular(
+                    AppConstants.borderRadius,
+                  ),
+                  onTap: () => widget.onProductRemoved!(
+                    ingredient.productId,
+                    _selectedListType,
+                  ),
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     child: Icon(
@@ -256,7 +259,7 @@ class _RecipeIngredientsDialogState
 
   Widget _buildIngredientSubtitle(RecipeIngredient ingredient) {
     final subtitleParts = <String>[];
-    
+
     if (ingredient.departmentName != null) {
       subtitleParts.add(ingredient.departmentName!);
     }
@@ -269,10 +272,7 @@ class _RecipeIngredientsDialogState
 
     return Text(
       subtitleParts.join(' • '),
-      style: TextStyle(
-        fontSize: 12,
-        color: AppColors.textDisabled(context),
-      ),
+      style: TextStyle(fontSize: 12, color: AppColors.textDisabled(context)),
     );
   }
 
@@ -310,55 +310,67 @@ class _RecipeIngredientsDialogState
     );
   }
 
-
   Widget _buildListSelector() {
     const listTypes = ['weekly', 'monthly', 'occasional'];
     
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppConstants.paddingM,
-        vertical: AppConstants.paddingS,
+    return DropdownMenu<String>(
+      initialSelection: _selectedListType,
+      enableFilter: false,
+      enableSearch: false,
+      requestFocusOnTap: false,
+      leadingIcon: Icon(
+        getListTypeIcon(_selectedListType),
+        size: AppConstants.iconS,
+        color: AppColors.primary,
       ),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedListType,
-          icon: Icon(Icons.arrow_drop_down, color: AppColors.primary),
-          dropdownColor: AppColors.surface(context),
-          style: TextStyle(
-            color: AppColors.textPrimary(context),
-            fontSize: AppConstants.fontM,
-          ),
-          onChanged: (String? newValue) {
-            if (newValue != null) {
-              setState(() {
-                _selectedListType = newValue;
-              });
-// Niente da ricaricare, i provider si aggiornano automaticamente
-            }
-          },
-          items: listTypes.map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    getListTypeIcon(value),
-                    size: AppConstants.iconS,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(width: AppConstants.spacingS),
-                  Text(getListTypeName(value)),
-                ],
-              ),
-            );
-          }).toList(),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.surface(context),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+          borderSide: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+          borderSide: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppConstants.paddingS,
+          vertical: AppConstants.paddingS,
         ),
       ),
+      trailingIcon: Icon(
+        Icons.arrow_drop_down,
+        color: AppColors.primary,
+        size: AppConstants.iconM,
+      ),
+      selectedTrailingIcon: Icon(
+        Icons.arrow_drop_up,
+        color: AppColors.primary,
+        size: AppConstants.iconM,
+      ),
+      onSelected: (String? value) {
+        if (value != null) {
+          setState(() {
+            _selectedListType = value;
+          });
+        }
+      },
+      dropdownMenuEntries: listTypes.map<DropdownMenuEntry<String>>((String value) {
+        return DropdownMenuEntry<String>(
+          value: value,
+          label: getListTypeName(value),
+          leadingIcon: Icon(
+            getListTypeIcon(value),
+            size: AppConstants.iconS,
+            color: AppColors.primary,
+          ),
+        );
+      }).toList(),
     );
   }
 
