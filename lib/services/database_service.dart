@@ -596,6 +596,22 @@ class DatabaseService {
     return await db.delete('list_items', where: 'id = ?', whereArgs: [id]);
   }
 
+  Future<void> removeProductFromCurrentList(int productId, String listType) async {
+    final db = await database;
+    final currentList = await getCurrentShoppingList(listType);
+    
+    if (currentList == null) {
+      throw Exception('Nessuna lista corrente trovata per il tipo: $listType');
+    }
+
+    // Rimuovi tutti gli item del prodotto dalla lista corrente
+    await db.delete(
+      'list_items',
+      where: 'list_id = ? AND product_id = ?',
+      whereArgs: [currentList.id, productId],
+    );
+  }
+
   Future<void> clearCurrentList([String? listType]) async {
     final db = await database;
     final currentList = await getCurrentShoppingList(listType);

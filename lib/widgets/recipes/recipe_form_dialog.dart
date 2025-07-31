@@ -1,34 +1,36 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:shopping_list_manager/utils/color_palettes.dart';
+import 'package:shopping_list_manager/widgets/common/app_image_uploader.dart';
 import '../../models/recipe.dart';
 
-class RecipeFormDialog extends StatefulWidget {
+class RecipeFormDialog extends ConsumerStatefulWidget {
   final Recipe? recipe;
   final Function(Recipe) onSave;
 
   const RecipeFormDialog({super.key, this.recipe, required this.onSave});
 
   @override
-  State<RecipeFormDialog> createState() => _RecipeFormDialogState();
+  ConsumerState<RecipeFormDialog> createState() => _RecipeFormDialogState();
 }
 
-class _RecipeFormDialogState extends State<RecipeFormDialog> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  String? _imagePath;
-  final ImagePicker _picker = ImagePicker();
+class _RecipeFormDialogState extends ConsumerState<RecipeFormDialog> {
+  late TextEditingController _nameController;
+  late TextEditingController _descriptionController;
+  String? _selectedImagePath;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    if (widget.recipe != null) {
-      _nameController.text = widget.recipe!.name;
-      _descriptionController.text = widget.recipe!.description ?? '';
-      _imagePath = widget.recipe!.imagePath;
-    }
+    _nameController = TextEditingController(
+      text: widget.recipe?.name ?? '',
+    );
+    _descriptionController = TextEditingController(
+      text: widget.recipe?.description ?? '',
+    );
+    _selectedImagePath = widget.recipe?.imagePath;
   }
 
   @override
@@ -43,155 +45,90 @@ class _RecipeFormDialogState extends State<RecipeFormDialog> {
     final isEditing = widget.recipe != null;
 
     return AlertDialog(
-      title: Text(isEditing ? 'Modifica Ricetta' : 'Nuova Ricetta'),
-      content: Form(
-        key: _formKey,
+      title: Text(
+        isEditing ? AppStrings.editRecipe : AppStrings.newRecipe,
+      ),
+      content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Campo nome
-            TextFormField(
+            // Nome ricetta
+            TextField(
               controller: _nameController,
               decoration: const InputDecoration(
-                labelText: 'Nome ricetta',
+                labelText: AppStrings.recipeName,
                 border: OutlineInputBorder(),
               ),
-              validator: (value) {
-                if (value?.trim().isEmpty ?? true) {
-                  return 'Il nome è obbligatorio';
-                }
-                return null;
-              },
+              textCapitalization: TextCapitalization.words,
             ),
-
             const SizedBox(height: AppConstants.spacingM),
 
-            // Campo descrizione
-            TextFormField(
+            // Descrizione
+            TextField(
               controller: _descriptionController,
               decoration: const InputDecoration(
-                labelText: 'Descrizione (opzionale)',
+                labelText: AppStrings.recipeDescription,
                 border: OutlineInputBorder(),
               ),
               maxLines: 3,
+              textCapitalization: TextCapitalization.sentences,
             ),
-
             const SizedBox(height: AppConstants.spacingM),
 
-            // Immagine
-            _buildImageSection(),
+            // Sezione immagine
+            AppImageUploader(
+              imagePath: _selectedImagePath,
+              onImageSelected: (path) =>
+                  setState(() => _selectedImagePath = path),
+              onImageRemoved: () => setState(() => _selectedImagePath = null),
+              title: 'Immagine della ricetta',
+              fallbackIcon: Icons.restaurant,
+              previewHeight: 100,
+              previewWidth: 100,
+              buttonsLayout: ButtonsLayout.beside,
+            ),
           ],
         ),
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Annulla'),
+          onPressed: () => Navigator.pop(context),
+          child: const Text(AppStrings.cancel),
         ),
-        ElevatedButton(onPressed: _saveRecipe, child: const Text('Salva')),
-      ],
-    );
-  }
-
-  Widget _buildImageSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Immagine (opzionale)',
-          style: Theme.of(context).textTheme.titleSmall,
-        ),
-        const SizedBox(height: AppConstants.spacingS),
-
-        if (_imagePath != null)
-          Stack(
-            children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(
-                    AppConstants.borderRadius,
-                  ),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    AppConstants.borderRadius,
-                  ),
-                  child: Image.file(
-                    File(_imagePath!),
-                    fit: BoxFit.cover,
-                    cacheWidth: 100,
-                    cacheHeight: 100,
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 0,
-                right: 0,
-                child: GestureDetector(
-                  onTap: () => setState(() => _imagePath = null),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          )
-        else
-          OutlinedButton.icon(
-            onPressed: _pickImage,
-            icon: const Icon(Icons.camera_alt),
-            label: const Text('Aggiungi immagine'),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.textOnPrimary(context),
           ),
+          onPressed: _isLoading ? null : _handleSave,
+          child: Text(isEditing ? AppStrings.save : AppStrings.add),
+        ),
       ],
     );
   }
 
-  Future<void> _pickImage() async {
-    try {
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 800,
-        maxHeight: 800,
-        imageQuality: 80,
+  void _handleSave() {
+    final name = _nameController.text.trim();
+
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppStrings.recipeNameRequired)),
       );
-
-      if (image != null) {
-        setState(() => _imagePath = image.path);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Errore nel selezionare l\'immagine: $e')),
-        );
-      }
+      return;
     }
-  }
-
-  void _saveRecipe() {
-    if (!_formKey.currentState!.validate()) return;
 
     final recipe = Recipe(
       id: widget.recipe?.id,
-      name: _nameController.text.trim(),
+      name: name,
       description: _descriptionController.text.trim().isEmpty
           ? null
           : _descriptionController.text.trim(),
-      imagePath: _imagePath,
+      imagePath: _selectedImagePath,
       createdAt:
           widget.recipe?.createdAt ?? DateTime.now().millisecondsSinceEpoch,
     );
 
     widget.onSave(recipe);
-    Navigator.of(context).pop();
+    Navigator.pop(context);
   }
 }

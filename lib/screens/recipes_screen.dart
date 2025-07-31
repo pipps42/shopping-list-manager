@@ -7,11 +7,13 @@ import 'package:shopping_list_manager/widgets/common/error_state_widget.dart';
 import 'package:shopping_list_manager/widgets/common/loading_widget.dart';
 import '../providers/recipes_provider.dart';
 import '../providers/current_list_provider.dart';
+import '../models/recipe.dart';
 import '../models/recipe_with_ingredients.dart';
 import '../widgets/recipes/recipe_card.dart';
 import '../widgets/recipes/recipe_form_dialog.dart';
 import '../widgets/recipes/recipe_ingredients_dialog.dart';
-import 'dart:io';
+import '../widgets/add_product_dialog.dart';
+import '../providers/list_type_provider.dart';
 
 class RecipesScreen extends ConsumerStatefulWidget {
   const RecipesScreen({super.key});
@@ -128,6 +130,9 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
             onEdit: () => _showEditRecipeDialog(recipeWithIngredients.recipe),
             onDelete: () =>
                 _showDeleteRecipeDialog(recipeWithIngredients.recipe),
+            onManageIngredients: () =>
+                _showManageIngredientsDialog(recipeWithIngredients),
+            onAddToList: () => _showRecipeIngredientsDialog(recipeWithIngredients),
           );
         },
       ),
@@ -174,7 +179,7 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
     );
   }
 
-  void _showEditRecipeDialog(recipe) {
+  void _showEditRecipeDialog(Recipe recipe) {
     showDialog(
       context: context,
       builder: (context) => RecipeFormDialog(
@@ -191,7 +196,7 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
     );
   }
 
-  void _showDeleteRecipeDialog(recipe) {
+  void _showDeleteRecipeDialog(Recipe recipe) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -221,6 +226,52 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
     );
   }
 
+  void _showManageIngredientsDialog(
+    RecipeWithIngredients recipeWithIngredients,
+  ) {
+    // Ottieni gli ingredienti attuali
+    final currentIngredients = recipeWithIngredients.ingredients
+        .map((ingredient) => ingredient.productId)
+        .toSet();
+
+    showDialog(
+      context: context,
+      builder: (context) => AddProductDialog.forRecipeIngredientManagement(
+        recipeName: recipeWithIngredients.recipe.name,
+        recipeId: recipeWithIngredients.recipe.id!,
+        currentIngredients: currentIngredients,
+        onProductSelected: (productId) async {
+          // Aggiungi ingrediente
+          await ref
+              .read(recipesWithIngredientsProvider.notifier)
+              .addProductToRecipe(
+                recipeWithIngredients.recipe.id!,
+                productId,
+              );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Ingrediente aggiunto')),
+            );
+          }
+        },
+        onProductRemoved: (productId) async {
+          // Rimuovi ingrediente
+          await ref
+              .read(recipesWithIngredientsProvider.notifier)
+              .removeProductFromRecipe(
+                recipeWithIngredients.recipe.id!,
+                productId,
+              );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Ingrediente rimosso')),
+            );
+          }
+        },
+      ),
+    );
+  }
+
   void _showRecipeIngredientsDialog(
     RecipeWithIngredients recipeWithIngredients,
   ) {
@@ -228,13 +279,31 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
       context: context,
       builder: (context) => RecipeIngredientsDialog(
         recipeWithIngredients: recipeWithIngredients,
-        onProductSelected: (productId) async {
+        onProductSelected: (productId, listType) async {
           await ref
               .read(currentListProvider.notifier)
-              .addProductToList(productId);
+              .addProductToList(productId, listType);
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Prodotto aggiunto alla lista')),
+              SnackBar(
+                content: Text(
+                  'Prodotto aggiunto a ${getListTypeName(listType)}',
+                ),
+              ),
+            );
+          }
+        },
+        onProductRemoved: (productId, listType) async {
+          await ref
+              .read(currentListProvider.notifier)
+              .removeProductFromList(productId, listType);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Prodotto rimosso da ${getListTypeName(listType)}',
+                ),
+              ),
             );
           }
         },

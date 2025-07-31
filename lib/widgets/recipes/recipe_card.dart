@@ -9,6 +9,8 @@ class RecipeCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback? onManageIngredients;
+  final VoidCallback? onAddToList;
 
   const RecipeCard({
     super.key,
@@ -16,6 +18,8 @@ class RecipeCard extends StatelessWidget {
     required this.onTap,
     required this.onEdit,
     required this.onDelete,
+    this.onManageIngredients,
+    this.onAddToList,
   });
 
   @override
@@ -90,6 +94,12 @@ class RecipeCard extends StatelessWidget {
               PopupMenuButton(
                 onSelected: (value) {
                   switch (value) {
+                    case 'manage_ingredients':
+                      onManageIngredients?.call();
+                      break;
+                    case 'add_to_list':
+                      onAddToList?.call();
+                      break;
                     case 'edit':
                       onEdit();
                       break;
@@ -99,6 +109,28 @@ class RecipeCard extends StatelessWidget {
                   }
                 },
                 itemBuilder: (context) => [
+                  if (onManageIngredients != null)
+                    const PopupMenuItem(
+                      value: 'manage_ingredients',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit_note),
+                          SizedBox(width: AppConstants.spacingS),
+                          Text('Gestisci Ingredienti'),
+                        ],
+                      ),
+                    ),
+                  if (onAddToList != null)
+                    const PopupMenuItem(
+                      value: 'add_to_list',
+                      child: Row(
+                        children: [
+                          Icon(Icons.add_shopping_cart),
+                          SizedBox(width: AppConstants.spacingS),
+                          Text('Aggiungi alla Lista'),
+                        ],
+                      ),
+                    ),
                   const PopupMenuItem(
                     value: 'edit',
                     child: Row(

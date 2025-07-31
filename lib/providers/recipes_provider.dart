@@ -37,6 +37,13 @@ final recipeIngredientsProvider =
       return await databaseService.getRecipeIngredients(recipeId);
     });
 
+// Provider per gli ID dei prodotti ingredienti di una ricetta specifica
+final recipeIngredientProductIdsProvider =
+    FutureProvider.family<Set<int>, int>((ref, recipeId) async {
+      final ingredients = await ref.watch(recipeIngredientsProvider(recipeId).future);
+      return ingredients.map((ingredient) => ingredient.productId).toSet();
+    });
+
 class RecipesNotifier extends StateNotifier<AsyncValue<List<Recipe>>> {
   final DatabaseService _databaseService;
   final Ref _ref;
@@ -130,6 +137,7 @@ class RecipesWithIngredientsNotifier
         await loadRecipesWithIngredients();
         _ref.invalidate(recipeWithIngredientsProvider(recipeId));
         _ref.invalidate(recipeIngredientsProvider(recipeId));
+        _ref.invalidate(recipeIngredientProductIdsProvider(recipeId));
       }
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
@@ -147,6 +155,7 @@ class RecipesWithIngredientsNotifier
         await loadRecipesWithIngredients();
         _ref.invalidate(recipeWithIngredientsProvider(recipeId));
         _ref.invalidate(recipeIngredientsProvider(recipeId));
+        _ref.invalidate(recipeIngredientProductIdsProvider(recipeId));
       }
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
