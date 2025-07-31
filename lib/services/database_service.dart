@@ -596,10 +596,13 @@ class DatabaseService {
     return await db.delete('list_items', where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<void> removeProductFromCurrentList(int productId, String listType) async {
+  Future<void> removeProductFromCurrentList(
+    int productId,
+    String listType,
+  ) async {
     final db = await database;
     final currentList = await getCurrentShoppingList(listType);
-    
+
     if (currentList == null) {
       throw Exception('Nessuna lista corrente trovata per il tipo: $listType');
     }
@@ -1008,8 +1011,9 @@ class DatabaseService {
     JOIN products p ON ri.product_id = p.id
     JOIN departments d ON p.department_id = d.id
     WHERE ri.recipe_id = ?
-    ORDER BY d.order_index ASC, p.name COLLATE NOCASE ASC
+    ORDER BY p.name COLLATE NOCASE ASC
   ''',
+      // ORDER BY d.order_index ASC, p.name COLLATE NOCASE ASC
       [recipeId],
     );
 
