@@ -13,6 +13,7 @@ import 'package:shopping_list_manager/utils/color_palettes.dart';
 import 'common/loading_widget.dart';
 import 'common/empty_state_widget.dart';
 import 'common/error_state_widget.dart';
+import 'common/base_dialog.dart';
 
 /* class AddProductDialog extends ConsumerStatefulWidget {
   final Function(int productId) onProductSelected;
@@ -123,90 +124,71 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     final departmentsState = ref.watch(departmentsProvider);
     final productsState = ref.watch(productsProvider);
 
-    return Dialog(
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.9,
-        height: MediaQuery.of(context).size.height * 0.8,
-        padding: const EdgeInsets.all(AppConstants.paddingM),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              children: [
-                const Expanded(
-                  child: Text(
-                    AppStrings.addProduct,
-                    style: TextStyle(
-                      fontSize: AppConstants.fontXXXL,
-                      fontWeight: FontWeight.bold,
-                    ),
+    return BaseDialog(
+      title: widget.title ?? AppStrings.addProduct,
+      titleIcon: Icons.add_circle_outline,
+      hasColoredHeader: true,
+      width: MediaQuery.of(context).size.width * 0.9,
+      height: MediaQuery.of(context).size.height * 0.8,
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Barra di ricerca
+          AppSearchBar(
+            placeholder: AppStrings.searchProductPlaceholder,
+            onChanged: (value) =>
+                setState(() => searchQuery = value.toLowerCase()),
+          ),
+          const SizedBox(height: AppConstants.spacingM),
+
+          // Filtro per reparto
+          departmentsState.when(
+            data: (departments) =>
+                _buildDepartmentFilter(context, departments),
+            loading: () => const LoadingWidget(
+              message: AppStrings.loadingDepartments,
+              size: AppConstants.iconS,
+            ),
+            error: (error, stack) => Padding(
+              padding: EdgeInsets.all(AppConstants.paddingS),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.error,
+                    color: AppColors.error,
+                    size: AppConstants.iconS,
                   ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppConstants.spacingM),
-
-            // Barra di ricerca
-            AppSearchBar(
-              placeholder: AppStrings.searchProductPlaceholder,
-              onChanged: (value) =>
-                  setState(() => searchQuery = value.toLowerCase()),
-            ),
-            const SizedBox(height: AppConstants.spacingM),
-
-            // Filtro per reparto
-            departmentsState.when(
-              data: (departments) =>
-                  _buildDepartmentFilter(context, departments),
-              loading: () => const LoadingWidget(
-                message: AppStrings.loadingDepartments,
-                size: AppConstants.iconS,
-              ),
-              error: (error, stack) => Padding(
-                padding: EdgeInsets.all(AppConstants.paddingS),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.error,
-                      color: AppColors.error,
-                      size: AppConstants.iconS,
-                    ),
-                    const SizedBox(width: AppConstants.spacingS),
-                    Expanded(
-                      child: Text(
-                        'Errore reparti: $error',
-                        style: TextStyle(
-                          color: AppColors.error,
-                          fontSize: AppConstants.fontM,
-                        ),
+                  const SizedBox(width: AppConstants.spacingS),
+                  Expanded(
+                    child: Text(
+                      'Errore reparti: $error',
+                      style: TextStyle(
+                        color: AppColors.error,
+                        fontSize: AppConstants.fontM,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: AppConstants.spacingM),
+          ),
+          const SizedBox(height: AppConstants.spacingM),
 
-            // Lista prodotti
-            Expanded(
-              child: productsState.when(
-                data: (products) => _buildProductsList(products),
-                loading: () =>
-                    const LoadingWidget(message: AppStrings.loadingProducts),
-                error: (error, stack) => ErrorStateWidget(
-                  message: 'Errore nel caricamento dei prodotti: $error',
-                  icon: Icons.inventory_2_outlined,
-                ),
+          // Lista prodotti
+          Expanded(
+            child: productsState.when(
+              data: (products) => _buildProductsList(products),
+              loading: () =>
+                  const LoadingWidget(message: AppStrings.loadingProducts),
+              error: (error, stack) => ErrorStateWidget(
+                message: 'Errore nel caricamento dei prodotti: $error',
+                icon: Icons.inventory_2_outlined,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
+      actions: [], // Nessuna azione, solo chiusura tramite tap fuori o back button
     );
   }
 

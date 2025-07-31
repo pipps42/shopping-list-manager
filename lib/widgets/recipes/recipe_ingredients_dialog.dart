@@ -6,6 +6,7 @@ import 'package:shopping_list_manager/utils/color_palettes.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:shopping_list_manager/widgets/common/empty_state_widget.dart';
 import 'package:shopping_list_manager/widgets/common/loading_widget.dart';
+import 'package:shopping_list_manager/widgets/common/base_dialog.dart';
 import '../../models/recipe_with_ingredients.dart';
 import '../../models/recipe_ingredient.dart';
 import 'dart:io';
@@ -36,23 +37,44 @@ class _RecipeIngredientsDialogState
     final recipe = widget.recipeWithIngredients.recipe;
     final ingredients = widget.recipeWithIngredients.ingredients;
 
-    return Dialog(
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.9,
-        height: MediaQuery.of(context).size.height * 0.8,
-        padding: const EdgeInsets.all(AppConstants.paddingM),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            _buildHeader(context, recipe),
-            const SizedBox(height: AppConstants.spacingM),
+    return BaseDialog(
+      title: recipe.name,
+      subtitle: 'Aggiungi ingredienti alla lista selezionata',
+      titleIcon: Icons.restaurant_menu,
+      hasColoredHeader: true,
+      width: MediaQuery.of(context).size.width * 0.9,
+      height: MediaQuery.of(context).size.height * 0.8,
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Recipe image if available
+          if (recipe.imagePath != null && File(recipe.imagePath!).existsSync())
+            Container(
+              width: double.infinity,
+              height: 120,
+              margin: const EdgeInsets.only(bottom: AppConstants.spacingM),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                image: DecorationImage(
+                  image: FileImage(File(recipe.imagePath!)),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          
+          // Dropdown selezione lista
+          _buildListSelector(),
+          const SizedBox(height: AppConstants.spacingM),
 
-            // Contenuto
-            Expanded(child: _buildIngredientsList(ingredients)),
-          ],
-        ),
+          // Lista ingredienti
+          Expanded(child: _buildIngredientsList(ingredients)),
+        ],
       ),
+      actions: [
+        DialogAction.cancel(
+          onPressed: () => Navigator.pop(context),
+        ),
+      ],
     );
   }
 

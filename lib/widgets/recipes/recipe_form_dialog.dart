@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
 import 'package:shopping_list_manager/widgets/common/app_image_uploader.dart';
+import 'package:shopping_list_manager/widgets/common/base_dialog.dart';
 import '../../models/recipe.dart';
 
 class RecipeFormDialog extends ConsumerStatefulWidget {
@@ -39,10 +40,10 @@ class _RecipeFormDialogState extends ConsumerState<RecipeFormDialog> {
   Widget build(BuildContext context) {
     final isEditing = widget.recipe != null;
 
-    return AlertDialog(
-      title: Text(
-        isEditing ? AppStrings.editRecipe : AppStrings.newRecipe,
-      ),
+    return BaseDialog(
+      title: isEditing ? AppStrings.editRecipe : AppStrings.newRecipe,
+      titleIcon: isEditing ? Icons.edit : Icons.restaurant_menu,
+      hasColoredHeader: true,
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -74,17 +75,13 @@ class _RecipeFormDialogState extends ConsumerState<RecipeFormDialog> {
         ),
       ),
       actions: [
-        TextButton(
+        DialogAction.cancel(
           onPressed: () => Navigator.pop(context),
-          child: const Text(AppStrings.cancel),
         ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.textOnPrimary(context),
-          ),
-          onPressed: _isLoading ? null : _handleSave,
-          child: Text(isEditing ? AppStrings.save : AppStrings.add),
+        DialogAction.save(
+          text: isEditing ? AppStrings.save : AppStrings.add,
+          onPressed: _handleSave,
+          isLoading: _isLoading,
         ),
       ],
     );

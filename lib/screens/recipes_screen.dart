@@ -5,6 +5,7 @@ import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:shopping_list_manager/widgets/common/empty_state_widget.dart';
 import 'package:shopping_list_manager/widgets/common/error_state_widget.dart';
 import 'package:shopping_list_manager/widgets/common/loading_widget.dart';
+import 'package:shopping_list_manager/widgets/common/base_dialog.dart';
 import '../providers/recipes_provider.dart';
 import '../providers/current_list_provider.dart';
 import '../models/recipe.dart';
@@ -199,29 +200,23 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
   void _showDeleteRecipeDialog(Recipe recipe) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Elimina Ricetta'),
-        content: Text('Sei sicuro di voler eliminare "${recipe.name}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Annulla'),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              await ref.read(recipesProvider.notifier).deleteRecipe(recipe.id!);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Ricetta eliminata con successo'),
-                  ),
-                );
-              }
-            },
-            child: const Text('Elimina'),
-          ),
-        ],
+      builder: (context) => ConfirmationDialog(
+        title: 'Elimina Ricetta',
+        message: 'Sei sicuro di voler eliminare "${recipe.name}"?',
+        icon: Icons.delete_outline,
+        iconColor: AppColors.error,
+        confirmText: 'Elimina',
+        confirmType: DialogActionType.delete,
+        onConfirm: () async {
+          await ref.read(recipesProvider.notifier).deleteRecipe(recipe.id!);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Ricetta eliminata con successo'),
+              ),
+            );
+          }
+        },
       ),
     );
   }
