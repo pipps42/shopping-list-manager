@@ -169,24 +169,40 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
 
     // Calcola la posizione relativa del chip nel ScrollView
     final relativePosition = chipPosition.dx - scrollViewPosition.dx;
+    
+    // Ottieni anche la larghezza del chip per capire se è completamente visibile
+    final chipWidth = chipRenderBox.size.width;
+    final scrollViewWidth = scrollViewRenderBox.size.width;
+    
+    // Calcola valori dinamici basati sulla larghezza del ScrollView
+    final edgeMargin = scrollViewWidth * 0.05; // 5% della larghezza come margine
+    final idealPositionStart = scrollViewWidth * 0.08; // 8% della larghezza come inizio ideale
+    final idealPositionEnd = scrollViewWidth * 0.20; // 20% della larghezza come fine ideale
+    final scrollMargin = scrollViewWidth * 0.22; // 22% della larghezza come margine di scroll (aumentato)
+    final endScrollTolerance = scrollViewWidth * 0.05; // 5% della larghezza come tolleranza fine scroll
+    
+    // Calcola se il chip è completamente visibile
+    final chipEndPosition = relativePosition + chipWidth;
+    final isFullyVisible = relativePosition >= edgeMargin && chipEndPosition <= scrollViewWidth - edgeMargin;
+    
+    // Se il chip è già completamente visibile nella posizione ideale, non fare nulla
+    if (isFullyVisible && relativePosition >= idealPositionStart && relativePosition <= idealPositionEnd) return;
 
-    // Se il chip è già all'inizio (primi ~50px), non fare nulla
-    if (relativePosition <= 50) return;
+    // Se siamo già al massimo scroll e il chip è completamente visibile, non fare nulla
+    final currentScrollPosition = _scrollController.offset;
+    final maxScrollExtent = _scrollController.position.maxScrollExtent;
+    if (currentScrollPosition >= maxScrollExtent - endScrollTolerance && isFullyVisible) return;
 
     // Calcola quanto scrollare per portare il chip all'inizio
-    // La posizione attuale dello scroll + la differenza
-    final currentScrollPosition = _scrollController.offset;
-    final targetScrollPosition =
-        currentScrollPosition + relativePosition - 20; // -20px di margine
+    final targetScrollPosition = currentScrollPosition + relativePosition - scrollMargin;
 
     // Assicurati di non superare i limiti
-    final maxScrollExtent = _scrollController.position.maxScrollExtent;
     final finalTargetPosition = targetScrollPosition > maxScrollExtent
         ? maxScrollExtent
-        : (targetScrollPosition < 0 ? 0 : targetScrollPosition);
+        : (targetScrollPosition < 0 ? 0.0 : targetScrollPosition);
 
     _scrollController.animateTo(
-      finalTargetPosition as double,
+      finalTargetPosition.toDouble(),
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );

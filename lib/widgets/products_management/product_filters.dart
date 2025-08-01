@@ -79,23 +79,37 @@ class _ProductFiltersWidgetState extends State<ProductFiltersWidget> {
     // Calcola la posizione relativa del chip nel ScrollView
     final relativePosition = chipPosition.dx - scrollViewPosition.dx;
 
-    // Se il chip è già all'inizio (primi ~50px), non fare nulla
-    if (relativePosition <= 50) return;
+    // Ottieni anche la larghezza del chip per capire se è completamente visibile
+    final chipWidth = chipRenderBox.size.width;
+    final scrollViewWidth = scrollViewRenderBox.size.width;
+
+    // Calcola se il chip è completamente visibile
+    final chipEndPosition = relativePosition + chipWidth;
+    final isFullyVisible =
+        relativePosition >= 20 && chipEndPosition <= scrollViewWidth - 20;
+
+    // Se il chip è già completamente visibile nella posizione ideale, non fare nulla
+    if (isFullyVisible && relativePosition >= 20 && relativePosition <= 50)
+      return;
+
+    // Se siamo già al massimo scroll e il chip è completamente visibile, non fare nulla
+    final currentScrollPosition = _scrollController.offset;
+    final maxScrollExtent = _scrollController.position.maxScrollExtent;
+    if (currentScrollPosition >= maxScrollExtent - 15 && isFullyVisible) return;
 
     // Calcola quanto scrollare per portare il chip all'inizio
-    // La posizione attuale dello scroll + la differenza
-    final currentScrollPosition = _scrollController.offset;
     final targetScrollPosition =
-        currentScrollPosition + relativePosition - 20; // -20px di margine
+        currentScrollPosition +
+        relativePosition -
+        40; // -40px di margine (aumentato)
 
     // Assicurati di non superare i limiti
-    final maxScrollExtent = _scrollController.position.maxScrollExtent;
     final finalTargetPosition = targetScrollPosition > maxScrollExtent
         ? maxScrollExtent
-        : (targetScrollPosition < 0 ? 0 : targetScrollPosition);
+        : (targetScrollPosition < 0 ? 0.0 : targetScrollPosition);
 
     _scrollController.animateTo(
-      finalTargetPosition as double,
+      finalTargetPosition.toDouble(),
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
