@@ -163,7 +163,7 @@ class RecipeIngredientManager extends ConsumerWidget {
   void _showAddProductDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (context) => AddProductDialog(
+      builder: (context) => AddProductDialog.forRecipeIngredientManagement(
         onProductSelected: (productId) async {
           await ref
               .read(recipesWithIngredientsProvider.notifier)
@@ -175,6 +175,8 @@ class RecipeIngredientManager extends ConsumerWidget {
             );
           }
         },
+        recipeName: recipe.name,
+        recipeId: recipe.id!,
       ),
     );
   }

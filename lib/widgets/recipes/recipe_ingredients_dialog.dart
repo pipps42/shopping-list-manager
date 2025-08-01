@@ -47,21 +47,6 @@ class _RecipeIngredientsDialogState
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Recipe image if available
-          if (recipe.imagePath != null && File(recipe.imagePath!).existsSync())
-            Container(
-              width: double.infinity,
-              height: 120,
-              margin: const EdgeInsets.only(bottom: AppConstants.spacingM),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-                image: DecorationImage(
-                  image: FileImage(File(recipe.imagePath!)),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          
           // Dropdown selezione lista
           _buildListSelector(),
           const SizedBox(height: AppConstants.spacingM),
