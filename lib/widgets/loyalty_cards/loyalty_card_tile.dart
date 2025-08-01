@@ -141,15 +141,6 @@ class LoyaltyCardTile extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: AppConstants.spacingXS),
-                    Text(
-                      _formatDate(card.createdAt),
-                      style: TextStyle(
-                        fontSize: AppConstants.fontS,
-                        color: AppColors.textSecondary(context),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
                   ],
                 ),
               ),
@@ -184,18 +175,4 @@ class LoyaltyCardTile extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays == 0) {
-      return 'Oggi';
-    } else if (difference.inDays == 1) {
-      return 'Ieri';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} giorni fa';
-    } else {
-      return '${date.day}/${date.month}/${date.year}';
-    }
-  }
 }

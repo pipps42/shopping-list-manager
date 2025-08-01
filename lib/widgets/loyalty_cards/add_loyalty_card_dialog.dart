@@ -87,6 +87,7 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
                 maxWidth: 1200,
                 maxHeight: 1200,
                 imageQuality: 90,
+                preserveAspectRatio: true,
               ),
             ],
           ),

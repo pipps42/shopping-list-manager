@@ -53,14 +53,6 @@ class FullScreenImageViewer extends StatelessWidget {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.pop(context),
-        backgroundColor: Colors.white.withOpacity(0.9),
-        foregroundColor: Colors.black,
-        mini: true,
-        child: const Icon(Icons.close),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
     );
   }
 

@@ -13,7 +13,7 @@ final imageServiceProvider = Provider<ImageService>((ref) {
 class ImageService {
   final ImagePicker _picker = ImagePicker();
 
-  Future<String?> pickAndSaveImage() async {
+  Future<String?> pickAndSaveImage({bool cropSquare = true}) async {
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
@@ -46,6 +46,21 @@ class ImageService {
         );
       }
 
+      // Crop 1:1 se richiesto (per reparti, prodotti, ricette)
+      if (cropSquare) {
+        final size = resized.width < resized.height ? resized.width : resized.height;
+        final x = (resized.width - size) ~/ 2;
+        final y = (resized.height - size) ~/ 2;
+        
+        resized = img.copyCrop(
+          resized,
+          x: x,
+          y: y,
+          width: size,
+          height: size,
+        );
+      }
+
       // Salva l'immagine compressa
       final Directory appDir = await getApplicationDocumentsDirectory();
       final String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
@@ -66,6 +81,11 @@ class ImageService {
     } catch (e) {
       return null;
     }
+  }
+
+  /// Metodo di convenienza per immagini senza crop (carte fedeltà)
+  Future<String?> pickAndSaveOriginalImage() async {
+    return pickAndSaveImage(cropSquare: false);
   }
 
   Future<void> deleteImage(String imagePath) async {
