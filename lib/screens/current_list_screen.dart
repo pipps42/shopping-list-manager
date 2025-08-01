@@ -116,7 +116,9 @@ class CurrentListScreen extends ConsumerWidget {
           ref.read(currentListProvider.notifier).addProductToList(productId);
         },
         onProductRemoved: (productId) {
-          ref.read(currentListProvider.notifier).removeProductFromList(productId);
+          ref
+              .read(currentListProvider.notifier)
+              .removeProductFromList(productId);
         },
       ),
     );
@@ -305,15 +307,6 @@ class CurrentListScreen extends ConsumerWidget {
   Future<void> _clearCurrentList(BuildContext context, WidgetRef ref) async {
     try {
       await ref.read(currentListProvider.notifier).clearAllItems();
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(AppStrings.listCleared),
-            backgroundColor: AppColors.success,
-          ),
-        );
-      }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

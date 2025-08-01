@@ -199,7 +199,8 @@ class AppStrings {
   static const String amount = 'Importo (€)';
   static const String optional = 'Opzionale - lascia vuoto per saltare';
   static const String skip = 'Salta';
-  static const String listCompleted = 'Lista completata con successo';
+  static const String listCompleted =
+      'Lista completata con successo.\nVai in "Ultime Liste" per un riepilogo della spesa.';
   static const String listIsEmpty =
       'La lista è vuota! Aggiungi prodotti prima di completarla.';
   static const String completionError = 'Errore nel completamento';

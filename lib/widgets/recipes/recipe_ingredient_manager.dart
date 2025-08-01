@@ -169,11 +169,6 @@ class RecipeIngredientManager extends ConsumerWidget {
               .read(recipesWithIngredientsProvider.notifier)
               .addProductToRecipe(recipe.id!, productId);
 
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Ingrediente aggiunto!')),
-            );
-          }
         },
         recipeName: recipe.name,
         recipeId: recipe.id!,
@@ -238,9 +233,6 @@ class RecipeIngredientManager extends ConsumerWidget {
 
               if (context.mounted) {
                 Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Ingrediente modificato!')),
-                );
               }
             },
             child: const Text('Salva'),

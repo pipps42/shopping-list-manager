@@ -77,8 +77,7 @@ class CompletedListsScreen extends ConsumerWidget {
       return const EmptyStateWidget(
         icon: Icons.history,
         title: 'Nessuna lista completata',
-        subtitle:
-            'Le tue liste completate appariranno qui.\nCompleta la prima lista dalla sezione "Lista Corrente"!',
+        subtitle: 'Le tue liste completate appariranno qui.',
       );
     }
 
@@ -348,9 +347,6 @@ class CompletedListsScreen extends ConsumerWidget {
                     .read(completedListsProvider.notifier)
                     .updateCompletedListPrice(list.id!, price);
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Prezzo aggiornato')),
-                );
               } catch (e) {
                 ScaffoldMessenger.of(
                   context,
@@ -394,9 +390,6 @@ class CompletedListsScreen extends ConsumerWidget {
             await ref
                 .read(completedListsProvider.notifier)
                 .deleteCompletedList(list.id!);
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Lista eliminata')));
           } catch (e) {
             ScaffoldMessenger.of(
               context,
@@ -445,12 +438,6 @@ class CompletedListsScreen extends ConsumerWidget {
       await ref.read(completedListsProvider.notifier).deleteAllCompletedLists();
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Tutte le liste sono state eliminate'),
-            backgroundColor: AppColors.success,
-          ),
-        );
       }
     } catch (e) {
       if (context.mounted) {

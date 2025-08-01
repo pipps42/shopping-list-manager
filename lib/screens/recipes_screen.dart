@@ -14,7 +14,6 @@ import '../widgets/recipes/recipe_card.dart';
 import '../widgets/recipes/recipe_form_dialog.dart';
 import '../widgets/recipes/recipe_ingredients_dialog.dart';
 import '../widgets/add_product_dialog.dart';
-import '../providers/list_type_provider.dart';
 
 class RecipesScreen extends ConsumerStatefulWidget {
   const RecipesScreen({super.key});
@@ -170,11 +169,6 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
       builder: (context) => RecipeFormDialog(
         onSave: (recipe) async {
           await ref.read(recipesProvider.notifier).addRecipe(recipe);
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Ricetta aggiunta con successo')),
-            );
-          }
         },
       ),
     );
@@ -187,11 +181,6 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
         recipe: recipe,
         onSave: (updatedRecipe) async {
           await ref.read(recipesProvider.notifier).updateRecipe(updatedRecipe);
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Ricetta modificata con successo')),
-            );
-          }
         },
       ),
     );
@@ -209,13 +198,6 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
         confirmType: DialogActionType.delete,
         onConfirm: () async {
           await ref.read(recipesProvider.notifier).deleteRecipe(recipe.id!);
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Ricetta eliminata con successo'),
-              ),
-            );
-          }
         },
       ),
     );
@@ -243,11 +225,6 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
                 recipeWithIngredients.recipe.id!,
                 productId,
               );
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Ingrediente aggiunto')),
-            );
-          }
         },
         onProductRemoved: (productId) async {
           // Rimuovi ingrediente
@@ -257,11 +234,6 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
                 recipeWithIngredients.recipe.id!,
                 productId,
               );
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Ingrediente rimosso')),
-            );
-          }
         },
       ),
     );
@@ -278,29 +250,11 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
           await ref
               .read(currentListProvider.notifier)
               .addProductToList(productId, listType);
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Prodotto aggiunto a ${getListTypeName(listType)}',
-                ),
-              ),
-            );
-          }
         },
         onProductRemoved: (productId, listType) async {
           await ref
               .read(currentListProvider.notifier)
               .removeProductFromList(productId, listType);
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Prodotto rimosso da ${getListTypeName(listType)}',
-                ),
-              ),
-            );
-          }
         },
       ),
     );
