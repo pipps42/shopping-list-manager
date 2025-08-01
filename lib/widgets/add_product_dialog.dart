@@ -377,7 +377,6 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
         icon: Icons.search_off,
         title: 'Nessun prodotto trovato',
         subtitle: 'Prova a modificare i filtri di ricerca',
-        iconSize: AppConstants.iconXL,
       );
     }
 
@@ -630,4 +629,5 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
       error: (error, stack) => const Text('Errore'),
     );
   }
+
 }
