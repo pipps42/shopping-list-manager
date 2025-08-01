@@ -118,6 +118,79 @@ class AddProductDialog extends ConsumerStatefulWidget {
 class _AddProductDialogState extends ConsumerState<AddProductDialog> {
   Department? selectedDepartment;
   String searchQuery = '';
+  late ScrollController _scrollController;
+  final Map<int?, GlobalKey> _chipKeys = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    // Crea la chiave per il chip "Tutti"
+    _chipKeys[null] = GlobalKey();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToSelectedTag(
+    Department? selectedDepartment,
+    List<Department> departments,
+  ) {
+    // Non fare nulla se il controller non è ancora collegato
+    if (!_scrollController.hasClients) return;
+
+    // Se selectedDepartment è null (opzione "Tutti"), scorri all'inizio
+    if (selectedDepartment == null) {
+      _scrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      return;
+    }
+
+    // Ottieni la chiave del chip selezionato
+    final chipKey = _chipKeys[selectedDepartment.id];
+    if (chipKey?.currentContext == null) return;
+
+    // Ottieni la posizione del chip rispetto al widget principale
+    final RenderBox chipRenderBox =
+        chipKey!.currentContext!.findRenderObject() as RenderBox;
+    final chipPosition = chipRenderBox.localToGlobal(Offset.zero);
+
+    // Ottieni la posizione del ScrollView
+    final scrollViewContext = context;
+    final RenderBox scrollViewRenderBox =
+        scrollViewContext.findRenderObject() as RenderBox;
+    final scrollViewPosition = scrollViewRenderBox.localToGlobal(Offset.zero);
+
+    // Calcola la posizione relativa del chip nel ScrollView
+    final relativePosition = chipPosition.dx - scrollViewPosition.dx;
+
+    // Se il chip è già all'inizio (primi ~50px), non fare nulla
+    if (relativePosition <= 50) return;
+
+    // Calcola quanto scrollare per portare il chip all'inizio
+    // La posizione attuale dello scroll + la differenza
+    final currentScrollPosition = _scrollController.offset;
+    final targetScrollPosition =
+        currentScrollPosition + relativePosition - 20; // -20px di margine
+
+    // Assicurati di non superare i limiti
+    final maxScrollExtent = _scrollController.position.maxScrollExtent;
+    final finalTargetPosition = targetScrollPosition > maxScrollExtent
+        ? maxScrollExtent
+        : (targetScrollPosition < 0 ? 0 : targetScrollPosition);
+
+    _scrollController.animateTo(
+      finalTargetPosition as double,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -143,8 +216,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
 
           // Filtro per reparto
           departmentsState.when(
-            data: (departments) =>
-                _buildDepartmentFilter(context, departments),
+            data: (departments) => _buildDepartmentFilter(context, departments),
             loading: () => const LoadingWidget(
               message: AppStrings.loadingDepartments,
               size: AppConstants.iconS,
@@ -188,7 +260,8 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
           ),
         ],
       ),
-      actions: [], // Nessuna azione, solo chiusura tramite tap fuori o back button
+      actions:
+          [], // Nessuna azione, solo chiusura tramite tap fuori o back button
     );
   }
 
@@ -196,7 +269,13 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     BuildContext context,
     List<Department> departments,
   ) {
+    // Crea le chiavi per i reparti se non esistono già
+    for (final dept in departments) {
+      _chipKeys.putIfAbsent(dept.id, () => GlobalKey());
+    }
+
     return SingleChildScrollView(
+      controller: _scrollController,
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
@@ -204,6 +283,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
+              key: _chipKeys[null],
               label: const Text('Tutti'),
               selected: selectedDepartment == null,
               selectedColor: AppColors.accent,
@@ -211,6 +291,10 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
               onSelected: (selected) {
                 setState(() {
                   selectedDepartment = null;
+                });
+                // Trigger scroll animation after the state update
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _scrollToSelectedTag(null, departments);
                 });
               },
             ),
@@ -220,13 +304,19 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
             (dept) => Padding(
               padding: const EdgeInsets.only(right: 8),
               child: FilterChip(
+                key: _chipKeys[dept.id],
                 label: Text(dept.name),
                 selected: selectedDepartment?.id == dept.id,
                 selectedColor: AppColors.accent,
                 checkmarkColor: AppColors.textOnTertiary(context),
                 onSelected: (selected) {
+                  final newSelectedDepartment = selected ? dept : null;
                   setState(() {
-                    selectedDepartment = selected ? dept : null;
+                    selectedDepartment = newSelectedDepartment;
+                  });
+                  // Trigger scroll animation after the state update
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _scrollToSelectedTag(newSelectedDepartment, departments);
                   });
                 },
               ),
@@ -335,12 +425,14 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
 
     // Se abbiamo un recipeId, usa il provider dedicato per gli ingredienti
     if (widget.recipeId != null) {
-      final recipeIngredientsState = ref.watch(recipeIngredientProductIdsProvider(widget.recipeId!));
-      
+      final recipeIngredientsState = ref.watch(
+        recipeIngredientProductIdsProvider(widget.recipeId!),
+      );
+
       return recipeIngredientsState.when(
         data: (recipeIngredientIds) {
           final isInRecipe = recipeIngredientIds.contains(product.id!);
-          
+
           if (isInRecipe) {
             return _buildCheckedProductTile(product);
           } else {
@@ -425,16 +517,16 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
         leading: _buildProductImage(product),
         title: Text(
           product.name,
-          style: TextStyle(
-            color: AppColors.textSecondary(context),
-          ),
+          style: TextStyle(color: AppColors.textSecondary(context)),
         ),
         subtitle: _buildDepartmentName(context, product.departmentId),
         trailing: widget.onProductRemoved != null
             ? Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                  borderRadius: BorderRadius.circular(
+                    AppConstants.borderRadius,
+                  ),
                   onTap: () => widget.onProductRemoved!(product.id!),
                   child: Container(
                     padding: const EdgeInsets.all(4),
