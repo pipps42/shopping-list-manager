@@ -141,7 +141,14 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
     );
   }
 
-  void _showDepartmentSelection() {
+  void _showDepartmentSelection() async {
+    // Nascondi la tastiera e aspetta che l'animazione si completi
+    FocusScope.of(context).unfocus();
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    // Verifica che il widget sia ancora montato prima di aprire la dialog
+    if (!mounted) return;
+    
     // Creo un prodotto temporaneo per la modale
     final tempProduct = Product(
       id: widget.product?.id ?? 0,
