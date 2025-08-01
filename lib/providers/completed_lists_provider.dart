@@ -9,7 +9,7 @@ final completedListsProvider =
       CompletedListsNotifier,
       AsyncValue<List<CompletedListWithCount>>
     >((ref) {
-      return CompletedListsNotifier(ref.watch(databaseServiceProvider), ref);
+      return CompletedListsNotifier(ref.watch(databaseServiceProvider));
     });
 
 final completedListDetailProvider = StateNotifierProvider.family
@@ -27,9 +27,8 @@ final completedListDetailProvider = StateNotifierProvider.family
 class CompletedListsNotifier
     extends StateNotifier<AsyncValue<List<CompletedListWithCount>>> {
   final DatabaseService _databaseService;
-  final Ref _ref;
 
-  CompletedListsNotifier(this._databaseService, this._ref)
+  CompletedListsNotifier(this._databaseService)
     : super(const AsyncValue.loading()) {
     loadCompletedLists();
   }
@@ -65,7 +64,7 @@ class CompletedListsNotifier
   Future<void> deleteCompletedList(int listId) async {
     try {
       await _databaseService.deleteCompletedList(listId);
-      
+
       // Ricarica le liste per aggiornare la UI
       await loadCompletedLists();
     } catch (error, stackTrace) {
@@ -77,7 +76,7 @@ class CompletedListsNotifier
   Future<void> updateCompletedListPrice(int listId, double? totalCost) async {
     try {
       await _databaseService.updateCompletedListPrice(listId, totalCost);
-      
+
       // Ricarica le liste per aggiornare la UI
       await loadCompletedLists();
     } catch (error, stackTrace) {

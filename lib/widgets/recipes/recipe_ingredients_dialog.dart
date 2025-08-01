@@ -55,84 +55,7 @@ class _RecipeIngredientsDialogState
           Expanded(child: _buildIngredientsList(ingredients)),
         ],
       ),
-      actions: [
-        DialogAction.cancel(
-          onPressed: () => Navigator.pop(context),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, recipe) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Prima riga: Icona ricetta + Nome + Bottone chiudi
-        Row(
-          children: [
-            // Icona/Immagine ricetta
-            Container(
-              width: AppConstants.imageM,
-              height: AppConstants.imageM,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-                child:
-                    recipe.imagePath != null &&
-                        File(recipe.imagePath!).existsSync()
-                    ? Image.file(
-                        File(recipe.imagePath!),
-                        fit: BoxFit.cover,
-                        cacheWidth: AppConstants.imageCacheWidth,
-                        cacheHeight: AppConstants.imageCacheHeight,
-                      )
-                    : Icon(
-                        Icons.restaurant_menu,
-                        size: AppConstants.iconM,
-                        color: AppColors.primary,
-                      ),
-              ),
-            ),
-            const SizedBox(width: AppConstants.spacingM),
-
-            // Nome ricetta
-            Expanded(
-              child: Text(
-                recipe.name,
-                style: const TextStyle(
-                  fontSize: AppConstants.fontXXXL,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-
-            // Bottone chiudi
-            IconButton(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: AppConstants.spacingS),
-
-        // Seconda riga: Descrizione
-        Text(
-          'Aggiungi ingredienti alla lista selezionata',
-          style: TextStyle(
-            fontSize: AppConstants.fontM,
-            color: AppColors.textSecondary(context),
-          ),
-        ),
-
-        const SizedBox(height: AppConstants.spacingM),
-
-        // Terza riga: Dropdown selezione lista
-        _buildListSelector(),
-      ],
+      actions: [DialogAction.cancel(onPressed: () => Navigator.pop(context))],
     );
   }
 
@@ -319,7 +242,7 @@ class _RecipeIngredientsDialogState
 
   Widget _buildListSelector() {
     const listTypes = ['weekly', 'monthly', 'occasional'];
-    
+
     return DropdownMenu<String>(
       initialSelection: _selectedListType,
       enableFilter: false,
@@ -335,11 +258,15 @@ class _RecipeIngredientsDialogState
         fillColor: AppColors.surface(context),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-          borderSide: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
+          borderSide: BorderSide(
+            color: AppColors.primary.withValues(alpha: 0.3),
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-          borderSide: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
+          borderSide: BorderSide(
+            color: AppColors.primary.withValues(alpha: 0.3),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppConstants.borderRadius),
@@ -367,7 +294,9 @@ class _RecipeIngredientsDialogState
           });
         }
       },
-      dropdownMenuEntries: listTypes.map<DropdownMenuEntry<String>>((String value) {
+      dropdownMenuEntries: listTypes.map<DropdownMenuEntry<String>>((
+        String value,
+      ) {
         return DropdownMenuEntry<String>(
           value: value,
           label: getListTypeName(value),

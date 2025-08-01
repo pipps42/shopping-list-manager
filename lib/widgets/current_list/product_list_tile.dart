@@ -10,11 +10,7 @@ class ProductListTile extends ConsumerWidget {
   final ListItem item;
   final bool readOnly;
 
-  const ProductListTile({
-    super.key, 
-    required this.item,
-    this.readOnly = false,
-  });
+  const ProductListTile({super.key, required this.item, this.readOnly = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -58,7 +54,7 @@ class ProductListTile extends ConsumerWidget {
           trailing: item.isChecked
               ? Icon(Icons.check_circle, color: AppColors.success)
               : Icon(
-                  Icons.radio_button_unchecked,
+                  Icons.swipe_right_alt,
                   color: AppColors.textDisabled(context),
                 ),
           onLongPress: () => _showRemoveDialog(context, ref),
@@ -69,9 +65,7 @@ class ProductListTile extends ConsumerWidget {
 
   Widget _buildReadOnlyTile(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground(context),
-      ),
+      decoration: BoxDecoration(color: AppColors.cardBackground(context)),
       padding: const EdgeInsets.symmetric(vertical: AppConstants.paddingS),
       child: ListTile(
         leading: _buildProductImage(),
@@ -136,7 +130,7 @@ class ProductListTile extends ConsumerWidget {
 
   void _showRemoveDialog(BuildContext context, WidgetRef ref) {
     if (readOnly) return; // Non mostrare dialog se in modalità read-only
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

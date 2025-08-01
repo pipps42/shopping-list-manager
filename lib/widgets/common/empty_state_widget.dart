@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
-import 'package:shopping_list_manager/utils/constants.dart';
 
 class EmptyStateWidget extends StatelessWidget {
   final IconData icon;
@@ -27,17 +26,18 @@ class EmptyStateWidget extends StatelessWidget {
         // Calcola dimensioni responsive basate sullo spazio disponibile
         final availableHeight = constraints.maxHeight;
         final availableWidth = constraints.maxWidth;
-        
+
         // Calcola padding dinamico (min 16, max 32)
         final padding = (availableWidth * 0.05).clamp(16.0, 32.0);
-        
+
         // Calcola dimensione icona dinamica
-        final dynamicIconSize = iconSize ?? (availableHeight * 0.15).clamp(40.0, 80.0);
-        
+        final dynamicIconSize =
+            iconSize ?? (availableHeight * 0.15).clamp(40.0, 80.0);
+
         // Calcola font size dinamici
         final titleFontSize = (availableHeight * 0.035).clamp(16.0, 24.0);
         final subtitleFontSize = (availableHeight * 0.025).clamp(14.0, 18.0);
-        
+
         return Center(
           child: Padding(
             padding: EdgeInsets.all(padding),
