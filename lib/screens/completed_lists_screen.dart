@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopping_list_manager/widgets/common/app_bar_gradient.dart';
+import 'package:shopping_list_manager/widgets/common/base_dialog.dart';
 import '../models/shopping_list.dart';
 import '../providers/completed_lists_provider.dart';
 import '../widgets/common/empty_state_widget.dart';
@@ -117,7 +118,11 @@ class CompletedListsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildItemContent(BuildContext context, WidgetRef ref, _FlatItem item) {
+  Widget _buildItemContent(
+    BuildContext context,
+    WidgetRef ref,
+    _FlatItem item,
+  ) {
     if (item is _MonthHeaderItem) {
       return Container(
         padding: const EdgeInsets.symmetric(
@@ -277,23 +282,41 @@ class CompletedListsScreen extends ConsumerWidget {
     );
   }
 
-  void _showEditPriceDialog(BuildContext context, WidgetRef ref, ShoppingList list) {
+  void _showEditPriceDialog(
+    BuildContext context,
+    WidgetRef ref,
+    ShoppingList list,
+  ) {
     final TextEditingController priceController = TextEditingController(
       text: list.totalCost?.toStringAsFixed(2) ?? '',
     );
 
+    // Formatta la data nel formato richiesto: DD/MM/YYYY HH24:MI
+    final completedDate = list.completedAt!;
+    final formattedDate =
+        '${completedDate.day.toString().padLeft(2, '0')}/'
+        '${completedDate.month.toString().padLeft(2, '0')}/'
+        '${completedDate.year} '
+        '${completedDate.hour.toString().padLeft(2, '0')}:'
+        '${completedDate.minute.toString().padLeft(2, '0')}';
+
+    final subtitle = '${list.name} del $formattedDate';
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Modifica prezzo'),
+      builder: (context) => BaseDialog(
+        title: 'Modifica Prezzo',
+        subtitle: subtitle,
+        titleIcon: Icons.euro,
+        hasColoredHeader: true,
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Lista: ${list.name}'),
-            const SizedBox(height: AppConstants.spacingM),
             TextField(
               controller: priceController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               decoration: const InputDecoration(
                 labelText: 'Prezzo totale',
                 prefixText: '€ ',
@@ -304,19 +327,12 @@ class CompletedListsScreen extends ConsumerWidget {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Annulla'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.textOnPrimary(context),
-            ),
+          DialogAction.cancel(onPressed: () => Navigator.pop(context)),
+          DialogAction.save(
             onPressed: () async {
               final priceText = priceController.text.trim();
               double? price;
-              
+
               if (priceText.isNotEmpty) {
                 price = double.tryParse(priceText.replaceAll(',', '.'));
                 if (price == null) {
@@ -326,75 +342,67 @@ class CompletedListsScreen extends ConsumerWidget {
                   return;
                 }
               }
-              
+
               try {
-                await ref.read(completedListsProvider.notifier)
+                await ref
+                    .read(completedListsProvider.notifier)
                     .updateCompletedListPrice(list.id!, price);
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Prezzo aggiornato')),
                 );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Errore: $e')),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text('Errore: $e')));
               }
             },
-            child: const Text('Salva'),
           ),
         ],
       ),
     );
   }
 
-  void _showDeleteListDialog(BuildContext context, WidgetRef ref, ShoppingList list) {
+  void _showDeleteListDialog(
+    BuildContext context,
+    WidgetRef ref,
+    ShoppingList list,
+  ) {
+    // Formatta la data nel formato richiesto: DD/MM/YYYY HH24:MI
+    final completedDate = list.completedAt!;
+    final formattedDate =
+        '${completedDate.day.toString().padLeft(2, '0')}/'
+        '${completedDate.month.toString().padLeft(2, '0')}/'
+        '${completedDate.year} '
+        '${completedDate.hour.toString().padLeft(2, '0')}:'
+        '${completedDate.minute.toString().padLeft(2, '0')}';
+
+    final message =
+        'Sei sicuro di voler eliminare questa lista?\n${list.name} del $formattedDate';
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Elimina lista'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Sei sicuro di voler eliminare questa lista?'),
-            const SizedBox(height: AppConstants.spacingM),
-            Text(
-              'Lista: ${list.name}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            if (list.totalCost != null)
-              Text('Prezzo: €${list.totalCost!.toStringAsFixed(2)}'),
-            const SizedBox(height: AppConstants.spacingM),
-            const Text(
-              'Questa azione non può essere annullata.',
-              style: TextStyle(color: AppColors.error),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Annulla'),
-          ),
-          TextButton(
-            onPressed: () async {
-              try {
-                await ref.read(completedListsProvider.notifier)
-                    .deleteCompletedList(list.id!);
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Lista eliminata')),
-                );
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Errore: $e')),
-                );
-              }
-            },
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Elimina'),
-          ),
-        ],
+      builder: (context) => ConfirmationDialog(
+        title: 'Elimina Lista',
+        message: message,
+        icon: Icons.delete_outline,
+        iconColor: AppColors.error,
+        confirmText: 'Elimina',
+        confirmType: DialogActionType.delete,
+        onConfirm: () async {
+          try {
+            await ref
+                .read(completedListsProvider.notifier)
+                .deleteCompletedList(list.id!);
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Lista eliminata')));
+          } catch (e) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Errore: $e')));
+          }
+        },
       ),
     );
   }

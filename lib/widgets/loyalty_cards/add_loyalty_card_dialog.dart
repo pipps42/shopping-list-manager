@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_list_manager/widgets/common/app_image_uploader.dart';
+import 'package:shopping_list_manager/widgets/common/base_dialog.dart';
 import '../../models/loyalty_card.dart';
 import '../../utils/constants.dart';
 import '../../utils/color_palettes.dart';
@@ -44,8 +45,10 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(_isEditing ? 'Modifica Carta' : 'Nuova Carta Fedeltà'),
+    return BaseDialog(
+      title: _isEditing ? 'Modifica Carta' : 'Nuova Carta',
+      titleIcon: _isEditing ? Icons.edit : Icons.credit_card,
+      hasColoredHeader: true,
       content: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.8,
@@ -90,23 +93,11 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: _isLoading ? null : () => Navigator.pop(context),
-          child: const Text(AppStrings.cancel),
-        ),
-        ElevatedButton(
-          onPressed: _canSave && !_isLoading ? _saveCard : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.textOnPrimary(context),
-          ),
-          child: _isLoading
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Text(_isEditing ? AppStrings.edit : AppStrings.add),
+        DialogAction.cancel(onPressed: () => Navigator.pop(context)),
+        DialogAction.save(
+          text: _isEditing ? AppStrings.save : AppStrings.add,
+          onPressed: _saveCard,
+          isLoading: _isLoading,
         ),
       ],
     );

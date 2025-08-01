@@ -111,9 +111,12 @@ class CurrentListScreen extends ConsumerWidget {
   void _showAddProductDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (context) => AddProductDialog(
+      builder: (context) => AddProductDialog.forCurrentList(
         onProductSelected: (productId) {
           ref.read(currentListProvider.notifier).addProductToList(productId);
+        },
+        onProductRemoved: (productId) {
+          ref.read(currentListProvider.notifier).removeProductFromList(productId);
         },
       ),
     );

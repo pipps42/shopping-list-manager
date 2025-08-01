@@ -5,6 +5,7 @@ import '../providers/loyalty_cards_provider.dart';
 import '../widgets/common/empty_state_widget.dart';
 import '../widgets/common/error_state_widget.dart';
 import '../widgets/common/loading_widget.dart';
+import '../widgets/common/base_dialog.dart';
 import '../widgets/loyalty_cards/loyalty_card_tile.dart';
 import '../widgets/loyalty_cards/add_loyalty_card_dialog.dart';
 import '../widgets/loyalty_cards/full_screen_image_viewer.dart';
@@ -130,28 +131,18 @@ class LoyaltyCardsScreen extends ConsumerWidget {
   ) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Elimina Carta'),
-        content: Text('Sei sicuro di voler eliminare "${card.name}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Annulla'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await ref
-                  .read(loyaltyCardsProvider.notifier)
-                  .deleteLoyaltyCard(card.id!);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-              foregroundColor: AppColors.textOnPrimary(context),
-            ),
-            child: const Text('Elimina'),
-          ),
-        ],
+      builder: (context) => ConfirmationDialog(
+        title: 'Elimina Carta',
+        message: 'Sei sicuro di voler eliminare "${card.name}"?',
+        icon: Icons.delete_outline,
+        iconColor: AppColors.error,
+        confirmText: 'Elimina',
+        confirmType: DialogActionType.delete,
+        onConfirm: () async {
+          await ref
+              .read(loyaltyCardsProvider.notifier)
+              .deleteLoyaltyCard(card.id!);
+        },
       ),
     );
   }

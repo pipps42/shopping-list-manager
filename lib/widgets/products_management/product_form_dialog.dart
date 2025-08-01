@@ -2,6 +2,7 @@ import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopping_list_manager/widgets/common/app_image_uploader.dart';
+import 'package:shopping_list_manager/widgets/common/base_dialog.dart';
 import '../../models/product.dart';
 import '../../models/department.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
@@ -56,8 +57,10 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
   Widget build(BuildContext context) {
     final isEditing = widget.product != null;
 
-    return AlertDialog(
-      title: Text(isEditing ? AppStrings.editProduct : AppStrings.newProduct),
+    return BaseDialog(
+      title: isEditing ? AppStrings.editProduct : AppStrings.newProduct,
+      titleIcon: isEditing ? Icons.edit : Icons.shopping_basket,
+      hasColoredHeader: true,
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -93,17 +96,13 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
         ),
       ),
       actions: [
-        TextButton(
+        DialogAction.cancel(
           onPressed: () => Navigator.pop(context),
-          child: const Text(AppStrings.cancel),
         ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            foregroundColor: AppColors.textOnPrimary(context),
-          ),
-          onPressed: _isLoading ? null : _handleSave,
-          child: Text(isEditing ? AppStrings.save : AppStrings.add),
+        DialogAction.save(
+          text: isEditing ? AppStrings.save : AppStrings.add,
+          onPressed: _handleSave,
+          isLoading: _isLoading,
         ),
       ],
     );

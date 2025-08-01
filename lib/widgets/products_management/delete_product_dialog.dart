@@ -2,6 +2,7 @@ import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import '../../models/product.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
+import '../common/base_dialog.dart';
 
 class DeleteProductDialog extends StatelessWidget {
   final Product product;
@@ -15,26 +16,14 @@ class DeleteProductDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Elimina Prodotto'),
-      content: Text('Sei sicuro di voler eliminare "${product.name}"?'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(AppStrings.cancel),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            onConfirmDelete();
-            Navigator.pop(context);
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.error,
-            foregroundColor: AppColors.textOnPrimary(context),
-          ),
-          child: Text(AppStrings.delete),
-        ),
-      ],
+    return ConfirmationDialog(
+      title: 'Elimina Prodotto',
+      message: 'Sei sicuro di voler eliminare "${product.name}"?',
+      icon: Icons.delete_outline,
+      iconColor: AppColors.error,
+      confirmText: AppStrings.delete,
+      confirmType: DialogActionType.delete,
+      onConfirm: onConfirmDelete,
     );
   }
 }
