@@ -57,7 +57,6 @@ class AddProductDialog extends ConsumerStatefulWidget {
       onProductSelected: onProductSelected,
       onProductRemoved: onProductRemoved,
       title: AppStrings.addProduct,
-      subtitle: 'Seleziona i prodotti da aggiungere alla lista',
     );
   }
 
@@ -89,7 +88,7 @@ class AddProductDialog extends ConsumerStatefulWidget {
       onProductSelected: onProductSelected,
       onProductRemoved: onProductRemoved,
       title: 'Gestisci Ingredienti',
-      subtitle: 'Seleziona gli ingredienti per "$recipeName"',
+      subtitle: 'Ingredienti per "$recipeName"',
       preselectedProductIds: currentIngredients,
       recipeId: recipeId,
     );
@@ -169,32 +168,47 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
 
     // Calcola la posizione relativa del chip nel ScrollView
     final relativePosition = chipPosition.dx - scrollViewPosition.dx;
-    
+
     // Ottieni anche la larghezza del chip per capire se è completamente visibile
     final chipWidth = chipRenderBox.size.width;
     final scrollViewWidth = scrollViewRenderBox.size.width;
-    
+
     // Calcola valori dinamici basati sulla larghezza del ScrollView
-    final edgeMargin = scrollViewWidth * 0.05; // 5% della larghezza come margine
-    final idealPositionStart = scrollViewWidth * 0.08; // 8% della larghezza come inizio ideale
-    final idealPositionEnd = scrollViewWidth * 0.20; // 20% della larghezza come fine ideale
-    final scrollMargin = scrollViewWidth * 0.22; // 22% della larghezza come margine di scroll (aumentato)
-    final endScrollTolerance = scrollViewWidth * 0.05; // 5% della larghezza come tolleranza fine scroll
-    
+    final edgeMargin =
+        scrollViewWidth * 0.05; // 5% della larghezza come margine
+    final idealPositionStart =
+        scrollViewWidth * 0.08; // 8% della larghezza come inizio ideale
+    final idealPositionEnd =
+        scrollViewWidth * 0.20; // 20% della larghezza come fine ideale
+    final scrollMargin =
+        scrollViewWidth *
+        0.22; // 22% della larghezza come margine di scroll (aumentato)
+    final endScrollTolerance =
+        scrollViewWidth *
+        0.05; // 5% della larghezza come tolleranza fine scroll
+
     // Calcola se il chip è completamente visibile
     final chipEndPosition = relativePosition + chipWidth;
-    final isFullyVisible = relativePosition >= edgeMargin && chipEndPosition <= scrollViewWidth - edgeMargin;
-    
+    final isFullyVisible =
+        relativePosition >= edgeMargin &&
+        chipEndPosition <= scrollViewWidth - edgeMargin;
+
     // Se il chip è già completamente visibile nella posizione ideale, non fare nulla
-    if (isFullyVisible && relativePosition >= idealPositionStart && relativePosition <= idealPositionEnd) return;
+    if (isFullyVisible &&
+        relativePosition >= idealPositionStart &&
+        relativePosition <= idealPositionEnd)
+      return;
 
     // Se siamo già al massimo scroll e il chip è completamente visibile, non fare nulla
     final currentScrollPosition = _scrollController.offset;
     final maxScrollExtent = _scrollController.position.maxScrollExtent;
-    if (currentScrollPosition >= maxScrollExtent - endScrollTolerance && isFullyVisible) return;
+    if (currentScrollPosition >= maxScrollExtent - endScrollTolerance &&
+        isFullyVisible)
+      return;
 
     // Calcola quanto scrollare per portare il chip all'inizio
-    final targetScrollPosition = currentScrollPosition + relativePosition - scrollMargin;
+    final targetScrollPosition =
+        currentScrollPosition + relativePosition - scrollMargin;
 
     // Assicurati di non superare i limiti
     final finalTargetPosition = targetScrollPosition > maxScrollExtent
@@ -215,6 +229,7 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
 
     return BaseDialog(
       title: widget.title ?? AppStrings.addProduct,
+      subtitle: widget.subtitle,
       titleIcon: Icons.add_circle_outline,
       hasColoredHeader: true,
       width: MediaQuery.of(context).size.width * 0.9,
@@ -362,7 +377,6 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
         icon: Icons.search_off,
         title: 'Nessun prodotto trovato',
         subtitle: 'Prova a modificare i filtri di ricerca',
-        iconSize: AppConstants.iconXL,
       );
     }
 
@@ -615,4 +629,5 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
       error: (error, stack) => const Text('Errore'),
     );
   }
+
 }

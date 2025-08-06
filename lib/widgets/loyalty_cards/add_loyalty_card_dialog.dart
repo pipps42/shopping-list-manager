@@ -87,6 +87,7 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
                 maxWidth: 1200,
                 maxHeight: 1200,
                 imageQuality: 90,
+                preserveAspectRatio: true,
               ),
             ],
           ),
@@ -117,16 +118,6 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
 
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              _isEditing
-                  ? 'Carta modificata con successo!'
-                  : 'Carta aggiunta con successo!',
-            ),
-            backgroundColor: AppColors.success,
-          ),
-        );
       }
     } catch (e) {
       if (mounted) {

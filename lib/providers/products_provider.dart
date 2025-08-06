@@ -3,6 +3,7 @@ import '../models/product.dart';
 import '../services/database_service.dart';
 import 'current_list_provider.dart';
 import 'database_provider.dart';
+import 'recipes_provider.dart';
 
 final productsProvider =
     StateNotifierProvider<ProductsNotifier, AsyncValue<List<Product>>>((ref) {
@@ -65,6 +66,12 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<Product>>> {
     _ref.invalidate(currentListProvider);
     _ref.invalidate(currentListProductIdsProvider);
     _ref.invalidate(productsByDepartmentProvider);
+    
+    // Invalidate recipe providers since product data changed
+    _ref.invalidate(recipesWithIngredientsProvider);
+    _ref.invalidate(recipeWithIngredientsProvider);
+    _ref.invalidate(recipeIngredientsProvider);
+    _ref.invalidate(recipeIngredientProductIdsProvider);
   }
 
   Future<void> deleteProduct(int id) async {
@@ -74,6 +81,12 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<Product>>> {
     _ref.invalidate(currentListProvider);
     _ref.invalidate(currentListProductIdsProvider);
     _ref.invalidate(productsByDepartmentProvider);
+    
+    // Invalidate recipe providers since product was deleted
+    _ref.invalidate(recipesWithIngredientsProvider);
+    _ref.invalidate(recipeWithIngredientsProvider);
+    _ref.invalidate(recipeIngredientsProvider);
+    _ref.invalidate(recipeIngredientProductIdsProvider);
   }
 }
 

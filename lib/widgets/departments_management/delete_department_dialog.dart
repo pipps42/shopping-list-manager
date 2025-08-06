@@ -25,16 +25,6 @@ class DeleteDepartmentDialog extends StatelessWidget {
       confirmType: DialogActionType.delete,
       onConfirm: () {
         onConfirmDelete();
-        
-        // Mostra snackbar di conferma nel context parent
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Reparto "${department.name}" eliminato'),
-              backgroundColor: AppColors.success,
-            ),
-          );
-        });
       },
     );
   }

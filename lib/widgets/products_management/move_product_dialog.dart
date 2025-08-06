@@ -53,16 +53,6 @@ class MoveProductDialog extends StatelessWidget {
                           onMoveProduct(dept);
                           Navigator.pop(context);
 
-                          // Mostra snackbar di conferma solo se non è selezione
-                          if (!isSelection) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  '${product.name} spostato in ${dept.name}',
-                                ),
-                              ),
-                            );
-                          }
                         },
                 );
               },

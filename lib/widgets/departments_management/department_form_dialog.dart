@@ -4,7 +4,6 @@ import 'package:shopping_list_manager/widgets/common/app_image_uploader.dart';
 import 'package:shopping_list_manager/widgets/common/base_dialog.dart';
 import '../../models/department.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shopping_list_manager/utils/color_palettes.dart';
 
 class DepartmentFormDialog extends ConsumerStatefulWidget {
   final Department? department;

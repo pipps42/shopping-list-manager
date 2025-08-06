@@ -1,14 +1,16 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../utils/constants.dart';
 import '../../utils/color_palettes.dart';
+import '../../providers/image_provider.dart';
 
 /// 📸 **AppImageUploader** - Widget completo per upload e gestione immagini
 
 enum ButtonsLayout { below, beside }
 
-class AppImageUploader extends StatefulWidget {
+class AppImageUploader extends ConsumerStatefulWidget {
   final String? imagePath;
   final ValueChanged<String>? onImageSelected;
   final VoidCallback? onImageRemoved;
@@ -26,6 +28,7 @@ class AppImageUploader extends StatefulWidget {
   final String? galleryButtonText;
   final String? removeButtonText;
   final String? emptyStateText;
+  final bool preserveAspectRatio;
 
   const AppImageUploader({
     super.key,
@@ -46,13 +49,14 @@ class AppImageUploader extends StatefulWidget {
     this.galleryButtonText,
     this.removeButtonText,
     this.emptyStateText,
+    this.preserveAspectRatio = false,
   });
 
   @override
-  State<AppImageUploader> createState() => _AppImageUploaderState();
+  ConsumerState<AppImageUploader> createState() => _AppImageUploaderState();
 }
 
-class _AppImageUploaderState extends State<AppImageUploader> {
+class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
 
@@ -317,15 +321,25 @@ class _AppImageUploaderState extends State<AppImageUploader> {
     setState(() => _isLoading = true);
 
     try {
-      final XFile? image = await _picker.pickImage(
-        source: source,
-        maxWidth: widget.maxWidth.toDouble(),
-        maxHeight: widget.maxHeight.toDouble(),
-        imageQuality: widget.imageQuality,
-      );
+      String? imagePath;
+      
+      if (widget.preserveAspectRatio) {
+        // Comportamento originale per carte fedeltà (preserva proporzioni)
+        final XFile? image = await _picker.pickImage(
+          source: source,
+          maxWidth: widget.maxWidth.toDouble(),
+          maxHeight: widget.maxHeight.toDouble(),
+          imageQuality: widget.imageQuality,
+        );
+        imagePath = image?.path;
+      } else {
+        // Default: usa il servizio di immagini con crop 1:1
+        final imageService = ref.read(imageServiceProvider);
+        imagePath = await imageService.pickAndSaveImage(cropSquare: true);
+      }
 
-      if (image != null && widget.onImageSelected != null) {
-        widget.onImageSelected!(image.path);
+      if (imagePath != null && widget.onImageSelected != null) {
+        widget.onImageSelected!(imagePath);
       }
     } catch (e) {
       final errorMessage = 'Errore nella selezione dell\'immagine: $e';
