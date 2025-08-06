@@ -131,6 +131,134 @@ class CompleteListChoiceDialog extends StatelessWidget {
   }
 }
 
+class UnpurchasedItemsHandlingDialog extends StatelessWidget {
+  final VoidCallback onRemoveItems;
+  final VoidCallback onKeepItems;
+
+  const UnpurchasedItemsHandlingDialog({
+    super.key,
+    required this.onRemoveItems,
+    required this.onKeepItems,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Row(
+        children: [
+          Icon(
+            Icons.help_outline,
+            color: AppColors.primary,
+            size: AppConstants.iconL,
+          ),
+          const SizedBox(width: AppConstants.spacingM),
+          const Text(AppStrings.handleUnpurchasedItems),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            AppStrings.howToHandleUnpurchasedItems,
+            style: TextStyle(
+              fontSize: AppConstants.fontL,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: AppConstants.spacingL),
+          _buildOption(
+            context,
+            icon: Icons.delete_outline,
+            iconColor: AppColors.error,
+            title: AppStrings.removeFromList,
+            subtitle: AppStrings.removeFromListSubtitle,
+            onTap: () {
+              Navigator.pop(context);
+              onRemoveItems();
+            },
+          ),
+          const SizedBox(height: AppConstants.spacingM),
+          _buildOption(
+            context,
+            icon: Icons.shopping_cart_outlined,
+            iconColor: AppColors.success,
+            title: AppStrings.keepForNextShopping,
+            subtitle: AppStrings.keepForNextShoppingSubtitle,
+            onTap: () {
+              Navigator.pop(context);
+              onKeepItems();
+            },
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Annulla'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOption(
+    BuildContext context, {
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppConstants.radiusM),
+      child: Container(
+        padding: const EdgeInsets.all(AppConstants.paddingM),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.border(context), width: 1),
+          borderRadius: BorderRadius.circular(AppConstants.radiusM),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppConstants.paddingS),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(AppConstants.radiusS),
+              ),
+              child: Icon(icon, color: iconColor, size: AppConstants.iconL),
+            ),
+            const SizedBox(width: AppConstants.spacingM),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: AppConstants.fontL,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: AppConstants.spacingXS),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: AppConstants.fontM,
+                      color: AppColors.textSecondary(context),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, size: AppConstants.iconS),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class TotalCostDialog extends StatefulWidget {
   final Function(double?) onSave;
 

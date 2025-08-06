@@ -1,7 +1,7 @@
 class AppConstants {
   // App Info
   static const String appName = 'Lista Spesa';
-  static const String appVersion = 'v0.1.0';
+  static const String appVersion = 'v1.0.0';
 
   // Colori Esselunga
   static const int esseLungaGreen = 0xFF00A651;
@@ -208,6 +208,14 @@ class AppStrings {
   static const String listCleared = 'Lista svuotata con successo';
   static const String noItemsSelected =
       'Non hai selezionato nessun prodotto! Seleziona almeno un prodotto o scegli "Ho preso tutto".';
+  
+  // === GESTIONE PRODOTTI NON ACQUISTATI ===
+  static const String handleUnpurchasedItems = 'Gestisci Prodotti';
+  static const String howToHandleUnpurchasedItems = 'Come vuoi gestire i prodotti non acquistati?';
+  static const String removeFromList = 'Rimuovi dalla lista';
+  static const String removeFromListSubtitle = 'I prodotti non acquistati verranno eliminati';
+  static const String keepForNextShopping = 'Mantieni per la prossima spesa';
+  static const String keepForNextShoppingSubtitle = 'I prodotti non acquistati rimarranno nella nuova lista';
 
   // === RICETTE ===
   static const String recipes = 'Ricette';

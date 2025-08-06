@@ -155,12 +155,14 @@ class CurrentListNotifier
 
   Future<void> completeCurrentList({
     required bool markAllAsChecked,
+    required bool keepUncheckedItems,
     double? totalCost,
   }) async {
     try {
       final currentListType = _ref.read(currentListTypeProvider);
       await _databaseService.completeCurrentList(
         markAllAsChecked: markAllAsChecked,
+        keepUncheckedItems: keepUncheckedItems,
         totalCost: totalCost,
         listType: currentListType,
       );

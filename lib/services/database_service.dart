@@ -123,7 +123,6 @@ class DatabaseService {
     await DatabaseInitializer.initializeDefaultData(db);
   }
 
-
   // =========== CRUD per Departments ===========
   Future<int> insertDepartment(Department department) async {
     final db = await database;
@@ -426,6 +425,7 @@ class DatabaseService {
 
   Future<void> completeCurrentList({
     required bool markAllAsChecked,
+    required bool keepUncheckedItems,
     double? totalCost,
     String? listType,
   }) async {
@@ -437,6 +437,8 @@ class DatabaseService {
     }
 
     await db.transaction((txn) async {
+      List<Map<String, dynamic>> uncheckedItems = [];
+
       // 1. Se richiesto, marca tutti gli item come checked
       if (markAllAsChecked) {
         await txn.update(
@@ -446,7 +448,15 @@ class DatabaseService {
           whereArgs: [currentList.id],
         );
       } else {
-        // 2. Se manteniamo lo stato corrente, elimina gli item NON checked
+        // 2. Se richiesto, salva i prodotti non checked che devono essere mantenuti nella nuova lista
+        if (keepUncheckedItems) {
+          uncheckedItems = await txn.query(
+            'list_items',
+            where: 'list_id = ? AND is_checked = 0',
+            whereArgs: [currentList.id],
+          );
+        }
+        // 3. In ogni caso pulisci la lista dai prodotti non-checked
         await txn.delete(
           'list_items',
           where: 'list_id = ? AND is_checked = 0',
@@ -454,7 +464,7 @@ class DatabaseService {
         );
       }
 
-      // 3. Completa la lista corrente
+      // 4. Completa la lista corrente
       await txn.update(
         'shopping_lists',
         {
@@ -465,14 +475,28 @@ class DatabaseService {
         whereArgs: [currentList.id],
       );
 
-      // 4. Crea una nuova lista corrente vuota dello stesso tipo
+      // 5. Crea una nuova lista corrente
       final newListType = listType ?? 'weekly';
       final listName = _getListNameByType(newListType);
-      await txn.insert('shopping_lists', {
+      final newListId = await txn.insert('shopping_lists', {
         'name': listName,
         'created_at': DateTime.now().millisecondsSinceEpoch,
         'list_type': newListType,
       });
+
+      // 6. Se richiesto, copia i prodotti non checked nella nuova lista
+      if (!markAllAsChecked &&
+          keepUncheckedItems &&
+          uncheckedItems.isNotEmpty) {
+        for (final item in uncheckedItems) {
+          await txn.insert('list_items', {
+            'list_id': newListId,
+            'product_id': item['product_id'],
+            'is_checked': 0,
+            'added_at': DateTime.now().millisecondsSinceEpoch,
+          });
+        }
+      }
     });
   }
 
