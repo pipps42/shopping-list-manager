@@ -5,6 +5,7 @@ import 'package:shopping_list_manager/widgets/common/app_image_uploader.dart';
 import 'package:shopping_list_manager/widgets/common/base_dialog.dart';
 import '../../models/product.dart';
 import '../../models/department.dart';
+import '../../utils/icon_types.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
 import 'move_product_dialog.dart';
 
@@ -12,7 +13,13 @@ class ProductFormDialog extends ConsumerStatefulWidget {
   final Product? product;
   final List<Department> departments;
   final int? defaultDepartmentId;
-  final Function(String name, int departmentId, String? imagePath) onSave;
+  final Function(
+    String name,
+    int departmentId,
+    IconType iconType,
+    String? iconValue,
+  )
+  onSave;
 
   const ProductFormDialog({
     super.key,
@@ -29,7 +36,8 @@ class ProductFormDialog extends ConsumerStatefulWidget {
 class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
   late TextEditingController _nameController;
   int? _selectedDepartmentId;
-  String? _selectedImagePath;
+  IconType _selectedIconType = IconType.asset;
+  String? _selectedIconValue;
   bool _isLoading = false;
 
   @override
@@ -44,7 +52,8 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
             ? widget.departments.first.id
             : null); // 3. Fallback primo reparto
 
-    _selectedImagePath = widget.product?.imagePath;
+    _selectedIconType = widget.product?.iconType ?? IconType.asset;
+    _selectedIconValue = widget.product?.iconValue;
   }
 
   @override
@@ -80,25 +89,29 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
             _buildDepartmentSelector(),
             const SizedBox(height: AppConstants.spacingM),
 
-            // Sezione immagine
+            // Sezione icona
             AppImageUploader(
-              imagePath: _selectedImagePath,
-              onImageSelected: (path) =>
-                  setState(() => _selectedImagePath = path),
-              onImageRemoved: () => setState(() => _selectedImagePath = null),
-              title: 'Immagine del prodotto',
+              mode: UploaderMode.emojiGallery,
+              value: _selectedIconValue,
+              iconType: _selectedIconType,
+              onValueChanged: (value) =>
+                  setState(() => _selectedIconValue = value),
+              onIconTypeChanged: (type) =>
+                  setState(() => _selectedIconType = type),
+              onValueRemoved: () => setState(() {
+                _selectedIconValue = null;
+                _selectedIconType = IconType.asset;
+              }),
+              title: 'Icona del prodotto',
               fallbackIcon: Icons.shopping_basket,
               previewHeight: 100,
               previewWidth: 100,
-              buttonsLayout: ButtonsLayout.beside,
             ),
           ],
         ),
       ),
       actions: [
-        DialogAction.cancel(
-          onPressed: () => Navigator.pop(context),
-        ),
+        DialogAction.cancel(onPressed: () => Navigator.pop(context)),
         DialogAction.save(
           text: isEditing ? AppStrings.save : AppStrings.add,
           onPressed: _handleSave,
@@ -109,9 +122,10 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
   }
 
   Widget _buildDepartmentSelector() {
-    final selectedDepartment = widget.departments
-        .firstWhere((dept) => dept.id == _selectedDepartmentId,
-            orElse: () => widget.departments.first);
+    final selectedDepartment = widget.departments.firstWhere(
+      (dept) => dept.id == _selectedDepartmentId,
+      orElse: () => widget.departments.first,
+    );
 
     return InkWell(
       onTap: _showDepartmentSelection,
@@ -145,16 +159,17 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
     // Nascondi la tastiera e aspetta che l'animazione si completi
     FocusScope.of(context).unfocus();
     await Future.delayed(const Duration(milliseconds: 300));
-    
+
     // Verifica che il widget sia ancora montato prima di aprire la dialog
     if (!mounted) return;
-    
+
     // Creo un prodotto temporaneo per la modale
     final tempProduct = Product(
       id: widget.product?.id ?? 0,
       name: _nameController.text.isNotEmpty ? _nameController.text : 'Prodotto',
       departmentId: _selectedDepartmentId ?? widget.departments.first.id!,
-      imagePath: _selectedImagePath,
+      iconType: _selectedIconType,
+      iconValue: _selectedIconValue,
     );
 
     showDialog(
@@ -189,7 +204,12 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
       return;
     }
 
-    widget.onSave(name, _selectedDepartmentId!, _selectedImagePath);
+    widget.onSave(
+      name,
+      _selectedDepartmentId!,
+      _selectedIconType,
+      _selectedIconValue,
+    );
     Navigator.pop(context);
   }
 }

@@ -53,19 +53,6 @@ class RecipeCard extends StatelessWidget {
                       ),
                     ),
 
-                    if (recipe.description != null &&
-                        recipe.description!.isNotEmpty) ...[
-                      const SizedBox(height: AppConstants.spacingXS),
-                      Text(
-                        recipe.description!,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary(context),
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-
                     const SizedBox(height: AppConstants.spacingS),
 
                     // Contatore ingredienti

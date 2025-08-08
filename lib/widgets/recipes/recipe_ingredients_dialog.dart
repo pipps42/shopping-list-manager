@@ -7,9 +7,10 @@ import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:shopping_list_manager/widgets/common/empty_state_widget.dart';
 import 'package:shopping_list_manager/widgets/common/loading_widget.dart';
 import 'package:shopping_list_manager/widgets/common/base_dialog.dart';
+import 'package:shopping_list_manager/widgets/common/universal_icon.dart';
 import '../../models/recipe_with_ingredients.dart';
 import '../../models/recipe_ingredient.dart';
-import 'dart:io';
+import '../../utils/icon_types.dart';
 
 class RecipeIngredientsDialog extends ConsumerStatefulWidget {
   final RecipeWithIngredients recipeWithIngredients;
@@ -116,7 +117,7 @@ class _RecipeIngredientsDialogState
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 1.0),
       child: ListTile(
-        leading: _buildProductImage(ingredient.productImagePath),
+        leading: _buildProductImage(ingredient),
         title: Text(ingredient.productName ?? 'Prodotto sconosciuto'),
         subtitle: _buildIngredientSubtitle(ingredient),
         trailing: const Icon(Icons.add_circle_outline),
@@ -133,7 +134,7 @@ class _RecipeIngredientsDialogState
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
       ),
       child: ListTile(
-        leading: _buildProductImage(ingredient.productImagePath),
+        leading: _buildProductImage(ingredient),
         title: Text(
           ingredient.productName ?? 'Prodotto sconosciuto',
           style: TextStyle(color: AppColors.textSecondary(context)),
@@ -167,7 +168,7 @@ class _RecipeIngredientsDialogState
 
   Widget _buildLoadingTile(RecipeIngredient ingredient) {
     return ListTile(
-      leading: _buildProductImage(ingredient.productImagePath),
+      leading: _buildProductImage(ingredient),
       title: Text(ingredient.productName ?? 'Prodotto sconosciuto'),
       subtitle: _buildIngredientSubtitle(ingredient),
       trailing: const SizedBox(
@@ -180,7 +181,7 @@ class _RecipeIngredientsDialogState
 
   Widget _buildErrorTile(RecipeIngredient ingredient, Object error) {
     return ListTile(
-      leading: _buildProductImage(ingredient.productImagePath),
+      leading: _buildProductImage(ingredient),
       title: Text(ingredient.productName ?? 'Prodotto sconosciuto'),
       subtitle: Text('Errore: $error'),
       trailing: const Icon(Icons.error, color: AppColors.error),
@@ -193,12 +194,6 @@ class _RecipeIngredientsDialogState
     if (ingredient.departmentName != null) {
       subtitleParts.add(ingredient.departmentName!);
     }
-    if (ingredient.quantity != null && ingredient.quantity!.isNotEmpty) {
-      subtitleParts.add('Qtà: ${ingredient.quantity}');
-    }
-    if (ingredient.notes != null && ingredient.notes!.isNotEmpty) {
-      subtitleParts.add('Note: ${ingredient.notes}');
-    }
 
     return Text(
       subtitleParts.join(' • '),
@@ -206,37 +201,13 @@ class _RecipeIngredientsDialogState
     );
   }
 
-  Widget _buildProductImage(String? imagePath) {
-    if (imagePath != null && File(imagePath).existsSync()) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        child: Image.file(
-          File(imagePath),
-          width: AppConstants.imageM,
-          height: AppConstants.imageM,
-          fit: BoxFit.cover,
-          cacheWidth: AppConstants.imageCacheWidth,
-          cacheHeight: AppConstants.imageCacheHeight,
-          errorBuilder: (context, error, stackTrace) => _buildDefaultIcon(),
-        ),
-      );
-    }
-    return _buildDefaultIcon();
-  }
-
-  Widget _buildDefaultIcon() {
-    return Container(
-      width: AppConstants.imageM,
-      height: AppConstants.imageM,
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-      ),
-      child: Icon(
-        Icons.shopping_basket,
-        size: AppConstants.iconM,
-        color: AppColors.primary,
-      ),
+  Widget _buildProductImage(RecipeIngredient ingredient) {
+    return UniversalIcon(
+      iconType: ingredient.productIconType ?? IconType.asset,
+      iconValue: ingredient.productIconValue,
+      size: AppConstants.imageM,
+      fallbackIcon: Icons.shopping_basket,
+      borderRadius: BorderRadius.circular(AppConstants.borderRadius),
     );
   }
 

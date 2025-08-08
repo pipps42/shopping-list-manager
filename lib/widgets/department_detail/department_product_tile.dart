@@ -1,9 +1,9 @@
 import 'package:shopping_list_manager/utils/constants.dart';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../models/product.dart';
 import '../../models/department.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
+import '../common/universal_icon.dart';
 
 class DepartmentProductTile extends StatelessWidget {
   final Product product;
@@ -93,37 +93,11 @@ class DepartmentProductTile extends StatelessWidget {
   }
 
   Widget _buildProductImage() {
-    if (product.imagePath != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(AppConstants.radiusM),
-        child: Image.file(
-          File(product.imagePath!),
-          width: AppConstants.imageL,
-          height: AppConstants.imageL,
-          fit: BoxFit.cover,
-          cacheWidth: AppConstants.imageCacheWidth,
-          cacheHeight: AppConstants.imageCacheHeight,
-          errorBuilder: (context, error, stackTrace) =>
-              _buildDefaultProductIcon(),
-        ),
-      );
-    }
-    return _buildDefaultProductIcon();
-  }
-
-  Widget _buildDefaultProductIcon() {
-    return Container(
-      width: AppConstants.imageL,
-      height: AppConstants.imageL,
-      decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(AppConstants.radiusM),
-      ),
-      child: Icon(
-        Icons.shopping_basket,
-        size: AppConstants.iconM,
-        color: AppColors.primary,
-      ),
+    return UniversalIcon(
+      iconType: product.iconType,
+      iconValue: product.iconValue,
+      size: AppConstants.imageXL,
+      fallbackIcon: Icons.shopping_basket,
     );
   }
 }

@@ -23,9 +23,7 @@ class _RecipeFormDialogState extends ConsumerState<RecipeFormDialog> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(
-      text: widget.recipe?.name ?? '',
-    );
+    _nameController = TextEditingController(text: widget.recipe?.name ?? '');
     _selectedImagePath = widget.recipe?.imagePath;
   }
 
@@ -60,23 +58,20 @@ class _RecipeFormDialogState extends ConsumerState<RecipeFormDialog> {
 
             // Sezione immagine
             AppImageUploader(
-              imagePath: _selectedImagePath,
-              onImageSelected: (path) =>
+              value: _selectedImagePath,
+              onValueChanged: (path) =>
                   setState(() => _selectedImagePath = path),
-              onImageRemoved: () => setState(() => _selectedImagePath = null),
+              onValueRemoved: () => setState(() => _selectedImagePath = null),
               title: 'Immagine della ricetta',
               fallbackIcon: Icons.restaurant,
               previewHeight: 100,
               previewWidth: 100,
-              buttonsLayout: ButtonsLayout.beside,
             ),
           ],
         ),
       ),
       actions: [
-        DialogAction.cancel(
-          onPressed: () => Navigator.pop(context),
-        ),
+        DialogAction.cancel(onPressed: () => Navigator.pop(context)),
         DialogAction.save(
           text: isEditing ? AppStrings.save : AppStrings.add,
           onPressed: _handleSave,
@@ -99,7 +94,6 @@ class _RecipeFormDialogState extends ConsumerState<RecipeFormDialog> {
     final recipe = Recipe(
       id: widget.recipe?.id,
       name: name,
-      description: null,
       imagePath: _selectedImagePath,
       createdAt:
           widget.recipe?.createdAt ?? DateTime.now().millisecondsSinceEpoch,

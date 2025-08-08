@@ -76,10 +76,10 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
 
               // Sezione immagine
               AppImageUploader(
-                imagePath: _selectedImagePath,
-                onImageSelected: (path) =>
+                value: _selectedImagePath,
+                onValueChanged: (path) =>
                     setState(() => _selectedImagePath = path),
-                onImageRemoved: () => setState(() => _selectedImagePath = null),
+                onValueRemoved: () => setState(() => _selectedImagePath = null),
                 title: 'Immagine della carta',
                 fallbackIcon: Icons.credit_card,
                 previewHeight: 150,

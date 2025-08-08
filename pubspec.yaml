@@ -26,6 +26,7 @@ dependencies:
   path_provider: ^2.1.1
   # Icons
   cupertino_icons: ^1.0.8
+  emoji_picker_flutter: ^3.1.0
 
 dev_dependencies:
   flutter_test:
@@ -38,3 +39,5 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/icons/departments/
+    - assets/icons/products/

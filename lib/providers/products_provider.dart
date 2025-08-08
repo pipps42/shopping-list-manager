@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/product.dart';
 import '../services/database_service.dart';
+import '../utils/icon_types.dart';
 import 'current_list_provider.dart';
 import 'database_provider.dart';
 import 'recipes_provider.dart';
@@ -43,12 +44,14 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<Product>>> {
   Future<void> addProduct(
     String name,
     int departmentId,
-    String? imagePath,
+    IconType iconType,
+    String? iconValue,
   ) async {
     final product = Product(
       name: name,
       departmentId: departmentId,
-      imagePath: imagePath,
+      iconType: iconType,
+      iconValue: iconValue,
     );
 
     await _databaseService.insertProduct(product);

@@ -7,7 +7,8 @@ class ListItem {
 
   // Campi aggiuntivi per query con JOIN
   final String? productName;
-  final String? productImagePath;
+  final String? productIconType;
+  final String? productIconValue;
   final int? departmentId;
   final String? departmentName;
   final int? departmentOrder;
@@ -19,7 +20,8 @@ class ListItem {
     required this.isChecked,
     required this.addedAt,
     this.productName,
-    this.productImagePath,
+    this.productIconType,
+    this.productIconValue,
     this.departmentId,
     this.departmentName,
     this.departmentOrder,
@@ -43,7 +45,8 @@ class ListItem {
       isChecked: (map['is_checked'] ?? 0) == 1,
       addedAt: DateTime.fromMillisecondsSinceEpoch(map['added_at']),
       productName: map['product_name'],
-      productImagePath: map['product_image_path'],
+      productIconType: map['product_icon_type'],
+      productIconValue: map['product_icon_value'],
       departmentId: map['department_id']?.toInt(),
       departmentName: map['department_name'],
       departmentOrder: map['department_order']?.toInt(),
@@ -57,7 +60,8 @@ class ListItem {
     bool? isChecked,
     DateTime? addedAt,
     String? productName,
-    String? productImagePath,
+    String? productIconType,
+    String? productIconValue,
     int? departmentId,
     String? departmentName,
     int? departmentOrder,
@@ -69,7 +73,8 @@ class ListItem {
       isChecked: isChecked ?? this.isChecked,
       addedAt: addedAt ?? this.addedAt,
       productName: productName ?? this.productName,
-      productImagePath: productImagePath ?? this.productImagePath,
+      productIconType: productIconType ?? this.productIconType,
+      productIconValue: productIconValue ?? this.productIconValue,
       departmentId: departmentId ?? this.departmentId,
       departmentName: departmentName ?? this.departmentName,
       departmentOrder: departmentOrder ?? this.departmentOrder,

@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:shopping_list_manager/widgets/common/app_image_uploader.dart';
 import 'package:shopping_list_manager/widgets/common/base_dialog.dart';
 import '../../models/department.dart';
+import '../../utils/icon_types.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class DepartmentFormDialog extends ConsumerStatefulWidget {
   final Department? department;
-  final Function(String name, String? imagePath) onSave;
+  final Function(String name, IconType iconType, String? iconValue) onSave;
 
   const DepartmentFormDialog({
     super.key,
@@ -22,7 +23,8 @@ class DepartmentFormDialog extends ConsumerStatefulWidget {
 
 class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
   late TextEditingController _nameController;
-  String? _selectedImagePath;
+  IconType _selectedIconType = IconType.asset;
+  String? _selectedIconValue;
   bool _isLoading = false;
 
   @override
@@ -31,7 +33,8 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
     _nameController = TextEditingController(
       text: widget.department?.name ?? '',
     );
-    _selectedImagePath = widget.department?.imagePath;
+    _selectedIconType = widget.department?.iconType ?? IconType.asset;
+    _selectedIconValue = widget.department?.iconValue;
   }
 
   @override
@@ -62,24 +65,28 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
           ),
           const SizedBox(height: AppConstants.spacingM),
 
-          // Sezione immagine
+          // Sezione icona
           AppImageUploader(
-            imagePath: _selectedImagePath,
-            onImageSelected: (path) =>
-                setState(() => _selectedImagePath = path),
-            onImageRemoved: () => setState(() => _selectedImagePath = null),
+            mode: UploaderMode.emojiGallery,
+            value: _selectedIconValue,
+            iconType: _selectedIconType,
+            onValueChanged: (value) =>
+                setState(() => _selectedIconValue = value),
+            onIconTypeChanged: (type) =>
+                setState(() => _selectedIconType = type),
+            onValueRemoved: () => setState(() {
+              _selectedIconValue = null;
+              _selectedIconType = IconType.asset;
+            }),
             title: 'Icona del reparto',
             fallbackIcon: Icons.store,
             previewHeight: 100,
             previewWidth: 100,
-            buttonsLayout: ButtonsLayout.beside,
           ),
         ],
       ),
       actions: [
-        DialogAction.cancel(
-          onPressed: () => Navigator.pop(context),
-        ),
+        DialogAction.cancel(onPressed: () => Navigator.pop(context)),
         DialogAction.save(
           text: isEditing ? AppStrings.save : AppStrings.add,
           onPressed: _handleSave,
@@ -99,7 +106,7 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
       return;
     }
 
-    widget.onSave(name, _selectedImagePath);
+    widget.onSave(name, _selectedIconType, _selectedIconValue);
     Navigator.pop(context);
   }
 }

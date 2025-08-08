@@ -1,14 +1,21 @@
+import '../utils/icon_types.dart';
+
+// Sentinel value per distinguere "non specificato" da "null esplicito"
+const Object _undefined = Object();
+
 class Department {
   final int? id;
   final String name;
   final int orderIndex;
-  final String? imagePath;
+  final IconType iconType;
+  final String? iconValue;
 
   Department({
     this.id,
     required this.name,
     required this.orderIndex,
-    this.imagePath,
+    this.iconType = IconType.asset,
+    this.iconValue,
   });
 
   Map<String, dynamic> toMap() {
@@ -16,7 +23,8 @@ class Department {
       'id': id,
       'name': name,
       'order_index': orderIndex,
-      'image_path': imagePath,
+      'icon_type': iconType.value,
+      'icon_value': iconValue,
     };
   }
 
@@ -25,7 +33,8 @@ class Department {
       id: map['id']?.toInt(),
       name: map['name'] ?? '',
       orderIndex: map['order_index']?.toInt() ?? 0,
-      imagePath: map['image_path'],
+      iconType: IconType.fromString(map['icon_type'] ?? 'asset'),
+      iconValue: map['icon_value'],
     );
   }
 
@@ -33,13 +42,15 @@ class Department {
     int? id,
     String? name,
     int? orderIndex,
-    String? imagePath,
+    IconType? iconType,
+    Object? iconValue = _undefined,
   }) {
     return Department(
       id: id ?? this.id,
       name: name ?? this.name,
       orderIndex: orderIndex ?? this.orderIndex,
-      imagePath: imagePath,
+      iconType: iconType ?? this.iconType,
+      iconValue: iconValue == _undefined ? this.iconValue : iconValue as String?,
     );
   }
 }

@@ -9,6 +9,7 @@ import '../models/department_with_products.dart';
 import '../models/recipe.dart';
 import '../models/recipe_ingredient.dart';
 import '../models/recipe_with_ingredients.dart';
+import '../utils/icon_types.dart';
 import 'database_initializer.dart';
 
 class DatabaseService {
@@ -44,7 +45,8 @@ class DatabaseService {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         order_index INTEGER NOT NULL,
-        image_path TEXT
+        icon_type TEXT NOT NULL DEFAULT 'asset',
+        icon_value TEXT
       )
     ''');
 
@@ -54,7 +56,8 @@ class DatabaseService {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         department_id INTEGER NOT NULL,
-        image_path TEXT,
+        icon_type TEXT NOT NULL DEFAULT 'asset',
+        icon_value TEXT,
         FOREIGN KEY (department_id) REFERENCES departments (id)
       )
     ''');
@@ -99,7 +102,6 @@ class DatabaseService {
       CREATE TABLE recipes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        description TEXT,
         image_path TEXT,
         created_at INTEGER NOT NULL
       )
@@ -111,8 +113,6 @@ class DatabaseService {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         recipe_id INTEGER NOT NULL,
         product_id INTEGER NOT NULL,
-        quantity TEXT,
-        notes TEXT,
         FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE,
         FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
         UNIQUE(recipe_id, product_id)
@@ -277,11 +277,13 @@ class DatabaseService {
         li.is_checked,
         li.added_at,
         p.name as product_name,
-        p.image_path as product_image_path,
+        p.icon_type as product_icon_type,
+        p.icon_value as product_icon_value,
         d.id as department_id,
         d.name as department_name,
         d.order_index as department_order,
-        d.image_path as department_image_path
+        d.icon_type as department_icon_type,
+        d.icon_value as department_icon_value
       FROM list_items li
       JOIN products p ON li.product_id = p.id
       JOIN departments d ON p.department_id = d.id
@@ -308,9 +310,15 @@ class DatabaseService {
             id: deptId,
             name: item.departmentName!,
             orderIndex: item.departmentOrder!,
-            imagePath: maps.firstWhere(
+            iconType: IconType.fromString(
+              maps.firstWhere(
+                    (m) => m['department_id'] == deptId,
+                  )['department_icon_type'] ??
+                  'asset',
+            ),
+            iconValue: maps.firstWhere(
               (m) => m['department_id'] == deptId,
-            )['department_image_path'],
+            )['department_icon_value'],
           ),
           items: [],
         );
@@ -621,11 +629,13 @@ class DatabaseService {
       li.is_checked,
       li.added_at,
       p.name as product_name,
-      p.image_path as product_image_path,
+      p.icon_type as product_icon_type,
+      p.icon_value as product_icon_value,
       d.id as department_id,
       d.name as department_name,
       d.order_index as department_order,
-      d.image_path as department_image_path
+      d.icon_type as department_icon_type,
+      d.icon_value as department_icon_value
     FROM list_items li
     JOIN products p ON li.product_id = p.id
     JOIN departments d ON p.department_id = d.id
@@ -653,9 +663,15 @@ class DatabaseService {
             id: deptId,
             name: item.departmentName!,
             orderIndex: item.departmentOrder!,
-            imagePath: maps.firstWhere(
+            iconType: IconType.fromString(
+              maps.firstWhere(
+                    (m) => m['department_id'] == deptId,
+                  )['department_icon_type'] ??
+                  'asset',
+            ),
+            iconValue: maps.firstWhere(
               (m) => m['department_id'] == deptId,
-            )['department_image_path'],
+            )['department_icon_value'],
           ),
           items: [],
         );
@@ -786,7 +802,8 @@ class DatabaseService {
     SELECT 
       ri.*,
       p.name as product_name,
-      p.image_path as product_image_path,
+      p.icon_type as product_icon_type,
+      p.icon_value as product_icon_value,
       d.id as department_id,
       d.name as department_name
     FROM recipe_ingredients ri
@@ -863,8 +880,6 @@ class DatabaseService {
       final ingredient = RecipeIngredient(
         recipeId: recipeId,
         productId: productId,
-        quantity: quantity,
-        notes: notes,
       );
       await insertRecipeIngredient(ingredient);
       return true;
