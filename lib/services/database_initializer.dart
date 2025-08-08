@@ -74,24 +74,34 @@ class DatabaseInitializer {
         'asset_icon': 'assets/icons/departments/hand-wash.png',
       },
       {
-        'name': 'Animali Domestici',
+        'name': 'Accessori da Cucina',
         'order_index': 13,
+        'asset_icon': 'assets/icons/departments/kitchen.png',
+      },
+      {
+        'name': 'Animali Domestici',
+        'order_index': 14,
         'asset_icon': 'assets/icons/departments/pet-food.png',
       },
       {
         'name': 'Bevande',
-        'order_index': 14,
+        'order_index': 15,
         'asset_icon': 'assets/icons/departments/bottles.png',
       },
       {
         'name': 'Vini e Alcolici',
-        'order_index': 15,
+        'order_index': 16,
         'asset_icon': 'assets/icons/departments/alcohols.png',
       },
       {
         'name': 'Surgelati',
-        'order_index': 16,
+        'order_index': 17,
         'asset_icon': 'assets/icons/departments/freeze.png',
+      },
+      {
+        'name': 'Cartoleria',
+        'order_index': 18,
+        'asset_icon': 'assets/icons/departments/stationery.png',
       },
     ];
 
@@ -108,7 +118,6 @@ class DatabaseInitializer {
 
   /// Inserisce un set completo di prodotti strategici (~100 prodotti)
   static Future<void> _insertDefaultProducts(Database db) async {
-
     final products = [
       // === FRUTTA E VERDURA (id: 1) - 22 prodotti ===
       {
@@ -340,11 +349,6 @@ class DatabaseInitializer {
         'asset_icon': 'assets/icons/products/033-milk.png',
       },
       {
-        'name': 'Latte di Soia',
-        'department_id': 3,
-        'asset_icon': 'assets/icons/products/034-soy-milk.png',
-      },
-      {
         'name': 'Yogurt',
         'department_id': 3,
         'asset_icon': 'assets/icons/products/035-ice-cream.png',
@@ -565,8 +569,8 @@ class DatabaseInitializer {
       {
         'name': 'Ceci',
         'department_id': 8,
-        'asset_icon': 'assets/icons/products/064-red-beans.png',
-      }, // riuso beans
+        'asset_icon': 'assets/icons/products/003-chickpea.png',
+      },
       {
         'name': 'Lenticchie',
         'department_id': 8,
@@ -634,6 +638,11 @@ class DatabaseInitializer {
         'department_id': 9,
         'asset_icon': 'assets/icons/products/076-salt.png',
       }, // riuso salt
+      {
+        'name': 'Latte di Soia',
+        'department_id': 9,
+        'asset_icon': 'assets/icons/products/034-soy-milk.png',
+      },
       {
         'name': 'Pepe Nero',
         'department_id': 9,
@@ -791,140 +800,330 @@ class DatabaseInitializer {
         'asset_icon': 'assets/icons/products/101-dental-floss.png',
       },
 
-      // === ANIMALI DOMESTICI (id: 13) - 5 prodotti ===
+      // === ANIMALI DOMESTICI (id: 14) - 5 prodotti ===
       {
         'name': 'Crocchette',
-        'department_id': 13,
+        'department_id': 14,
         'asset_icon': 'assets/icons/products/102-pet-food.png',
       },
       {
         'name': 'Scatolette',
-        'department_id': 13,
+        'department_id': 14,
         'asset_icon': 'assets/icons/products/102-pet-food.png',
       }, // riuso pet-food
       {
         'name': 'Lettiera',
-        'department_id': 13,
+        'department_id': 14,
         'asset_icon': 'assets/icons/products/103-litter-box.png',
       },
       {
         'name': 'Shampoo Animali',
-        'department_id': 13,
+        'department_id': 14,
         'asset_icon': 'assets/icons/products/097-shampoo.png',
       }, // riuso shampoo
       {
         'name': 'Giocattoli Animali',
-        'department_id': 13,
+        'department_id': 14,
         'asset_icon': 'assets/icons/products/104-mouse-toy.png',
       },
 
-      // === BEVANDE (id: 14) - 8 prodotti ===
+      // === BEVANDE (id: 15) - 8 prodotti ===
       {
         'name': 'Acqua',
-        'department_id': 14,
+        'department_id': 15,
         'asset_icon': 'assets/icons/products/105-mineral-water.png',
       },
       {
         'name': 'Succo di Frutta',
-        'department_id': 14,
+        'department_id': 15,
         'asset_icon': 'assets/icons/products/106-orange-juice.png',
       },
       {
-        'name': 'Coca-Cola',
-        'department_id': 14,
+        'name': 'Cola',
+        'department_id': 15,
         'asset_icon': 'assets/icons/products/107-soft-drink.png',
       },
       {
         'name': 'Thé Freddo',
-        'department_id': 14,
+        'department_id': 15,
         'asset_icon': 'assets/icons/products/107-soft-drink.png',
       }, // riuso soft-drink
       {
-        'name': 'Red Bull',
-        'department_id': 14,
+        'name': 'Energy Drink',
+        'department_id': 15,
         'asset_icon': 'assets/icons/products/108-energy-drink.png',
       },
-      // === VINI E ALCOLICI (id: 15) - 7 prodotti ===
+      // === VINI E ALCOLICI (id: 16) - 7 prodotti ===
       {
         'name': 'Vino Bianco',
-        'department_id': 15,
+        'department_id': 16,
         'asset_icon': 'assets/icons/products/110-white-wine.png',
       },
       {
         'name': 'Vino Rosso',
-        'department_id': 15,
+        'department_id': 16,
         'asset_icon': 'assets/icons/products/111-wine.png',
       },
       {
         'name': 'Birra',
-        'department_id': 15,
+        'department_id': 16,
         'asset_icon': 'assets/icons/products/112-beer.png',
       },
       {
         'name': 'Gin',
-        'department_id': 15,
+        'department_id': 16,
         'asset_icon': 'assets/icons/products/113-gin-tonic.png',
       },
       {
         'name': 'Rum',
-        'department_id': 15,
+        'department_id': 16,
         'asset_icon': 'assets/icons/products/114-rum.png',
       },
       {
         'name': 'Vodka',
-        'department_id': 15,
+        'department_id': 16,
         'asset_icon': 'assets/icons/products/115-liquor.png',
       },
       {
         'name': 'Whiskey',
-        'department_id': 15,
+        'department_id': 16,
         'asset_icon': 'assets/icons/products/115-liquor.png',
       }, // riuso liquor
-      // === SURGELATI (id: 16) - 9 prodotti ===
+      // === SURGELATI (id: 17) - 9 prodotti ===
       {
         'name': 'Piselli Surgelati',
-        'department_id': 16,
+        'department_id': 17,
         'asset_icon': 'assets/icons/products/065-peas.png',
       }, // riuso peas
       {
         'name': 'Pizza Surgelata',
-        'department_id': 16,
+        'department_id': 17,
         'asset_icon': 'assets/icons/products/116-pizza.png',
       },
       {
         'name': 'Gelato',
-        'department_id': 16,
+        'department_id': 17,
         'asset_icon': 'assets/icons/products/035-ice-cream.png',
       },
       {
         'name': 'Merluzzo Surgelato',
-        'department_id': 16,
+        'department_id': 17,
         'asset_icon': 'assets/icons/products/048-cod.png',
       }, // riuso cod
       {
         'name': 'Funghi Surgelati',
-        'department_id': 16,
+        'department_id': 17,
         'asset_icon': 'assets/icons/products/020-mushroom.png',
       }, // riuso mushroom
       {
         'name': 'Verdure Grigliate',
-        'department_id': 16,
+        'department_id': 17,
         'asset_icon': 'assets/icons/products/118-frozen-food.png',
       },
       {
         'name': 'Spinaci Surgelati',
-        'department_id': 16,
+        'department_id': 17,
         'asset_icon': 'assets/icons/products/011-spinach.png',
       }, // riuso spinach
       {
         'name': 'Burger Vegetali',
-        'department_id': 16,
+        'department_id': 17,
         'asset_icon': 'assets/icons/products/118-frozen-food.png',
       }, // riuso frozen-food
       {
         'name': 'Patatine Fritte',
-        'department_id': 16,
+        'department_id': 17,
         'asset_icon': 'assets/icons/products/119-french-fries.png',
+      },
+
+      // === NUOVI PRODOTTI PER REPARTI ESISTENTI ===
+
+      // LATTICINI E UOVA (id: 3) - aggiunti 1 prodotto
+      {
+        'name': 'Pesto',
+        'department_id': 3,
+        'asset_icon': 'assets/icons/products/001-pesto.png',
+      },
+
+      // PASTA, RISO E CEREALI (id: 7) - aggiunti 4 prodotti
+      {
+        'name': 'Couscous',
+        'department_id': 7,
+        'asset_icon': 'assets/icons/products/002-couscous.png',
+      },
+      {
+        'name': 'Caffè',
+        'department_id': 7,
+        'asset_icon': 'assets/icons/products/004-coffee-beans.png',
+      },
+      {
+        'name': 'Pasta Sfoglia',
+        'department_id': 7,
+        'asset_icon': 'assets/icons/products/dough.png',
+      },
+      {
+        'name': 'Soia',
+        'department_id': 7,
+        'asset_icon': 'assets/icons/products/021-shoyu.png',
+      },
+
+      // DETERSIVI E PULIZIA (id: 11) - aggiunti 7 prodotti
+      {
+        'name': 'Anticalcare',
+        'department_id': 11,
+        'asset_icon': 'assets/icons/products/005-cleaning-liquid.png',
+      },
+      {
+        'name': 'Anticalcare Lavatrice',
+        'department_id': 11,
+        'asset_icon': 'assets/icons/products/005-cleaning-liquid.png',
+      },
+      {
+        'name': 'Candeggina Delicata',
+        'department_id': 11,
+        'asset_icon': 'assets/icons/products/005-cleaning-liquid.png',
+      },
+      {
+        'name': 'Cura Lavastoviglie',
+        'department_id': 11,
+        'asset_icon': 'assets/icons/products/091-hand-sanitizer.png',
+      },
+      {
+        'name': 'Detersivo Pavimenti',
+        'department_id': 11,
+        'asset_icon': 'assets/icons/products/092-detergent.png',
+      },
+      {
+        'name': 'Sale Lavastoviglie',
+        'department_id': 11,
+        'asset_icon':
+            'assets/icons/products/076-salt.png', // mantieni salt per il sale
+      },
+      {
+        'name': 'Insetticida',
+        'department_id': 11,
+        'asset_icon': 'assets/icons/products/006-insecticide.png',
+      },
+
+      // IGIENE PERSONALE (id: 12) - aggiunti 7 prodotti
+      {
+        'name': 'Assorbenti',
+        'department_id': 12,
+        'asset_icon': 'assets/icons/products/008-sanitary-napkin.png',
+      },
+      {
+        'name': 'Bagnoschiuma',
+        'department_id': 12,
+        'asset_icon': 'assets/icons/products/097-shampoo.png', // riuso shampoo
+      },
+      {
+        'name': 'Cotone',
+        'department_id': 12,
+        'asset_icon': 'assets/icons/products/010-cotton.png',
+      },
+      {
+        'name': 'Cotton Fioc',
+        'department_id': 12,
+        'asset_icon': 'assets/icons/products/009-cotton-bud.png',
+      },
+      {
+        'name': 'Disinfettante',
+        'department_id': 12,
+        'asset_icon': 'assets/icons/products/012-antiseptic.png',
+      },
+      {
+        'name': 'Rasoio',
+        'department_id': 12,
+        'asset_icon': 'assets/icons/products/007-razor.png',
+      },
+      {
+        'name': 'Spugna Doccia',
+        'department_id': 12,
+        'asset_icon': 'assets/icons/products/011-sponge.png',
+      },
+
+      // ACCESSORI DA CUCINA (id: 13) - 8 prodotti
+      {
+        'name': 'Carta Forno',
+        'department_id': 13,
+        'asset_icon': 'assets/icons/products/013-parchment-paper.png',
+      },
+      {
+        'name': 'Pellicola',
+        'department_id': 13,
+        'asset_icon': 'assets/icons/products/014-plastic-film.png',
+      },
+      {
+        'name': 'Alluminio',
+        'department_id': 13,
+        'asset_icon': 'assets/icons/products/015-aluminum.png',
+      },
+      {
+        'name': 'Vaschette Alluminio',
+        'department_id': 13,
+        'asset_icon': 'assets/icons/products/020-baking-tray.png',
+      },
+      {
+        'name': 'Piatti di Carta',
+        'department_id': 13,
+        'asset_icon': 'assets/icons/products/016-plates.png',
+      },
+      {
+        'name': 'Posate di Carta',
+        'department_id': 13,
+        'asset_icon': 'assets/icons/products/017-cutlery.png',
+      },
+      {
+        'name': 'Tovaglioli',
+        'department_id': 13,
+        'asset_icon': 'assets/icons/products/018-tissue-box.png',
+      },
+      {
+        'name': 'Sacchetti Congelatore',
+        'department_id': 13,
+        'asset_icon': 'assets/icons/products/019-ziplock.png',
+      },
+
+      // CARTOLERIA (id: 18) - 8 prodotti
+      {
+        'name': 'Penna',
+        'department_id': 18,
+        'asset_icon': 'assets/icons/products/025-pens.png',
+      },
+      {
+        'name': 'Matite',
+        'department_id': 18,
+        'asset_icon': 'assets/icons/products/024-pencil.png',
+      },
+      {
+        'name': 'Graffette',
+        'department_id': 18,
+        'asset_icon': 'assets/icons/products/023-paper-clip.png',
+      },
+      {
+        'name': 'Gomma da Cancellare',
+        'department_id': 18,
+        'asset_icon': 'assets/icons/products/022-eraser.png',
+      },
+      {
+        'name': 'Nastro Adesivo',
+        'department_id': 18,
+        'asset_icon': 'assets/icons/products/029-masking-tape.png',
+      },
+      {
+        'name': 'Note Adesive',
+        'department_id': 18,
+        'asset_icon': 'assets/icons/products/027-sticky-notes.png',
+      },
+      {
+        'name': 'Puntine',
+        'department_id': 18,
+        'asset_icon': 'assets/icons/products/028-push-pin.png',
+      },
+      {
+        'name': 'Risma di Carta',
+        'department_id': 18,
+        'asset_icon': 'assets/icons/products/026-paper.png',
       },
     ];
 

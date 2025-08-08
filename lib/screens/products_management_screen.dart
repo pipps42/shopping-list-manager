@@ -175,6 +175,7 @@ class _ProductsManagementScreenState
       context: context,
       builder: (context) => ProductFormDialog(
         departments: departments,
+        defaultDepartmentId: _selectedDepartmentId,
         onSave: (name, departmentId, iconType, iconValue) async {
           await ref
               .read(productsProvider.notifier)
