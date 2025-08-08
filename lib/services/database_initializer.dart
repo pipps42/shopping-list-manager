@@ -265,6 +265,11 @@ class DatabaseInitializer {
         'department_id': 1,
         'asset_icon': 'assets/icons/products/007-peanuts.png',
       },
+      {
+        'name': 'Uva',
+        'department_id': 1,
+        'asset_icon': 'assets/icons/products/030-grapes.png',
+      },
 
       // === SALUMERIA E FORMAGGI (id: 2) - 15 prodotti ===
       {
@@ -955,6 +960,11 @@ class DatabaseInitializer {
         'name': 'Caffè',
         'department_id': 7,
         'asset_icon': 'assets/icons/products/004-coffee-beans.png',
+      },
+      {
+        'name': 'Té',
+        'department_id': 7,
+        'asset_icon': 'assets/icons/products/tea-bag.png',
       },
       {
         'name': 'Pasta Sfoglia',

@@ -12,6 +12,7 @@ import '../widgets/common/error_state_widget.dart';
 import '../widgets/common/loading_widget.dart';
 import '../widgets/current_list/department_card.dart';
 import '../widgets/current_list/complete_list_dialogs.dart';
+import '../widgets/common/voice_recognition_button.dart';
 
 class CurrentListScreen extends ConsumerWidget {
   const CurrentListScreen({super.key});
@@ -67,13 +68,7 @@ class CurrentListScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(currentListProvider),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: "current_list_fab",
-        onPressed: () => _showAddProductDialog(context, ref),
-        child: const Icon(Icons.add),
-        backgroundColor: AppColors.secondary,
-        foregroundColor: AppColors.textOnSecondary(context),
-      ),
+      floatingActionButton: _buildFloatingActionButtons(context, ref),
     );
   }
 
@@ -171,10 +166,17 @@ class CurrentListScreen extends ConsumerWidget {
         showDialog(
           context: context,
           builder: (context) => CompleteListChoiceDialog(
-            onMarkAll: () =>
-                _showTotalCostDialog(context, ref, markAllAsChecked: true, keepUncheckedItems: false),
-            onKeepCurrent: () =>
-                _validateAndShowUnpurchasedItemsDialog(context, ref, stats: stats),
+            onMarkAll: () => _showTotalCostDialog(
+              context,
+              ref,
+              markAllAsChecked: true,
+              keepUncheckedItems: false,
+            ),
+            onKeepCurrent: () => _validateAndShowUnpurchasedItemsDialog(
+              context,
+              ref,
+              stats: stats,
+            ),
           ),
         );
       }
@@ -223,10 +225,18 @@ class CurrentListScreen extends ConsumerWidget {
       showDialog(
         context: context,
         builder: (context) => UnpurchasedItemsHandlingDialog(
-          onRemoveItems: () =>
-              _showTotalCostDialog(context, ref, markAllAsChecked: false, keepUncheckedItems: false),
-          onKeepItems: () =>
-              _showTotalCostDialog(context, ref, markAllAsChecked: false, keepUncheckedItems: true),
+          onRemoveItems: () => _showTotalCostDialog(
+            context,
+            ref,
+            markAllAsChecked: false,
+            keepUncheckedItems: false,
+          ),
+          onKeepItems: () => _showTotalCostDialog(
+            context,
+            ref,
+            markAllAsChecked: false,
+            keepUncheckedItems: true,
+          ),
         ),
       );
     }
@@ -338,5 +348,48 @@ class CurrentListScreen extends ConsumerWidget {
         );
       }
     }
+  }
+
+  // ==================== FLOATING ACTION BUTTONS ====================
+
+  Widget _buildFloatingActionButtons(BuildContext context, WidgetRef ref) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        // FAB per riconoscimento vocale
+        VoiceRecognitionButton(
+          heroTag: "voice_recognition_fab",
+          onVoiceResult: (result) => _handleVoiceResult(context, ref, result),
+        ),
+        const SizedBox(height: AppConstants.spacingM),
+
+        // FAB per aggiunta manuale prodotto
+        FloatingActionButton(
+          heroTag: "current_list_add_fab",
+          onPressed: () => _showAddProductDialog(context, ref),
+          backgroundColor: AppColors.secondary,
+          foregroundColor: AppColors.textOnSecondary(context),
+          child: const Icon(Icons.add),
+        ),
+      ],
+    );
+  }
+
+  void _handleVoiceResult(BuildContext context, WidgetRef ref, String result) {
+    // Per ora mostriamo semplicemente il risultato in uno SnackBar
+    // Nella Fase 2 implementeremo il matching intelligente
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Riconosciuto: "$result"'),
+        backgroundColor: AppColors.secondary,
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'OK',
+          textColor: Colors.white,
+          onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+        ),
+      ),
+    );
   }
 }
