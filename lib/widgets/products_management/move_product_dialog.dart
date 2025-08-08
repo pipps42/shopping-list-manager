@@ -1,9 +1,9 @@
 import 'package:shopping_list_manager/utils/constants.dart';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../models/product.dart';
 import '../../models/department.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
+import '../common/universal_icon.dart';
 
 class MoveProductDialog extends StatelessWidget {
   final Product product;
@@ -27,9 +27,11 @@ class MoveProductDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(isSelection 
-            ? 'Seleziona il reparto per "${product.name}":'
-            : 'Sposta "${product.name}" in:'),
+          Text(
+            isSelection
+                ? 'Seleziona il reparto per "${product.name}":'
+                : 'Sposta "${product.name}" in:',
+          ),
           const SizedBox(height: AppConstants.spacingM),
           SizedBox(
             height: 400,
@@ -52,7 +54,6 @@ class MoveProductDialog extends StatelessWidget {
                       : () {
                           onMoveProduct(dept);
                           Navigator.pop(context);
-
                         },
                 );
               },
@@ -70,21 +71,12 @@ class MoveProductDialog extends StatelessWidget {
   }
 
   Widget _buildDepartmentImage(Department department) {
-    if (department.imagePath != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(AppConstants.radiusS),
-        child: Image.file(
-          File(department.imagePath!),
-          width: AppConstants.imageM,
-          height: AppConstants.imageM,
-          fit: BoxFit.cover,
-          cacheWidth: AppConstants.imageCacheWidth,
-          cacheHeight: AppConstants.imageCacheHeight,
-          errorBuilder: (context, error, stackTrace) =>
-              const Icon(Icons.store, size: AppConstants.iconL),
-        ),
-      );
-    }
-    return const Icon(Icons.store, size: AppConstants.iconL);
+    return UniversalIcon(
+      iconType: department.iconType,
+      iconValue: department.iconValue,
+      size: AppConstants.imageM,
+      fallbackIcon: Icons.store,
+      fallbackColor: AppColors.secondary,
+    );
   }
 }

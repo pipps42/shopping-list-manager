@@ -4,16 +4,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../utils/constants.dart';
 import '../../utils/color_palettes.dart';
+import '../../utils/icon_types.dart';
 import '../../providers/image_provider.dart';
+import 'emoji_picker_dialog.dart';
+import 'universal_icon.dart';
 
 /// 📸 **AppImageUploader** - Widget completo per upload e gestione immagini
 
 enum ButtonsLayout { below, beside }
 
+enum UploaderMode { cameraGallery, emojiGallery }
+
 class AppImageUploader extends ConsumerStatefulWidget {
-  final String? imagePath;
-  final ValueChanged<String>? onImageSelected;
-  final VoidCallback? onImageRemoved;
+  // Campo unificato per entrambe le modalità
+  final String? value;
+  final ValueChanged<String>? onValueChanged;
+  final VoidCallback? onValueRemoved;
+
+  // Solo per modalità emojiGallery
+  final IconType? iconType;
+  final ValueChanged<IconType>? onIconTypeChanged;
+
+  // Parametri comuni
   final ValueChanged<String>? onError;
   final String? title;
   final IconData fallbackIcon;
@@ -21,32 +33,41 @@ class AppImageUploader extends ConsumerStatefulWidget {
   final double? previewWidth;
   final bool enabled;
   final ButtonsLayout buttonsLayout;
+  final UploaderMode mode;
   final int imageQuality;
   final int maxWidth;
   final int maxHeight;
   final String? cameraButtonText;
   final String? galleryButtonText;
+  final String? emojiButtonText;
   final String? removeButtonText;
   final String? emptyStateText;
   final bool preserveAspectRatio;
 
   const AppImageUploader({
     super.key,
-    this.imagePath,
-    this.onImageSelected,
-    this.onImageRemoved,
+    // Campo unificato
+    this.value,
+    this.onValueChanged,
+    this.onValueRemoved,
+    // Solo per icone
+    this.iconType,
+    this.onIconTypeChanged,
+    // Parametri comuni
     this.onError,
     this.title,
     this.fallbackIcon = Icons.add_photo_alternate_outlined,
     this.previewHeight = 120.0,
     this.previewWidth,
     this.enabled = true,
-    this.buttonsLayout = ButtonsLayout.below,
+    this.buttonsLayout = ButtonsLayout.beside,
+    this.mode = UploaderMode.cameraGallery,
     this.imageQuality = AppConstants.imageQuality,
     this.maxWidth = AppConstants.maxImageWidth,
     this.maxHeight = AppConstants.maxImageHeight,
     this.cameraButtonText,
     this.galleryButtonText,
+    this.emojiButtonText,
     this.removeButtonText,
     this.emptyStateText,
     this.preserveAspectRatio = false,
@@ -59,6 +80,10 @@ class AppImageUploader extends ConsumerStatefulWidget {
 class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
+
+  bool _hasContent() {
+    return widget.value != null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,8 +109,8 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
         else
           _buildBelowLayout(),
 
-        // Pulsante rimuovi (se c'è un'immagine)
-        if (widget.imagePath != null && widget.enabled && !_isLoading)
+        // Pulsante rimuovi (se c'è contenuto)
+        if (_hasContent() && widget.enabled && !_isLoading)
           _buildRemoveButton(),
       ],
     );
@@ -95,21 +120,21 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
     final width = widget.previewWidth ?? 280.0;
     final height = widget.previewHeight;
 
+    final hasContent = _hasContent();
+
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
         border: Border.all(color: AppColors.border(context), width: 1.0),
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        color: widget.imagePath == null
-            ? AppColors.surface(context).withOpacity(0.5)
-            : null,
+        color: !hasContent ? AppColors.surface(context).withOpacity(0.5) : null,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        child: widget.imagePath == null
+        child: !hasContent
             ? _buildEmptyState()
-            : _buildImageContent(),
+            : _buildContent(),
       ),
     );
   }
@@ -148,41 +173,56 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
     );
   }
 
-  Widget _buildImageContent() {
+  Widget _buildContent() {
     return Stack(
       children: [
-        // Immagine
-        SizedBox(
-          width: double.infinity,
-          height: double.infinity,
-          child: File(widget.imagePath!).existsSync()
-              ? Image.file(
-                  File(widget.imagePath!),
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  cacheWidth: AppConstants.imageCacheWidth,
-                  cacheHeight: AppConstants.imageCacheHeight,
-                  errorBuilder: (context, error, stackTrace) =>
-                      _buildErrorState(),
-                )
-              : _buildErrorState(),
-        ),
-
-        // Loading overlay
-        if (_isLoading)
-          Container(
+        // Contenuto: immagine per cameraGallery, icona per emojiGallery
+        if (widget.mode == UploaderMode.cameraGallery)
+          // Modalità immagini
+          SizedBox(
             width: double.infinity,
             height: double.infinity,
-            color: AppColors.overlay.withOpacity(0.7),
-            child: const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
-                strokeWidth: 3,
-              ),
+            child: File(widget.value!).existsSync()
+                ? Image.file(
+                    File(widget.value!),
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    cacheWidth: AppConstants.imageCacheWidth,
+                    cacheHeight: AppConstants.imageCacheHeight,
+                    errorBuilder: (context, error, stackTrace) =>
+                        _buildErrorState(),
+                  )
+                : _buildErrorState(),
+          )
+        else
+          // Modalità icone
+          Center(
+            child: UniversalIcon(
+              iconType: widget.iconType ?? IconType.asset,
+              iconValue: widget.value,
+              size: widget.previewHeight * 0.6,
+              fallbackIcon: widget.fallbackIcon,
             ),
           ),
+
+        // Loading overlay
+        if (_isLoading) _buildLoadingOverlay(),
       ],
+    );
+  }
+
+  Widget _buildLoadingOverlay() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: AppColors.overlay.withOpacity(0.7),
+      child: const Center(
+        child: CircularProgressIndicator(
+          color: AppColors.primary,
+          strokeWidth: 3,
+        ),
+      ),
     );
   }
 
@@ -249,9 +289,15 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
       height: widget.previewHeight,
       child: Column(
         children: [
-          Flexible(child: _buildCameraButton()),
-          const SizedBox(height: AppConstants.spacingS),
-          Flexible(child: _buildGalleryButton()),
+          if (widget.mode == UploaderMode.cameraGallery) ...[
+            Flexible(child: _buildCameraButton()),
+            const SizedBox(height: AppConstants.spacingS),
+            Flexible(child: _buildGalleryButton()),
+          ] else ...[
+            Flexible(child: _buildEmojiButton()),
+            const SizedBox(height: AppConstants.spacingS),
+            Flexible(child: _buildGalleryButton()),
+          ],
         ],
       ),
     );
@@ -289,16 +335,43 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
     );
   }
 
+  Widget _buildEmojiButton() {
+    return OutlinedButton.icon(
+      onPressed: _isLoading ? null : _showEmojiPicker,
+      icon: const Icon(Icons.emoji_emotions),
+      label: Text(
+        widget.emojiButtonText ?? 'Emoji',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.secondary,
+        side: BorderSide(color: AppColors.secondary),
+      ),
+    );
+  }
+
   Widget _buildActionButtons() {
-    if (!widget.enabled || widget.imagePath != null) {
+    if (!widget.enabled) {
+      return const SizedBox.shrink();
+    }
+
+    // Nascondi i bottoni se c'è già contenuto
+    if (_hasContent()) {
       return const SizedBox.shrink();
     }
 
     return Row(
       children: [
-        Expanded(child: _buildCameraButton()),
-        const SizedBox(width: AppConstants.spacingM),
-        Expanded(child: _buildGalleryButton()),
+        if (widget.mode == UploaderMode.cameraGallery) ...[
+          Expanded(child: _buildCameraButton()),
+          const SizedBox(width: AppConstants.spacingM),
+          Expanded(child: _buildGalleryButton()),
+        ] else ...[
+          Expanded(child: _buildEmojiButton()),
+          const SizedBox(width: AppConstants.spacingM),
+          Expanded(child: _buildGalleryButton()),
+        ],
       ],
     );
   }
@@ -307,7 +380,7 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
     return Padding(
       padding: const EdgeInsets.only(top: AppConstants.spacingM),
       child: TextButton.icon(
-        onPressed: _handleRemoveImage,
+        onPressed: _handleRemove,
         icon: const Icon(Icons.delete_outline),
         label: Text(widget.removeButtonText ?? AppStrings.removeImage),
         style: TextButton.styleFrom(foregroundColor: AppColors.error),
@@ -322,7 +395,7 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
 
     try {
       String? imagePath;
-      
+
       if (widget.preserveAspectRatio) {
         // Comportamento originale per carte fedeltà (preserva proporzioni)
         final XFile? image = await _picker.pickImage(
@@ -338,8 +411,17 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
         imagePath = await imageService.pickAndSaveImage(cropSquare: true);
       }
 
-      if (imagePath != null && widget.onImageSelected != null) {
-        widget.onImageSelected!(imagePath);
+      if (imagePath != null) {
+        // Modalità emojiGallery - imposta come immagine personalizzata
+        if (widget.mode == UploaderMode.emojiGallery) {
+          if (widget.onIconTypeChanged != null) {
+            widget.onIconTypeChanged!(IconType.custom);
+          }
+        }
+        // Per entrambe le modalità: aggiorna il valore
+        if (widget.onValueChanged != null) {
+          widget.onValueChanged!(imagePath);
+        }
       }
     } catch (e) {
       final errorMessage = 'Errore nella selezione dell\'immagine: $e';
@@ -364,9 +446,39 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
     }
   }
 
-  void _handleRemoveImage() {
-    if (widget.onImageRemoved != null) {
-      widget.onImageRemoved!();
+  Future<void> _showEmojiPicker() async {
+    if (!widget.enabled || _isLoading) return;
+
+    try {
+      await EmojiPickerDialog.show(
+        context,
+        onEmojiSelected: (emoji) {
+          if (widget.onIconTypeChanged != null) {
+            widget.onIconTypeChanged!(IconType.emoji);
+          }
+          if (widget.onValueChanged != null) {
+            widget.onValueChanged!(emoji);
+          }
+        },
+      );
+    } catch (e) {
+      final errorMessage = 'Errore nella selezione dell\'emoji: $e';
+      if (widget.onError != null) {
+        widget.onError!(errorMessage);
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  void _handleRemove() {
+    if (widget.onValueRemoved != null) {
+      widget.onValueRemoved!();
     }
   }
 }
@@ -375,21 +487,21 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
 ///
 /// Classe helper per gestire lo stato dell'uploader dall'esterno
 class AppImageUploaderController {
-  String? _imagePath;
+  String? _value;
   final List<VoidCallback> _listeners = [];
 
-  String? get imagePath => _imagePath;
-  bool get hasImage => _imagePath != null;
+  String? get value => _value;
+  bool get hasValue => _value != null;
 
-  set imagePath(String? path) {
-    if (_imagePath != path) {
-      _imagePath = path;
+  set value(String? newValue) {
+    if (_value != newValue) {
+      _value = newValue;
       _notifyListeners();
     }
   }
 
-  void setImage(String path) => imagePath = path;
-  void removeImage() => imagePath = null;
+  void setValue(String newValue) => value = newValue;
+  void removeValue() => value = null;
 
   void addListener(VoidCallback listener) {
     _listeners.add(listener);

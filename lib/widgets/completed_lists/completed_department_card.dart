@@ -1,8 +1,9 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../models/department_with_products.dart';
 import '../../utils/constants.dart';
 import '../../utils/color_palettes.dart';
+import '../../utils/icon_types.dart';
+import '../common/universal_icon.dart';
 
 class CompletedDepartmentCard extends StatelessWidget {
   final DepartmentWithProducts department;
@@ -82,37 +83,11 @@ class CompletedDepartmentCard extends StatelessWidget {
   }
 
   Widget _buildDepartmentImage(BuildContext context) {
-    if (department.department.imagePath != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(AppConstants.radiusM),
-        child: Image.file(
-          File(department.department.imagePath!),
-          width: AppConstants.imageXL,
-          height: AppConstants.imageXL,
-          fit: BoxFit.cover,
-          cacheWidth: AppConstants.imageCacheWidth,
-          cacheHeight: AppConstants.imageCacheHeight,
-          errorBuilder: (context, error, stackTrace) =>
-              _buildDefaultIcon(context),
-        ),
-      );
-    }
-    return _buildDefaultIcon(context);
-  }
-
-  Widget _buildDefaultIcon(BuildContext context) {
-    return Container(
-      width: AppConstants.imageXL,
-      height: AppConstants.imageXL,
-      decoration: BoxDecoration(
-        color: AppColors.secondary.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(AppConstants.radiusM),
-      ),
-      child: Icon(
-        Icons.store,
-        color: AppColors.secondary,
-        size: AppConstants.iconL,
-      ),
+    return UniversalIcon(
+      iconType: department.department.iconType,
+      iconValue: department.department.iconValue,
+      size: AppConstants.imageXL,
+      fallbackIcon: Icons.store,
     );
   }
 
@@ -174,23 +149,16 @@ class CompletedDepartmentCard extends StatelessWidget {
           ),
           const SizedBox(width: AppConstants.spacingM),
 
-          // Immagine prodotto (se presente)
-          if (item.productImagePath != null) ...[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppConstants.radiusS),
-              child: Image.file(
-                File(item.productImagePath!),
-                width: AppConstants.imageM,
-                height: AppConstants.imageM,
-                fit: BoxFit.cover,
-                cacheWidth: 60,
-                cacheHeight: 60,
-                errorBuilder: (context, error, stackTrace) =>
-                    _buildProductPlaceholder(),
-              ),
-            ),
-            const SizedBox(width: AppConstants.spacingM),
-          ],
+          // Icona prodotto
+          UniversalIcon(
+            iconType: item.productIconType != null
+                ? IconType.fromString(item.productIconType!)
+                : IconType.asset,
+            iconValue: item.productIconValue,
+            size: AppConstants.imageM,
+            fallbackIcon: Icons.shopping_basket,
+          ),
+          const SizedBox(width: AppConstants.spacingM),
 
           // Nome prodotto
           Expanded(
@@ -216,22 +184,6 @@ class CompletedDepartmentCard extends StatelessWidget {
             size: AppConstants.iconM,
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildProductPlaceholder() {
-    return Container(
-      width: AppConstants.imageM,
-      height: AppConstants.imageM,
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(AppConstants.radiusS),
-      ),
-      child: Icon(
-        Icons.shopping_basket,
-        color: Colors.grey[600],
-        size: AppConstants.iconM,
       ),
     );
   }

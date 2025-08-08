@@ -9,6 +9,7 @@ import '../models/department_with_products.dart';
 import '../models/recipe.dart';
 import '../models/recipe_ingredient.dart';
 import '../models/recipe_with_ingredients.dart';
+import '../utils/icon_types.dart';
 import 'database_initializer.dart';
 
 class DatabaseService {
@@ -44,7 +45,8 @@ class DatabaseService {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         order_index INTEGER NOT NULL,
-        image_path TEXT
+        icon_type TEXT NOT NULL DEFAULT 'asset',
+        icon_value TEXT
       )
     ''');
 
@@ -54,7 +56,8 @@ class DatabaseService {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         department_id INTEGER NOT NULL,
-        image_path TEXT,
+        icon_type TEXT NOT NULL DEFAULT 'asset',
+        icon_value TEXT,
         FOREIGN KEY (department_id) REFERENCES departments (id)
       )
     ''');
@@ -99,7 +102,6 @@ class DatabaseService {
       CREATE TABLE recipes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        description TEXT,
         image_path TEXT,
         created_at INTEGER NOT NULL
       )
@@ -111,8 +113,6 @@ class DatabaseService {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         recipe_id INTEGER NOT NULL,
         product_id INTEGER NOT NULL,
-        quantity TEXT,
-        notes TEXT,
         FOREIGN KEY (recipe_id) REFERENCES recipes (id) ON DELETE CASCADE,
         FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
         UNIQUE(recipe_id, product_id)
@@ -122,7 +122,6 @@ class DatabaseService {
     // Inserisci dati iniziali
     await DatabaseInitializer.initializeDefaultData(db);
   }
-
 
   // =========== CRUD per Departments ===========
   Future<int> insertDepartment(Department department) async {
@@ -278,11 +277,13 @@ class DatabaseService {
         li.is_checked,
         li.added_at,
         p.name as product_name,
-        p.image_path as product_image_path,
+        p.icon_type as product_icon_type,
+        p.icon_value as product_icon_value,
         d.id as department_id,
         d.name as department_name,
         d.order_index as department_order,
-        d.image_path as department_image_path
+        d.icon_type as department_icon_type,
+        d.icon_value as department_icon_value
       FROM list_items li
       JOIN products p ON li.product_id = p.id
       JOIN departments d ON p.department_id = d.id
@@ -309,9 +310,15 @@ class DatabaseService {
             id: deptId,
             name: item.departmentName!,
             orderIndex: item.departmentOrder!,
-            imagePath: maps.firstWhere(
+            iconType: IconType.fromString(
+              maps.firstWhere(
+                    (m) => m['department_id'] == deptId,
+                  )['department_icon_type'] ??
+                  'asset',
+            ),
+            iconValue: maps.firstWhere(
               (m) => m['department_id'] == deptId,
-            )['department_image_path'],
+            )['department_icon_value'],
           ),
           items: [],
         );
@@ -426,6 +433,7 @@ class DatabaseService {
 
   Future<void> completeCurrentList({
     required bool markAllAsChecked,
+    required bool keepUncheckedItems,
     double? totalCost,
     String? listType,
   }) async {
@@ -437,6 +445,8 @@ class DatabaseService {
     }
 
     await db.transaction((txn) async {
+      List<Map<String, dynamic>> uncheckedItems = [];
+
       // 1. Se richiesto, marca tutti gli item come checked
       if (markAllAsChecked) {
         await txn.update(
@@ -446,7 +456,15 @@ class DatabaseService {
           whereArgs: [currentList.id],
         );
       } else {
-        // 2. Se manteniamo lo stato corrente, elimina gli item NON checked
+        // 2. Se richiesto, salva i prodotti non checked che devono essere mantenuti nella nuova lista
+        if (keepUncheckedItems) {
+          uncheckedItems = await txn.query(
+            'list_items',
+            where: 'list_id = ? AND is_checked = 0',
+            whereArgs: [currentList.id],
+          );
+        }
+        // 3. In ogni caso pulisci la lista dai prodotti non-checked
         await txn.delete(
           'list_items',
           where: 'list_id = ? AND is_checked = 0',
@@ -454,7 +472,7 @@ class DatabaseService {
         );
       }
 
-      // 3. Completa la lista corrente
+      // 4. Completa la lista corrente
       await txn.update(
         'shopping_lists',
         {
@@ -465,14 +483,28 @@ class DatabaseService {
         whereArgs: [currentList.id],
       );
 
-      // 4. Crea una nuova lista corrente vuota dello stesso tipo
+      // 5. Crea una nuova lista corrente
       final newListType = listType ?? 'weekly';
       final listName = _getListNameByType(newListType);
-      await txn.insert('shopping_lists', {
+      final newListId = await txn.insert('shopping_lists', {
         'name': listName,
         'created_at': DateTime.now().millisecondsSinceEpoch,
         'list_type': newListType,
       });
+
+      // 6. Se richiesto, copia i prodotti non checked nella nuova lista
+      if (!markAllAsChecked &&
+          keepUncheckedItems &&
+          uncheckedItems.isNotEmpty) {
+        for (final item in uncheckedItems) {
+          await txn.insert('list_items', {
+            'list_id': newListId,
+            'product_id': item['product_id'],
+            'is_checked': 0,
+            'added_at': DateTime.now().millisecondsSinceEpoch,
+          });
+        }
+      }
     });
   }
 
@@ -597,11 +629,13 @@ class DatabaseService {
       li.is_checked,
       li.added_at,
       p.name as product_name,
-      p.image_path as product_image_path,
+      p.icon_type as product_icon_type,
+      p.icon_value as product_icon_value,
       d.id as department_id,
       d.name as department_name,
       d.order_index as department_order,
-      d.image_path as department_image_path
+      d.icon_type as department_icon_type,
+      d.icon_value as department_icon_value
     FROM list_items li
     JOIN products p ON li.product_id = p.id
     JOIN departments d ON p.department_id = d.id
@@ -629,9 +663,15 @@ class DatabaseService {
             id: deptId,
             name: item.departmentName!,
             orderIndex: item.departmentOrder!,
-            imagePath: maps.firstWhere(
+            iconType: IconType.fromString(
+              maps.firstWhere(
+                    (m) => m['department_id'] == deptId,
+                  )['department_icon_type'] ??
+                  'asset',
+            ),
+            iconValue: maps.firstWhere(
               (m) => m['department_id'] == deptId,
-            )['department_image_path'],
+            )['department_icon_value'],
           ),
           items: [],
         );
@@ -762,7 +802,8 @@ class DatabaseService {
     SELECT 
       ri.*,
       p.name as product_name,
-      p.image_path as product_image_path,
+      p.icon_type as product_icon_type,
+      p.icon_value as product_icon_value,
       d.id as department_id,
       d.name as department_name
     FROM recipe_ingredients ri
@@ -839,8 +880,6 @@ class DatabaseService {
       final ingredient = RecipeIngredient(
         recipeId: recipeId,
         productId: productId,
-        quantity: quantity,
-        notes: notes,
       );
       await insertRecipeIngredient(ingredient);
       return true;

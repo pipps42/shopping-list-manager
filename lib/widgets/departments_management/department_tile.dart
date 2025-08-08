@@ -1,10 +1,10 @@
 import 'package:shopping_list_manager/utils/constants.dart';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/department.dart';
 import '../../providers/products_provider.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
+import '../common/universal_icon.dart';
 
 class DepartmentTileWidget extends ConsumerWidget {
   final Department department;
@@ -116,37 +116,12 @@ class DepartmentTileWidget extends ConsumerWidget {
   }
 
   Widget _buildDepartmentImage() {
-    if (department.imagePath != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(AppConstants.radiusM),
-        child: Image.file(
-          File(department.imagePath!),
-          width: AppConstants.imageXL,
-          height: AppConstants.imageXL,
-          fit: BoxFit.cover,
-          cacheWidth: AppConstants.imageCacheWidth,
-          cacheHeight: AppConstants.imageCacheHeight,
-          errorBuilder: (context, error, stackTrace) =>
-              _buildDefaultDepartmentIcon(),
-        ),
-      );
-    }
-    return _buildDefaultDepartmentIcon();
-  }
-
-  Widget _buildDefaultDepartmentIcon() {
-    return Container(
-      width: AppConstants.imageXL,
-      height: AppConstants.imageXL,
-      decoration: BoxDecoration(
-        color: AppColors.secondary.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(AppConstants.radiusM),
-      ),
-      child: Icon(
-        Icons.store,
-        size: AppConstants.iconL,
-        color: AppColors.secondary,
-      ),
+    return UniversalIcon(
+      iconType: department.iconType,
+      iconValue: department.iconValue,
+      size: AppConstants.imageXL,
+      fallbackIcon: Icons.store,
+      fallbackColor: AppColors.secondary,
     );
   }
 }

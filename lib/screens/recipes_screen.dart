@@ -132,7 +132,8 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
                 _showDeleteRecipeDialog(recipeWithIngredients.recipe),
             onManageIngredients: () =>
                 _showManageIngredientsDialog(recipeWithIngredients),
-            onAddToList: () => _showRecipeIngredientsDialog(recipeWithIngredients),
+            onAddToList: () =>
+                _showRecipeIngredientsDialog(recipeWithIngredients),
           );
         },
       ),
@@ -146,8 +147,7 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
 
     return allRecipes.where((recipeWithIngredients) {
       final recipe = recipeWithIngredients.recipe;
-      return recipe.name.toLowerCase().contains(_searchQuery) ||
-          (recipe.description?.toLowerCase().contains(_searchQuery) ?? false);
+      return recipe.name.toLowerCase().contains(_searchQuery);
     }).toList();
   }
 
@@ -221,10 +221,7 @@ class _RecipesScreenState extends ConsumerState<RecipesScreen> {
           // Aggiungi ingrediente
           await ref
               .read(recipesWithIngredientsProvider.notifier)
-              .addProductToRecipe(
-                recipeWithIngredients.recipe.id!,
-                productId,
-              );
+              .addProductToRecipe(recipeWithIngredients.recipe.id!, productId);
         },
         onProductRemoved: (productId) async {
           // Rimuovi ingrediente

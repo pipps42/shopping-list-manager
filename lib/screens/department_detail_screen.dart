@@ -41,9 +41,9 @@ class DepartmentDetailScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         heroTag: "department_detail_fab",
         onPressed: () => _showAddProductDialog(context, ref),
-        child: const Icon(Icons.add),
         backgroundColor: AppColors.secondary,
         foregroundColor: AppColors.textOnSecondary(context),
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -93,10 +93,10 @@ class DepartmentDetailScreen extends ConsumerWidget {
       builder: (context) => ProductFormDialog(
         departments: departmentsState.value!,
         defaultDepartmentId: department.id,
-        onSave: (name, departmentId, imagePath) async {
+        onSave: (name, departmentId, iconType, iconValue) async {
           await ref
               .read(productsProvider.notifier)
-              .addProduct(name, departmentId, imagePath);
+              .addProduct(name, departmentId, iconType, iconValue);
         },
       ),
     );
@@ -116,14 +116,15 @@ class DepartmentDetailScreen extends ConsumerWidget {
       builder: (context) => ProductFormDialog(
         product: product,
         departments: departmentsState.value!,
-        onSave: (name, departmentId, imagePath) async {
+        onSave: (name, departmentId, iconType, iconValue) async {
           await ref
               .read(productsProvider.notifier)
               .updateProduct(
                 product.copyWith(
                   name: name,
                   departmentId: departmentId,
-                  imagePath: imagePath,
+                  iconType: iconType,
+                  iconValue: iconValue,
                 ),
               );
         },

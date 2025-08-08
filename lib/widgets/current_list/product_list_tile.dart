@@ -1,10 +1,11 @@
 import 'package:shopping_list_manager/utils/constants.dart';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/list_item.dart';
 import '../../providers/current_list_provider.dart';
+import '../../utils/icon_types.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
+import '../common/universal_icon.dart';
 
 class ProductListTile extends ConsumerWidget {
   final ListItem item;
@@ -82,36 +83,11 @@ class ProductListTile extends ConsumerWidget {
   }
 
   Widget _buildProductImage() {
-    if (item.productImagePath != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(AppConstants.radiusM),
-        child: Image.file(
-          File(item.productImagePath!),
-          width: AppConstants.imageXL,
-          height: AppConstants.imageXL,
-          fit: BoxFit.cover,
-          cacheWidth: AppConstants.imageCacheWidth,
-          cacheHeight: AppConstants.imageCacheHeight,
-          errorBuilder: (context, error, stackTrace) => _buildDefaultIcon(),
-        ),
-      );
-    }
-    return _buildDefaultIcon();
-  }
-
-  Widget _buildDefaultIcon() {
-    return Container(
-      width: AppConstants.imageXL,
-      height: AppConstants.imageXL,
-      decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(AppConstants.radiusM),
-      ),
-      child: Icon(
-        Icons.shopping_basket,
-        size: AppConstants.iconL,
-        color: AppColors.primary,
-      ),
+    return UniversalIcon(
+      iconType: IconType.fromString(item.productIconType ?? 'asset'),
+      iconValue: item.productIconValue,
+      size: AppConstants.imageXL,
+      fallbackIcon: Icons.shopping_basket,
     );
   }
 

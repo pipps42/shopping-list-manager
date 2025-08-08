@@ -1,5 +1,4 @@
 import 'package:shopping_list_manager/utils/constants.dart';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopping_list_manager/widgets/common/app_search_bar.dart';
@@ -10,19 +9,13 @@ import '../providers/recipes_provider.dart';
 import '../models/product.dart';
 import '../models/department.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
+import '../utils/search_helpers.dart';
 import 'common/loading_widget.dart';
 import 'common/empty_state_widget.dart';
 import 'common/error_state_widget.dart';
 import 'common/base_dialog.dart';
+import 'common/universal_icon.dart';
 
-/* class AddProductDialog extends ConsumerStatefulWidget {
-  final Function(int productId) onProductSelected;
-
-  const AddProductDialog({super.key, required this.onProductSelected});
-
-  @override
-  ConsumerState<AddProductDialog> createState() => _AddProductDialogState();
-} */
 class AddProductDialog extends ConsumerStatefulWidget {
   final Function(int) onProductSelected;
   final Function(int)? onProductRemoved; // Callback per rimuovere prodotti
@@ -196,15 +189,17 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     // Se il chip è già completamente visibile nella posizione ideale, non fare nulla
     if (isFullyVisible &&
         relativePosition >= idealPositionStart &&
-        relativePosition <= idealPositionEnd)
+        relativePosition <= idealPositionEnd) {
       return;
+    }
 
     // Se siamo già al massimo scroll e il chip è completamente visibile, non fare nulla
     final currentScrollPosition = _scrollController.offset;
     final maxScrollExtent = _scrollController.position.maxScrollExtent;
     if (currentScrollPosition >= maxScrollExtent - endScrollTolerance &&
-        isFullyVisible)
+        isFullyVisible) {
       return;
+    }
 
     // Calcola quanto scrollare per portare il chip all'inizio
     final targetScrollPosition =
@@ -359,18 +354,23 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
   }
 
   Widget _buildProductsList(List<Product> allProducts) {
-    // Filtra prodotti (stesso codice di prima)
+    // Filtra prodotti per reparto
     List<Product> filteredProducts = allProducts.where((product) {
       if (selectedDepartment != null &&
           product.departmentId != selectedDepartment!.id) {
         return false;
       }
-      if (searchQuery.isNotEmpty &&
-          !product.name.toLowerCase().contains(searchQuery)) {
-        return false;
-      }
       return true;
     }).toList();
+
+    // Applica filtro di ricerca con ordinamento per rilevanza
+    if (searchQuery.isNotEmpty) {
+      filteredProducts = SearchHelpers.sortBySearchRelevance(
+        filteredProducts,
+        searchQuery,
+        (product) => product.name,
+      );
+    }
 
     if (filteredProducts.isEmpty) {
       return const EmptyStateWidget(
@@ -411,41 +411,6 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
     );
   }
 
-  /*   Widget _buildProductTile(Product product) {
-    final productIdsInList = ref.watch(currentListProductIdsProvider);
-
-    return productIdsInList.when(
-      data: (productIds) {
-        final isInList = productIds.contains(product.id!);
-
-        return ListTile(
-          leading: _buildProductImage(product),
-          title: Text(product.name),
-          subtitle: _buildDepartmentName(context, product.departmentId),
-          trailing: isInList
-              ? Icon(Icons.check_circle, color: AppColors.success)
-              : const Icon(Icons.add_circle_outline),
-          onTap: isInList ? null : () => widget.onProductSelected(product.id!),
-          enabled: !isInList,
-        );
-      },
-      loading: () => const ListTile(
-        leading: SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-        title: Text(AppStrings.loading),
-      ),
-      error: (error, stack) => ListTile(
-        leading: Icon(Icons.error, color: AppColors.error, size: 20),
-        title: Text(
-          'Errore',
-          style: TextStyle(color: AppColors.error, fontSize: 12),
-        ),
-      ),
-    );
-  } */
   Widget _buildProductTile(Product product) {
     final productIdsInList = ref.watch(currentListProductIdsProvider);
 
@@ -574,36 +539,11 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
   }
 
   Widget _buildProductImage(Product product) {
-    if (product.imagePath != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        child: Image.file(
-          File(product.imagePath!),
-          width: AppConstants.imageM,
-          height: AppConstants.imageM,
-          fit: BoxFit.cover,
-          cacheWidth: AppConstants.imageCacheWidth,
-          cacheHeight: AppConstants.imageCacheHeight,
-          errorBuilder: (context, error, stackTrace) => _buildDefaultIcon(),
-        ),
-      );
-    }
-    return _buildDefaultIcon();
-  }
-
-  Widget _buildDefaultIcon() {
-    return Container(
-      width: AppConstants.imageM,
-      height: AppConstants.imageM,
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-      ),
-      child: Icon(
-        Icons.shopping_basket,
-        size: AppConstants.iconM,
-        color: AppColors.primary,
-      ),
+    return UniversalIcon(
+      iconType: product.iconType,
+      iconValue: product.iconValue,
+      size: AppConstants.imageM,
+      fallbackIcon: Icons.shopping_basket,
     );
   }
 
@@ -629,5 +569,4 @@ class _AddProductDialogState extends ConsumerState<AddProductDialog> {
       error: (error, stack) => const Text('Errore'),
     );
   }
-
 }

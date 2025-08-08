@@ -6,6 +6,7 @@ import '../providers/products_provider.dart';
 import '../providers/departments_provider.dart';
 import '../models/product.dart';
 import '../models/department.dart';
+import '../utils/search_helpers.dart';
 import '../widgets/common/empty_state_widget.dart';
 import '../widgets/common/error_state_widget.dart';
 import '../widgets/common/loading_widget.dart';
@@ -116,21 +117,25 @@ class _ProductsManagementScreenState
   }
 
   List<Product> _filterProducts(List<Product> allProducts) {
-    return allProducts.where((product) {
-      // Filtro per reparto
+    // Filtra per reparto
+    List<Product> filteredProducts = allProducts.where((product) {
       if (_selectedDepartmentId != null &&
           product.departmentId != _selectedDepartmentId) {
         return false;
       }
-
-      // Filtro per ricerca
-      if (_searchQuery.isNotEmpty &&
-          !product.name.toLowerCase().contains(_searchQuery)) {
-        return false;
-      }
-
       return true;
     }).toList();
+
+    // Applica filtro di ricerca con ordinamento per rilevanza
+    if (_searchQuery.isNotEmpty) {
+      filteredProducts = SearchHelpers.sortBySearchRelevance(
+        filteredProducts,
+        _searchQuery,
+        (product) => product.name,
+      );
+    }
+
+    return filteredProducts;
   }
 
   Widget _buildEmptyState() {
@@ -170,10 +175,11 @@ class _ProductsManagementScreenState
       context: context,
       builder: (context) => ProductFormDialog(
         departments: departments,
-        onSave: (name, departmentId, imagePath) async {
+        defaultDepartmentId: _selectedDepartmentId,
+        onSave: (name, departmentId, iconType, iconValue) async {
           await ref
               .read(productsProvider.notifier)
-              .addProduct(name, departmentId, imagePath);
+              .addProduct(name, departmentId, iconType, iconValue);
         },
       ),
     );
@@ -185,14 +191,15 @@ class _ProductsManagementScreenState
       builder: (context) => ProductFormDialog(
         product: product,
         departments: departments,
-        onSave: (name, departmentId, imagePath) async {
+        onSave: (name, departmentId, iconType, iconValue) async {
           await ref
               .read(productsProvider.notifier)
               .updateProduct(
                 product.copyWith(
                   name: name,
                   departmentId: departmentId,
-                  imagePath: imagePath,
+                  iconType: iconType,
+                  iconValue: iconValue,
                 ),
               );
         },

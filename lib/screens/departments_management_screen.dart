@@ -33,9 +33,9 @@ class DepartmentsManagementScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         heroTag: "departments_management_fab",
         onPressed: () => _showAddDepartmentDialog(context, ref),
-        child: const Icon(Icons.add),
         backgroundColor: AppColors.secondary,
         foregroundColor: AppColors.textOnSecondary(context),
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -132,16 +132,18 @@ class DepartmentsManagementScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => DepartmentFormDialog(
-        onSave: (name, imagePath) async {
+        onSave: (name, iconType, iconValue) async {
           await ref.read(departmentsProvider.notifier).addDepartment(name);
 
-          // Se c'è un'immagine, aggiorna il reparto appena creato
-          if (imagePath != null) {
+          // Se c'è un'icona, aggiorna il reparto appena creato
+          if (iconValue != null) {
             final departments = ref.read(departmentsProvider).value ?? [];
             final newDept = departments.lastWhere((d) => d.name == name);
             await ref
                 .read(departmentsProvider.notifier)
-                .updateDepartment(newDept.copyWith(imagePath: imagePath));
+                .updateDepartment(
+                  newDept.copyWith(iconType: iconType, iconValue: iconValue),
+                );
           }
         },
       ),
@@ -157,11 +159,15 @@ class DepartmentsManagementScreen extends ConsumerWidget {
       context: context,
       builder: (context) => DepartmentFormDialog(
         department: department,
-        onSave: (name, imagePath) async {
+        onSave: (name, iconType, iconValue) async {
           await ref
               .read(departmentsProvider.notifier)
               .updateDepartment(
-                department.copyWith(name: name, imagePath: imagePath),
+                department.copyWith(
+                  name: name,
+                  iconType: iconType,
+                  iconValue: iconValue,
+                ),
               );
         },
       ),

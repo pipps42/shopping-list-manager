@@ -172,9 +172,9 @@ class CurrentListScreen extends ConsumerWidget {
           context: context,
           builder: (context) => CompleteListChoiceDialog(
             onMarkAll: () =>
-                _showTotalCostDialog(context, ref, markAllAsChecked: true),
+                _showTotalCostDialog(context, ref, markAllAsChecked: true, keepUncheckedItems: false),
             onKeepCurrent: () =>
-                _validateAndShowTotalCostDialog(context, ref, stats: stats),
+                _validateAndShowUnpurchasedItemsDialog(context, ref, stats: stats),
           ),
         );
       }
@@ -190,7 +190,7 @@ class CurrentListScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _validateAndShowTotalCostDialog(
+  Future<void> _validateAndShowUnpurchasedItemsDialog(
     BuildContext context,
     WidgetRef ref, {
     required Map<String, int> stats,
@@ -211,14 +211,32 @@ class CurrentListScreen extends ConsumerWidget {
       return;
     }
 
-    // Se ci sono prodotti checkati, procedi normalmente
-    _showTotalCostDialog(context, ref, markAllAsChecked: false);
+    // Se ci sono prodotti checkati, mostra dialog per gestire quelli non acquistati
+    _showUnpurchasedItemsHandlingDialog(context, ref);
+  }
+
+  Future<void> _showUnpurchasedItemsHandlingDialog(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    if (context.mounted) {
+      showDialog(
+        context: context,
+        builder: (context) => UnpurchasedItemsHandlingDialog(
+          onRemoveItems: () =>
+              _showTotalCostDialog(context, ref, markAllAsChecked: false, keepUncheckedItems: false),
+          onKeepItems: () =>
+              _showTotalCostDialog(context, ref, markAllAsChecked: false, keepUncheckedItems: true),
+        ),
+      );
+    }
   }
 
   Future<void> _showTotalCostDialog(
     BuildContext context,
     WidgetRef ref, {
     required bool markAllAsChecked,
+    required bool keepUncheckedItems,
   }) async {
     if (context.mounted) {
       showDialog(
@@ -228,6 +246,7 @@ class CurrentListScreen extends ConsumerWidget {
             context,
             ref,
             markAllAsChecked: markAllAsChecked,
+            keepUncheckedItems: keepUncheckedItems,
             totalCost: totalCost,
           ),
         ),
@@ -239,6 +258,7 @@ class CurrentListScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref, {
     required bool markAllAsChecked,
+    required bool keepUncheckedItems,
     double? totalCost,
   }) async {
     try {
@@ -246,6 +266,7 @@ class CurrentListScreen extends ConsumerWidget {
           .read(currentListProvider.notifier)
           .completeCurrentList(
             markAllAsChecked: markAllAsChecked,
+            keepUncheckedItems: keepUncheckedItems,
             totalCost: totalCost,
           );
 
