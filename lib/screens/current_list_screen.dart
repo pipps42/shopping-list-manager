@@ -12,7 +12,7 @@ import '../widgets/common/error_state_widget.dart';
 import '../widgets/common/loading_widget.dart';
 import '../widgets/current_list/department_card.dart';
 import '../widgets/current_list/complete_list_dialogs.dart';
-import '../widgets/common/voice_recognition_button.dart';
+import '../providers/voice_recognition_provider.dart';
 
 class CurrentListScreen extends ConsumerWidget {
   const CurrentListScreen({super.key});
@@ -353,16 +353,42 @@ class CurrentListScreen extends ConsumerWidget {
   // ==================== FLOATING ACTION BUTTONS ====================
 
   Widget _buildFloatingActionButtons(BuildContext context, WidgetRef ref) {
-    return Column(
+    final voiceState = ref.watch(voiceRecognitionProvider);
+
+    return Row(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        // FAB per riconoscimento vocale
-        VoiceRecognitionButton(
+        // FAB per cancellazione (visibile solo durante l'ascolto)
+        if (voiceState.isListening) ...[
+          FloatingActionButton(
+            heroTag: "cancel_voice_fab",
+            // mini: true,
+            onPressed: () => _cancelVoiceRecognition(ref),
+            backgroundColor: AppColors.error.withValues(alpha: 0.2),
+            foregroundColor: AppColors.error,
+            child: const Icon(Icons.delete_outline),
+          ),
+          const SizedBox(width: AppConstants.spacingS),
+        ],
+
+        // FAB per riconoscimento vocale/stop
+        FloatingActionButton(
           heroTag: "voice_recognition_fab",
-          onVoiceResult: (result) => _handleVoiceResult(context, ref, result),
+          // mini: true,
+          onPressed: voiceState.isListening
+              ? () => _stopVoiceRecognition(ref)
+              : () => _startVoiceRecognition(context, ref),
+          backgroundColor: voiceState.isListening
+              ? AppColors.error
+              : AppColors.secondary,
+          foregroundColor: AppColors.textOnSecondary(context),
+          child: voiceState.isListening
+              ? const Icon(Icons.stop)
+              : const Icon(Icons.mic),
         ),
-        const SizedBox(height: AppConstants.spacingM),
+
+        const SizedBox(width: AppConstants.spacingS),
 
         // FAB per aggiunta manuale prodotto
         FloatingActionButton(
@@ -374,6 +400,28 @@ class CurrentListScreen extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  // ==================== VOICE RECOGNITION METHODS ====================
+
+  void _startVoiceRecognition(BuildContext context, WidgetRef ref) {
+    final voiceNotifier = ref.read(voiceRecognitionProvider.notifier);
+
+    voiceNotifier.startListening(
+      onResult: (result) => _handleVoiceResult(context, ref, result),
+      timeout: const Duration(minutes: 1),
+      context: context, // Passa il context per ManualStt
+    );
+  }
+
+  void _stopVoiceRecognition(WidgetRef ref) {
+    final voiceNotifier = ref.read(voiceRecognitionProvider.notifier);
+    voiceNotifier.stopListening(); // Processa i risultati accumulati
+  }
+
+  void _cancelVoiceRecognition(WidgetRef ref) {
+    final voiceNotifier = ref.read(voiceRecognitionProvider.notifier);
+    voiceNotifier.cancelListening(); // Ignora completamente i risultati
   }
 
   void _handleVoiceResult(BuildContext context, WidgetRef ref, String result) {

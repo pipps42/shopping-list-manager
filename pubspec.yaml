@@ -30,6 +30,7 @@ dependencies:
   # Speech Recognition
   # avatar_glow: ^3.0.1
   speech_to_text: 7.1.0
+  manual_speech_to_text: ^1.0.4
   permission_handler: ^11.3.1
 
 dev_dependencies:

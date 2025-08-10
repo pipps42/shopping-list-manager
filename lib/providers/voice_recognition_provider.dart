@@ -1,9 +1,17 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/voice_recognition_service.dart';
+import 'database_provider.dart';
 
 /// Provider per il servizio di riconoscimento vocale
 final voiceRecognitionServiceProvider = Provider<VoiceRecognitionService>((ref) {
-  return VoiceRecognitionService();
+  final service = VoiceRecognitionService();
+  final databaseService = ref.read(databaseServiceProvider);
+  
+  // Inizializza il servizio con dependency injection
+  service.initialize(databaseService);
+  
+  return service;
 });
 
 /// Stato del riconoscimento vocale
@@ -62,6 +70,7 @@ class VoiceRecognitionNotifier extends StateNotifier<VoiceRecognitionState> {
   Future<void> startListening({
     required Function(String) onResult,
     Duration? timeout,
+    BuildContext? context,
   }) async {
     if (!state.isInitialized) {
       final initialized = await initialize();
@@ -89,6 +98,7 @@ class VoiceRecognitionNotifier extends StateNotifier<VoiceRecognitionState> {
         );
       },
       timeout: timeout,
+      context: context,
     );
   }
 

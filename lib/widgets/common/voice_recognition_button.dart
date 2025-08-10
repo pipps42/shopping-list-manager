@@ -66,7 +66,7 @@ class VoiceRecognitionButton extends ConsumerWidget {
           onVoiceResult!(result);
         }
       },
-      timeout: const Duration(seconds: 10),
+      timeout: const Duration(seconds: 60),
     );
   }
 
