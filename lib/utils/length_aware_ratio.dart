@@ -24,9 +24,9 @@ class LengthAwareRatio implements Applicable {
     final b = _normalize(s2);
 
     // base usando tokenSetRatio (ignora ordine / ridondanze)
-    final base = tokenSetRatio(a, b);
+    // final base = tokenSetRatio(a, b);
     // final base = weightedRatio(a, b);
-    // final base = ratio(a, b);
+    final base = ratio(a, b);
 
     final qa = _wordCount(a);
     final qb = _wordCount(b);
@@ -38,15 +38,12 @@ class LengthAwareRatio implements Applicable {
     if (qa == 1 && qb > 1) {
       // query monosillabica vs phrase più lunga -> forte penalità
       factor = 0.60;
-      // factor = 0.70;
     } else if (diff >= 2) {
       // differenza di 2 o più parole -> penalità rilevante
       factor = 0.70;
-      // factor = 0.60;
     } else if (diff == 1) {
       // differenza di 1 parola -> penalità lieve
       factor = 0.75;
-      // factor = 0.85;
     }
 
     final scored = (base * factor).round();
