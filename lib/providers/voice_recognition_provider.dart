@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/voice_recognition_service.dart';
+import '../models/product.dart';
 import 'database_provider.dart';
 
 /// Provider per il servizio di riconoscimento vocale
@@ -66,7 +67,7 @@ class VoiceRecognitionNotifier extends StateNotifier<VoiceRecognitionState> {
 
   /// Avvia l'ascolto vocale
   Future<void> startListening({
-    required Function(String) onResult,
+    required Function(List<Product>) onResult,
     required BuildContext context,
   }) async {
     if (!state.isInitialized && !await initialize()) return;
@@ -86,9 +87,10 @@ class VoiceRecognitionNotifier extends StateNotifier<VoiceRecognitionState> {
     );
 
     _service.startListening(
-      onResult: (result) {
-        state = state.copyWith(lastResult: result, isListening: false);
-        onResult(result);
+      onResult: (products) {
+        final resultText = products.map((p) => p.name).join(', ');
+        state = state.copyWith(lastResult: resultText, isListening: false);
+        onResult(products);
       },
       onError: (error) {
         state = state.copyWith(lastError: error, isListening: false);

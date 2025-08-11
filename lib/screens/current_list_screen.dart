@@ -13,6 +13,7 @@ import '../widgets/common/loading_widget.dart';
 import '../widgets/current_list/department_card.dart';
 import '../widgets/current_list/complete_list_dialogs.dart';
 import '../providers/voice_recognition_provider.dart';
+import '../models/product.dart';
 
 class CurrentListScreen extends ConsumerWidget {
   const CurrentListScreen({super.key});
@@ -363,7 +364,6 @@ class CurrentListScreen extends ConsumerWidget {
         if (voiceState.isListening) ...[
           FloatingActionButton(
             heroTag: "cancel_voice_fab",
-            // mini: true,
             onPressed: () => _cancelVoiceRecognition(ref),
             backgroundColor: AppColors.error.withValues(alpha: 0.2),
             foregroundColor: AppColors.error,
@@ -375,7 +375,6 @@ class CurrentListScreen extends ConsumerWidget {
         // FAB per riconoscimento vocale/stop
         FloatingActionButton(
           heroTag: "voice_recognition_fab",
-          // mini: true,
           onPressed: voiceState.isListening
               ? () => _stopVoiceRecognition(ref)
               : () => _startVoiceRecognition(context, ref),
@@ -408,8 +407,8 @@ class CurrentListScreen extends ConsumerWidget {
     final voiceNotifier = ref.read(voiceRecognitionProvider.notifier);
 
     voiceNotifier.startListening(
-      onResult: (result) => _handleVoiceResult(context, ref, result),
-      context: context, // Passa il context per ManualStt
+      onResult: (products) => _handleVoiceResult(context, ref, products),
+      context: context,
     );
   }
 
@@ -423,20 +422,56 @@ class CurrentListScreen extends ConsumerWidget {
     voiceNotifier.cancelListening(); // Ignora completamente i risultati
   }
 
-  void _handleVoiceResult(BuildContext context, WidgetRef ref, String result) {
-    // Per ora mostriamo semplicemente il risultato in uno SnackBar
-    // Nella Fase 2 implementeremo il matching intelligente
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Riconosciuto: "$result"'),
-        backgroundColor: AppColors.secondary,
-        duration: const Duration(seconds: 3),
-        action: SnackBarAction(
-          label: 'OK',
-          textColor: Colors.white,
-          onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+  void _handleVoiceResult(
+    BuildContext context,
+    WidgetRef ref,
+    List<Product> products,
+  ) {
+    if (products.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Nessun prodotto riconosciuto'),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 2),
         ),
-      ),
-    );
+      );
+      return;
+    }
+
+    // Aggiungi i prodotti alla lista corrente
+    final currentListNotifier = ref.read(currentListProvider.notifier);
+    final productIds = products.map((p) => p.id!).toList();
+
+    currentListNotifier
+        .addMultipleProductsToList(productIds)
+        .then((_) {
+          // Mostra messaggio di successo
+          final productNames = products.map((p) => p.name).join(', ');
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Aggiunti: $productNames'),
+              backgroundColor: AppColors.success,
+              duration: const Duration(seconds: 2),
+              action: SnackBarAction(
+                label: 'OK',
+                textColor: AppColors.textOnPrimary(context),
+                onPressed: () =>
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+              ),
+            ),
+          );
+        })
+        .catchError((error) {
+          // Mostra messaggio di errore
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Errore aggiunta prodotti: $error'),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        });
   }
 }

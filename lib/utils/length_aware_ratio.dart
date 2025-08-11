@@ -41,11 +41,11 @@ class LengthAwareRatio implements Applicable {
       // factor = 0.70;
     } else if (diff >= 2) {
       // differenza di 2 o più parole -> penalità rilevante
-      factor = 0.75;
+      factor = 0.70;
       // factor = 0.60;
     } else if (diff == 1) {
       // differenza di 1 parola -> penalità lieve
-      factor = 0.90;
+      factor = 0.75;
       // factor = 0.85;
     }
 

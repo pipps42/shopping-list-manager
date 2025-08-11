@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/voice_recognition_provider.dart';
+import '../../models/product.dart';
 import '../../utils/color_palettes.dart';
 import '../../utils/constants.dart';
 
 /// Widget per il bottone di riconoscimento vocale
 class VoiceRecognitionButton extends ConsumerWidget {
   final VoidCallback? onPressed;
-  final Function(String)? onVoiceResult;
+  final Function(List<Product>)? onVoiceResult;
   final String? heroTag;
 
   const VoiceRecognitionButton({
@@ -61,10 +62,10 @@ class VoiceRecognitionButton extends ConsumerWidget {
     // Avvia ascolto
     notifier.startListening(
       context: context,
-      onResult: (result) {
+      onResult: (products) {
         Navigator.of(context).pop(); // Chiudi dialog
         if (onVoiceResult != null) {
-          onVoiceResult!(result);
+          onVoiceResult!(products);
         }
       },
     );
@@ -77,7 +78,7 @@ class VoiceRecognitionButton extends ConsumerWidget {
 
 /// Dialog mostrato durante l'ascolto vocale
 class VoiceListeningDialog extends ConsumerWidget {
-  final Function(String)? onResult;
+  final Function(List<Product>)? onResult;
   final VoidCallback? onCancel;
 
   const VoiceListeningDialog({super.key, this.onResult, this.onCancel});

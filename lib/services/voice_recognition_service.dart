@@ -52,7 +52,7 @@ class VoiceRecognitionService {
   bool get isListening => _isListening;
 
   // Callbacks salvati
-  Function(String)? _savedOnResult;
+  Function(List<Product>)? _savedOnResult;
   Function(String)? _savedOnError;
 
   // Testo completo dell'ultimo riconoscimento vocale
@@ -116,7 +116,7 @@ class VoiceRecognitionService {
 
   /// Avvia l'ascolto vocale con SpeechToText
   void startListening({
-    required Function(String) onResult,
+    required Function(List<Product>) onResult,
     required Function(String) onError,
     required Duration timeout,
     required BuildContext context,
@@ -331,7 +331,7 @@ class VoiceRecognitionService {
       final allMatches = extractAll(
         query: ngram,
         choices: _productNames,
-        cutoff: 75, // Soglia più permissiva per catturare più match
+        cutoff: 85, // Soglia più permissiva per catturare più match
         ratio: LengthAwareRatio(),
       );
 
@@ -400,7 +400,9 @@ class VoiceRecognitionService {
       }
 
       // Aggiungi il prodotto vincitore
-      finalProducts.add(productMap[bestProduct]!);
+      if (!finalProducts.contains(productMap[bestProduct])) {
+        finalProducts.add(productMap[bestProduct]!);
+      }
 
       debugPrint(
         '🏆 Indice $i (${words[i]}): "$bestProduct" vince con score ${bestScore.toStringAsFixed(1)}',
@@ -440,26 +442,26 @@ class VoiceRecognitionService {
         );
 
         if (extractedProducts.isNotEmpty) {
-          // Chiama il callback finale con i prodotti estratti
+          // Chiama il callback finale con la lista di prodotti
           if (_savedOnResult != null) {
             final allResults = extractedProducts.map((p) => p.name).join(', ');
             debugPrint(
               '🏁 Finalizing con ${extractedProducts.length} prodotti estratti: $allResults',
             );
-            _savedOnResult!(allResults);
+            _savedOnResult!(extractedProducts);
           }
         } else {
           debugPrint(
             '⚠️ Nessun prodotto estratto dal testo: "$_finalRecognizedText"',
           );
           if (_savedOnResult != null) {
-            _savedOnResult!('Nessun prodotto riconosciuto');
+            _savedOnResult!([]);
           }
         }
       } else {
         debugPrint('⚠️ Nessun testo ricevuto durante l\'ascolto');
         if (_savedOnResult != null) {
-          _savedOnResult!('Nessun testo riconosciuto');
+          _savedOnResult!([]);
         }
       }
 
