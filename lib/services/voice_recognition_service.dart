@@ -225,7 +225,7 @@ class VoiceRecognitionService {
     }
   }
 
-  /// Estrae prodotti dal testo finale usando N-grammi + FuzzyWuzzy
+  /// Estrae prodotti dal testo finale usando N-grammi + FuzzyWuzzy con voti cumulativi
   List<Product> _extractProductsFromFinalText(String text) {
     if (text.trim().isEmpty) return [];
 
@@ -237,8 +237,10 @@ class VoiceRecognitionService {
       final cleanedText = _parser.removeStopWords(normalizedText);
       debugPrint('📝 Testo normalizzato: "$cleanedText"');
 
-      // 2. Genera tutti gli n-grammi (1, 2, 3)
-      final List<NgramMatch> allMatches = [];
+      // 2. Mappa per accumulare score per indice specifico
+      final Map<int, Map<String, double>> scoresByIndex = {};
+      final Map<String, Product> productMap = {};
+
       final words = cleanedText
           .toLowerCase()
           .split(' ')
@@ -247,143 +249,168 @@ class VoiceRecognitionService {
 
       if (words.isEmpty) return [];
 
-      // Genera n-grammi e cerca match per ognuno
+      // Inizializza scoresByIndex per ogni indice
+      for (int i = 0; i < words.length; i++) {
+        scoresByIndex[i] = <String, double>{};
+      }
+
+      // Genera n-grammi e accumula match per ogni indice specifico
       for (int n = 1; n <= 3; n++) {
         for (int i = 0; i <= words.length - n; i++) {
           final ngram = words.sublist(i, i + n).join(' ');
 
-          // Fuzzy match contro la cache
-          final match = _findFuzzyMatch(ngram, i, i + n - 1, n);
-          if (match != null) {
-            allMatches.add(match);
+          // Skip n-grammi troppo corti (solo per 1-grammi)
+          if (n == 1 && ngram.length <= 2) continue;
+
+          // Trova tutti i match per questo n-gramma usando extractAll
+          final matches = _findAllFuzzyMatches(ngram, i, i + n - 1, n);
+
+          // Accumula score per ogni indice che questo n-gramma occupa
+          for (final match in matches) {
+            final productName = match.matchedProduct.name;
+            productMap[productName] = match.matchedProduct;
+
+            // Aggiungi lo score a tutti gli indici occupati da questo n-gramma
+            for (int idx = match.startIndex; idx <= match.endIndex; idx++) {
+              scoresByIndex[idx]![productName] =
+                  (scoresByIndex[idx]![productName] ?? 0) + match.fuzzyScore;
+            }
+
+            debugPrint(
+              '🗳️ Match: $ngram -> $productName (score: ${match.fuzzyScore}, indici: ${match.startIndex}-${match.endIndex})',
+            );
           }
         }
       }
 
-      debugPrint(
-        '🎯 Trovati ${allMatches.length} match prima della risoluzione conflitti',
-      );
-
-      debugPrint(allMatches.map((m) => m.toString()).join('\n'));
-
-      // 3. Risolvi i conflitti (preferenza agli n-grammi più lunghi)
-      final finalMatches = _resolveConflicts(allMatches, words.length);
-
-      debugPrint(
-        '✅ Match finali dopo risoluzione conflitti: ${finalMatches.length}',
-      );
-      for (final match in finalMatches) {
-        debugPrint('  ${match.toString()}');
+      debugPrint('🏆 Score per indice:');
+      for (int i = 0; i < words.length; i++) {
+        debugPrint('  Indice $i (${words[i]}):');
+        final sortedProducts = scoresByIndex[i]!.entries.toList()
+          ..sort((a, b) => b.value.compareTo(a.value));
+        for (final entry in sortedProducts.take(3)) {
+          // Mostra solo i top 3
+          debugPrint('    ${entry.key}: ${entry.value.toStringAsFixed(1)}');
+        }
       }
 
-      return finalMatches.map((m) => m.matchedProduct).toList();
+      // 3. Risolvi conflitti: per ogni indice scegli il prodotto con score più alto
+      final finalMatches = _resolveConflictsWithIndexSpecificScores(
+        scoresByIndex,
+        productMap,
+        words,
+      );
+
+      debugPrint(
+        '✅ Prodotti finali dopo risoluzione conflitti: ${finalMatches.length}',
+      );
+      for (final product in finalMatches) {
+        debugPrint('  ${product.name}');
+      }
+
+      return finalMatches;
     } catch (e) {
       debugPrint('❌ Errore durante estrazione prodotti con N-grammi: $e');
       return [];
     }
   }
 
-  /// Cerca un match fuzzy per un n-gramma specifico
-  NgramMatch? _findFuzzyMatch(
+  /// Trova tutti i match fuzzy per un n-gramma usando extractAll
+  List<NgramMatch> _findAllFuzzyMatches(
     String ngram,
     int startIndex,
     int endIndex,
     int ngramLength,
   ) {
-    if (ngram.trim().isEmpty || ngram.length <= 2) return null;
+    if (ngram.trim().isEmpty || ngram.length <= 2) return [];
 
     try {
-      // Usa FuzzyWuzzy per trovare il miglior match nella cache
-      final dynamic bestMatch = extractOne(
+      // Usa extractAll per ottenere tutti i match possibili
+      final allMatches = extractAll(
         query: ngram,
         choices: _productNames,
-        cutoff: 75,
-        // cutoff: ngramLength == 1 ? 85 : 75, // Più rigido per singole parole
+        cutoff: 75, // Soglia più permissiva per catturare più match
         ratio: LengthAwareRatio(),
       );
 
-      if (bestMatch?.choice != null) {
-        // Trova il prodotto corrispondente
-        final String matchedProductName = bestMatch.choice;
+      final List<NgramMatch> ngramMatches = [];
+
+      for (final match in allMatches) {
+        final String matchedProductName = match.choice;
         final int productIndex = _productNames.indexOf(matchedProductName);
 
         if (productIndex >= 0) {
           final Product matchedProduct = _cachedProducts[productIndex];
-          final int fuzzyScore = bestMatch.score ?? 0;
+          final int fuzzyScore = match.score;
 
-          return NgramMatch(
-            ngram: ngram,
-            startIndex: startIndex,
-            endIndex: endIndex,
-            ngramLength: ngramLength,
-            matchedProduct: matchedProduct,
-            fuzzyScore: fuzzyScore,
+          ngramMatches.add(
+            NgramMatch(
+              ngram: ngram,
+              startIndex: startIndex,
+              endIndex: endIndex,
+              ngramLength: ngramLength,
+              matchedProduct: matchedProduct,
+              fuzzyScore: fuzzyScore,
+            ),
           );
         }
       }
+
+      return ngramMatches;
     } catch (e) {
       debugPrint('⚠️ Errore nel fuzzy match per "$ngram": $e');
+      return [];
     }
-
-    return null;
   }
 
-  /// Risolve i conflitti tra n-grammi sovrapposti preferendo quelli più lunghi
-  List<NgramMatch> _resolveConflicts(
-    List<NgramMatch> allMatches,
-    int wordsCount,
+  /// Risolve conflitti usando score per indice specifico: per ogni indice sceglie il prodotto con score più alto
+  List<Product> _resolveConflictsWithIndexSpecificScores(
+    Map<int, Map<String, double>> scoresByIndex,
+    Map<String, Product> productMap,
+    List<String> words,
   ) {
-    if (allMatches.isEmpty) return [];
+    if (scoresByIndex.isEmpty) return [];
 
-    // Primo step: per ogni startIndex, mantieni solo il match migliore
-    final Map<int, NgramMatch> bestMatchByStartIndex = {};
+    final List<Product> finalProducts = [];
+    final List<bool> usedIndices = List.filled(words.length, false);
 
-    for (final match in allMatches) {
-      final startIdx = match.startIndex;
-      final existing = bestMatchByStartIndex[startIdx];
+    // Itera attraverso ogni indice sequenzialmente
+    for (int i = 0; i < words.length; i++) {
+      // Se l'indice è già stato usato da un n-gramma precedente, saltalo
+      if (usedIndices[i]) {
+        continue;
+      }
 
-      if (existing == null) {
-        bestMatchByStartIndex[startIdx] = match;
-      } else {
-        // A parità di startIndex, preferisci il miglior score normalizzato
-        final shouldReplace = match.fuzzyScore > existing.fuzzyScore;
+      final scoresForIndex = scoresByIndex[i]!;
+      if (scoresForIndex.isEmpty) {
+        continue;
+      }
 
-        if (shouldReplace) {
-          bestMatchByStartIndex[startIdx] = match;
+      // Trova il prodotto con score più alto per questo indice
+      String bestProduct = scoresForIndex.keys.first;
+      double bestScore = scoresForIndex[bestProduct]!;
+
+      for (final entry in scoresForIndex.entries) {
+        if (entry.value > bestScore) {
+          bestProduct = entry.key;
+          bestScore = entry.value;
         }
       }
+
+      // Aggiungi il prodotto vincitore
+      finalProducts.add(productMap[bestProduct]!);
+
+      debugPrint(
+        '🏆 Indice $i (${words[i]}): "$bestProduct" vince con score ${bestScore.toStringAsFixed(1)}',
+      );
+
+      // Determina quanti indici questo prodotto occupa (lunghezza del nome del prodotto divisa per parole)
+      // Per ora segniamo solo questo indice come usato - questo è il comportamento più semplice
+      // In futuro potremmo implementare logica più sofisticata per n-grammi
+      usedIndices[i] = true;
     }
 
-    // Secondo step: risolvi overlap tra match con startIndex diversi
-    final List<NgramMatch> candidateMatches = bestMatchByStartIndex.values
-        .toList();
-
-    // Ordina per score normalizzato (desc) per dare priorità ai match migliori
-    candidateMatches.sort((a, b) => b.fuzzyScore.compareTo(a.fuzzyScore));
-
-    List<bool> usedIndices = List.filled(wordsCount, false);
-    List<NgramMatch> finalMatches = [];
-
-    for (final match in candidateMatches) {
-      // Controlla se gli indici sono già occupati da altri match
-      bool canUse = true;
-      for (int i = match.startIndex; i <= match.endIndex; i++) {
-        if (usedIndices[i]) {
-          canUse = false;
-          break;
-        }
-      }
-
-      if (canUse) {
-        // Segna indici come occupati
-        for (int i = match.startIndex; i <= match.endIndex; i++) {
-          usedIndices[i] = true;
-        }
-        finalMatches.add(match);
-      }
-    }
-
-    return finalMatches;
+    return finalProducts;
   }
 
   /// Finalizza tutto il processo di listening e processa il testo finale
