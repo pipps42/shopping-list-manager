@@ -409,7 +409,6 @@ class CurrentListScreen extends ConsumerWidget {
 
     voiceNotifier.startListening(
       onResult: (result) => _handleVoiceResult(context, ref, result),
-      timeout: const Duration(minutes: 1),
       context: context, // Passa il context per ManualStt
     );
   }

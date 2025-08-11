@@ -60,13 +60,13 @@ class VoiceRecognitionButton extends ConsumerWidget {
 
     // Avvia ascolto
     notifier.startListening(
+      context: context,
       onResult: (result) {
         Navigator.of(context).pop(); // Chiudi dialog
         if (onVoiceResult != null) {
           onVoiceResult!(result);
         }
       },
-      timeout: const Duration(seconds: 60),
     );
   }
 

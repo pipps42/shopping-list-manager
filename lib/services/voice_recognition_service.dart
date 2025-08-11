@@ -1,10 +1,35 @@
 import 'package:manual_speech_to_text/manual_speech_to_text.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:fuzzywuzzy/fuzzywuzzy.dart';
+import 'package:shopping_list_manager/utils/length_aware_ratio.dart';
 import 'voice_text_parser.dart';
 import 'database_service.dart';
 import '../models/product.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+
+/// Rappresenta un match di n-gramma con informazioni complete per il conflict resolution
+class NgramMatch {
+  final String ngram; // "aceto balsamico"
+  final int startIndex; // 0 (indice prima parola)
+  final int endIndex; // 1 (indice ultima parola)
+  final int ngramLength; // 2 (numero parole)
+  final Product matchedProduct; // Prodotto matchato
+  final int fuzzyScore; // 88 (punteggio FuzzyWuzzy)
+
+  const NgramMatch({
+    required this.ngram,
+    required this.startIndex,
+    required this.endIndex,
+    required this.ngramLength,
+    required this.matchedProduct,
+    required this.fuzzyScore,
+  });
+
+  @override
+  String toString() =>
+      'NgramMatch($ngram -> ${matchedProduct.name}, score: $fuzzyScore, indices: $startIndex-$endIndex)';
+}
 
 /// Servizio per la gestione del riconoscimento vocale con ManualStt
 class VoiceRecognitionService {
@@ -13,7 +38,7 @@ class VoiceRecognitionService {
   factory VoiceRecognitionService() => _instance;
   VoiceRecognitionService._internal();
 
-  ManualSttController? _sttController;
+  late ManualSttController _sttController;
   final VoiceTextParser _parser = VoiceTextParser();
 
   // DatabaseService iniettato tramite dependency injection
@@ -22,19 +47,9 @@ class VoiceRecognitionService {
   bool _isInitialized = false;
   bool _isListening = false;
 
-  // Risultati della fuzzy search accumulati durante l'ascolto
-  final List<Product> _accumulatedResults = [];
-
-  // Stream per comunicare i risultati parziali
-  final StreamController<List<Product>> _resultsStreamController =
-      StreamController<List<Product>>.broadcast();
-
-  Stream<List<Product>> get resultsStream => _resultsStreamController.stream;
-
   // Getters per lo stato
   bool get isInitialized => _isInitialized;
   bool get isListening => _isListening;
-  bool get isAvailable => _sttController != null;
 
   // Timer master per il controllo dei 60 secondi
   Timer? _masterTimer;
@@ -43,8 +58,12 @@ class VoiceRecognitionService {
   Function(String)? _savedOnResult;
   Function(String)? _savedOnError;
 
-  // Track dell'ultimo testo processato per processing incrementale
-  String _lastProcessedText = '';
+  // Testo completo dell'ultimo riconoscimento vocale
+  String _finalRecognizedText = '';
+
+  // Cache dei prodotti con nomi completi
+  final List<Product> _cachedProducts = [];
+  final List<String> _productNames = [];
 
   /// Inizializza il servizio di riconoscimento vocale con ManualStt
   Future<bool> initialize([
@@ -57,6 +76,9 @@ class VoiceRecognitionService {
       // Inietta DatabaseService se fornito, altrimenti usa il singleton
       _databaseService = databaseService ?? DatabaseService();
 
+      // Carica e normalizza tutti i prodotti per la cache
+      await _loadAndCacheProducts();
+
       // Richiedi permesso microfono (manual_stt lo gestisce automaticamente, ma lo facciamo per sicurezza)
       final permissionStatus = await Permission.microphone.request();
       if (permissionStatus != PermissionStatus.granted) {
@@ -66,7 +88,7 @@ class VoiceRecognitionService {
 
       _isInitialized = true;
       debugPrint(
-        '✅ Voice Recognition Service (ManualStt) inizializzato con successo',
+        '✅ Voice Recognition Service inizializzato con ${_cachedProducts.length} prodotti',
       );
       return true;
     } catch (e) {
@@ -76,12 +98,12 @@ class VoiceRecognitionService {
   }
 
   /// Avvia l'ascolto vocale con ManualStt (controllo completo per 60 secondi)
-  Future<void> startListening({
+  void startListening({
     required Function(String) onResult,
     required Function(String) onError,
-    Duration? timeout,
-    BuildContext? context,
-  }) async {
+    required Duration timeout,
+    required BuildContext context,
+  }) {
     if (!_isInitialized) {
       onError('Servizio non inizializzato');
       return;
@@ -96,31 +118,26 @@ class VoiceRecognitionService {
     _savedOnResult = onResult;
     _savedOnError = onError;
 
-    // Pulisci risultati precedenti e reset tracking
-    clearAccumulatedResults();
-    _lastProcessedText = '';
+    // Reset testo
+    _finalRecognizedText = '';
 
     // Avvia timer master per 60 secondi
     _masterTimer?.cancel();
-    _masterTimer = Timer(const Duration(seconds: 60), () {
-      debugPrint('⏰ Timer master scaduto (60s) - Fine ascolto automatica');
-      _finalizeBatchedListening();
+    _masterTimer = Timer(timeout, () {
+      debugPrint(
+        '⏰ Timer master scaduto (${timeout.inSeconds}s) - Fine ascolto automatica',
+      );
+      _finalizeListening();
     });
 
     try {
       // Inizializza ManualSttController con context se fornito
-      if (_sttController == null && context != null) {
-        _sttController = ManualSttController(context);
-        debugPrint('🎛️ ManualSttController inizializzato');
-      }
-
-      if (_sttController == null) {
-        onError('Context richiesto per l\'inizializzazione di ManualStt');
-        return;
-      }
+      _sttController = ManualSttController(context);
+      _sttController.pauseIfMuteFor = timeout;
+      debugPrint('🎛️ ManualSttController inizializzato');
 
       // Configura i callback per ManualStt
-      _sttController!.listen(
+      _sttController.listen(
         onListeningStateChanged: (ManualSttState state) {
           debugPrint('🎙️ Stato ManualStt: $state');
           switch (state) {
@@ -128,7 +145,8 @@ class VoiceRecognitionService {
               _isListening = true;
               break;
             case ManualSttState.paused:
-              // ManualStt gestisce pause/resume automaticamente
+              // stopListening();
+              debugPrint('⏸️ ManualStt in pausa - ascolto sospeso');
               break;
             case ManualSttState.stopped:
               _isListening = false;
@@ -138,8 +156,8 @@ class VoiceRecognitionService {
         onListeningTextChanged: (String text) {
           debugPrint('📝 Testo ManualStt: "$text"');
 
-          // Processa il testo in tempo reale con logica incrementale
-          _processPartialResult(text);
+          // Salva l'ultimo testo ricevuto (processamento finale a fine ascolto)
+          _finalRecognizedText = text;
         },
         onSoundLevelChanged: (double level) {
           // Gestisci il livello audio se necessario
@@ -147,10 +165,12 @@ class VoiceRecognitionService {
       );
 
       // Avvia l'ascolto manuale (startStt è void, non restituisce Future)
-      _sttController!.startStt();
+      _sttController.startStt();
       _isListening = true;
 
-      debugPrint('🚀 ManualStt avviato - Ascolto continuo per 60 secondi');
+      debugPrint(
+        '🚀 ManualStt avviato - Ascolto continuo per ${timeout.inSeconds} secondi',
+      );
     } catch (e) {
       debugPrint('❌ Errore durante l\'avvio ManualStt: $e');
       onError('Errore durante l\'avvio dell\'ascolto: $e');
@@ -158,27 +178,22 @@ class VoiceRecognitionService {
   }
 
   /// Ferma l'ascolto vocale e processa tutti i risultati
-  Future<void> stopListening() async {
+  void stopListening() {
     if (!_isListening) return;
 
     debugPrint('🛑 Stop manuale richiesto');
-    await _finalizeBatchedListening();
+    _finalizeListening();
   }
 
   /// Cancella l'ascolto vocale e scarta tutti i risultati
-  Future<void> cancelListening() async {
+  void cancelListening() {
     if (!_isListening) return;
 
     try {
       _masterTimer?.cancel();
-
-      if (_sttController != null) {
-        _sttController!.stopStt();
-      }
-
+      _sttController.stopStt();
       _isListening = false;
-      _lastProcessedText = '';
-      clearAccumulatedResults();
+      _finalRecognizedText = '';
 
       debugPrint('❌ Ascolto cancellato - risultati scartati');
     } catch (e) {
@@ -186,134 +201,236 @@ class VoiceRecognitionService {
     }
   }
 
-  /// Ottieni le lingue disponibili
-  Future<List<String>> getAvailableLocales() async {
-    // ManualStt non espone questa funzionalità direttamente
-    return ['it_IT', 'en_US'];
-  }
-
   /// Controlla se il microfono ha il permesso
   Future<bool> hasMicrophonePermission() async {
     return await Permission.microphone.isGranted;
   }
 
-  /// Processa un risultato parziale con logica incrementale
-  Future<void> _processPartialResult(String currentText) async {
-    if (currentText.trim().isEmpty) return;
+  /// Carica tutti i prodotti dal database e li mette in cache
+  Future<void> _loadAndCacheProducts() async {
+    try {
+      final allProducts = await _databaseService.getAllProducts();
+      _cachedProducts.clear();
+      _productNames.clear();
 
-    // Estrai solo la parte nuova del testo (incrementale)
-    final newTextPart = _extractNewTextPart(currentText);
-    if (newTextPart.trim().isEmpty) return;
+      for (final product in allProducts) {
+        _cachedProducts.add(product);
+        _productNames.add(product.name.toLowerCase());
+      }
 
-    debugPrint(
-      '🎙️ Processing incremental text: "$newTextPart" (from: "$currentText")',
-    );
+      debugPrint('📦 Cache caricata: ${_cachedProducts.length} prodotti');
+    } catch (e) {
+      debugPrint('❌ Errore durante caricamento cache prodotti: $e');
+      rethrow;
+    }
+  }
 
-    // Aggiorna il tracking
-    _lastProcessedText = currentText;
+  /// Estrae prodotti dal testo finale usando N-grammi + FuzzyWuzzy
+  List<Product> _extractProductsFromFinalText(String text) {
+    if (text.trim().isEmpty) return [];
 
-    // Parsing asincrono solo della parte nuova
-    final newProducts = await _parseTextAsync(newTextPart);
+    try {
+      debugPrint('🔍 Processamento N-grammi da testo: "$text"');
 
-    if (newProducts.isNotEmpty) {
-      // Fuzzy search asincrona sui nuovi prodotti estratti
-      final searchResults = await _performFuzzySearchAsync(newProducts);
+      // 1. Normalizza il testo usando VoiceTextParser
+      final normalizedText = _parser.normalizeText(text);
+      final cleanedText = _parser.removeStopWords(normalizedText);
+      debugPrint('📝 Testo normalizzato: "$cleanedText"');
 
-      if (searchResults.isNotEmpty) {
-        // Aggiungi ai risultati accumulati (evita duplicati)
-        for (final product in searchResults) {
-          if (!_accumulatedResults.any((p) => p.id == product.id)) {
-            _accumulatedResults.add(product);
+      // 2. Genera tutti gli n-grammi (1, 2, 3)
+      final List<NgramMatch> allMatches = [];
+      final words = cleanedText
+          .toLowerCase()
+          .split(' ')
+          .where((w) => w.isNotEmpty)
+          .toList();
+
+      if (words.isEmpty) return [];
+
+      // Genera n-grammi e cerca match per ognuno
+      for (int n = 1; n <= 3; n++) {
+        for (int i = 0; i <= words.length - n; i++) {
+          final ngram = words.sublist(i, i + n).join(' ');
+
+          // Fuzzy match contro la cache
+          final match = _findFuzzyMatch(ngram, i, i + n - 1, n);
+          if (match != null) {
+            allMatches.add(match);
           }
         }
+      }
 
-        // Invia i risultati aggiornati attraverso lo stream
-        _resultsStreamController.add(List.from(_accumulatedResults));
+      debugPrint(
+        '🎯 Trovati ${allMatches.length} match prima della risoluzione conflitti',
+      );
 
-        debugPrint(
-          '✅ Risultati incrementali accumulati: ${_accumulatedResults.length}',
-        );
+      debugPrint(allMatches.map((m) => m.toString()).join('\n'));
+
+      // 3. Risolvi i conflitti (preferenza agli n-grammi più lunghi)
+      final finalMatches = _resolveConflicts(allMatches, words.length);
+
+      debugPrint(
+        '✅ Match finali dopo risoluzione conflitti: ${finalMatches.length}',
+      );
+      for (final match in finalMatches) {
+        debugPrint('  ${match.toString()}');
+      }
+
+      return finalMatches.map((m) => m.matchedProduct).toList();
+    } catch (e) {
+      debugPrint('❌ Errore durante estrazione prodotti con N-grammi: $e');
+      return [];
+    }
+  }
+
+  /// Cerca un match fuzzy per un n-gramma specifico
+  NgramMatch? _findFuzzyMatch(
+    String ngram,
+    int startIndex,
+    int endIndex,
+    int ngramLength,
+  ) {
+    if (ngram.trim().isEmpty || ngram.length <= 2) return null;
+
+    try {
+      // Usa FuzzyWuzzy per trovare il miglior match nella cache
+      final dynamic bestMatch = extractOne(
+        query: ngram,
+        choices: _productNames,
+        cutoff: 75,
+        // cutoff: ngramLength == 1 ? 85 : 75, // Più rigido per singole parole
+        ratio: LengthAwareRatio(),
+      );
+
+      if (bestMatch?.choice != null) {
+        // Trova il prodotto corrispondente
+        final String matchedProductName = bestMatch.choice;
+        final int productIndex = _productNames.indexOf(matchedProductName);
+
+        if (productIndex >= 0) {
+          final Product matchedProduct = _cachedProducts[productIndex];
+          final int fuzzyScore = bestMatch.score ?? 0;
+
+          return NgramMatch(
+            ngram: ngram,
+            startIndex: startIndex,
+            endIndex: endIndex,
+            ngramLength: ngramLength,
+            matchedProduct: matchedProduct,
+            fuzzyScore: fuzzyScore,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ Errore nel fuzzy match per "$ngram": $e');
+    }
+
+    return null;
+  }
+
+  /// Risolve i conflitti tra n-grammi sovrapposti preferendo quelli più lunghi
+  List<NgramMatch> _resolveConflicts(
+    List<NgramMatch> allMatches,
+    int wordsCount,
+  ) {
+    if (allMatches.isEmpty) return [];
+
+    // Primo step: per ogni startIndex, mantieni solo il match migliore
+    final Map<int, NgramMatch> bestMatchByStartIndex = {};
+
+    for (final match in allMatches) {
+      final startIdx = match.startIndex;
+      final existing = bestMatchByStartIndex[startIdx];
+
+      if (existing == null) {
+        bestMatchByStartIndex[startIdx] = match;
+      } else {
+        // A parità di startIndex, preferisci il miglior score normalizzato
+        final shouldReplace = match.fuzzyScore > existing.fuzzyScore;
+
+        if (shouldReplace) {
+          bestMatchByStartIndex[startIdx] = match;
+        }
       }
     }
-  }
 
-  /// Estrae solo la parte nuova del testo rispetto all'ultimo processing
-  String _extractNewTextPart(String currentText) {
-    if (_lastProcessedText.isEmpty) return currentText;
+    // Secondo step: risolvi overlap tra match con startIndex diversi
+    final List<NgramMatch> candidateMatches = bestMatchByStartIndex.values
+        .toList();
 
-    // Se il testo corrente contiene quello precedente, estrai solo la differenza
-    if (currentText.startsWith(_lastProcessedText)) {
-      final newPart = currentText.substring(_lastProcessedText.length).trim();
-      return newPart;
-    }
+    // Ordina per score normalizzato (desc) per dare priorità ai match migliori
+    candidateMatches.sort((a, b) => b.fuzzyScore.compareTo(a.fuzzyScore));
 
-    // Se non c'è continuità, processa tutto
-    return currentText;
-  }
+    List<bool> usedIndices = List.filled(wordsCount, false);
+    List<NgramMatch> finalMatches = [];
 
-  /// Parsing asincrono del testo vocale
-  Future<List<String>> _parseTextAsync(String text) async {
-    return await Future.microtask(() {
-      return _parser.parseVoiceText(text);
-    });
-  }
+    for (final match in candidateMatches) {
+      // Controlla se gli indici sono già occupati da altri match
+      bool canUse = true;
+      for (int i = match.startIndex; i <= match.endIndex; i++) {
+        if (usedIndices[i]) {
+          canUse = false;
+          break;
+        }
+      }
 
-  /// Fuzzy search asincrona sui prodotti
-  Future<List<Product>> _performFuzzySearchAsync(
-    List<String> productNames,
-  ) async {
-    final List<Product> results = [];
-
-    for (final productName in productNames) {
-      if (productName.trim().isEmpty) continue;
-
-      try {
-        // Cerca prodotti che contengono il nome
-        final products = await _databaseService.searchProducts(productName);
-        results.addAll(products);
-        debugPrint(
-          'Fuzzy search ha estratto: "${products.length} results for $productName"',
-        );
-      } catch (e) {
-        debugPrint('Errore nella fuzzy search per "$productName": $e');
+      if (canUse) {
+        // Segna indici come occupati
+        for (int i = match.startIndex; i <= match.endIndex; i++) {
+          usedIndices[i] = true;
+        }
+        finalMatches.add(match);
       }
     }
 
-    return results;
+    return finalMatches;
   }
 
-  /// Ottieni i risultati accumulati
-  List<Product> getAccumulatedResults() {
-    return List.from(_accumulatedResults);
-  }
-
-  /// Pulisci i risultati accumulati
-  void clearAccumulatedResults() {
-    _accumulatedResults.clear();
-    _resultsStreamController.add([]);
-  }
-
-  /// Finalizza tutto il processo di listening
-  Future<void> _finalizeBatchedListening() async {
+  /// Finalizza tutto il processo di listening e processa il testo finale
+  void _finalizeListening() {
     try {
       _masterTimer?.cancel();
 
-      if (_isListening && _sttController != null) {
-        _sttController!.stopStt();
+      if (_isListening) {
+        _sttController.stopStt();
       }
 
       _isListening = false;
-      _lastProcessedText = '';
 
-      // Chiama il callback finale con tutti i risultati accumulati
-      if (_savedOnResult != null && _accumulatedResults.isNotEmpty) {
-        final allResults = _accumulatedResults.map((p) => p.name).join(', ');
-        debugPrint(
-          '🏁 Finalizing con ${_accumulatedResults.length} risultati: $allResults',
+      // Processa il testo finale usando N-grammi + FuzzyWuzzy
+      if (_finalRecognizedText.isNotEmpty) {
+        debugPrint('🎙️ Processando testo finale: "$_finalRecognizedText"');
+
+        final extractedProducts = _extractProductsFromFinalText(
+          _finalRecognizedText,
         );
-        _savedOnResult!(allResults);
+
+        if (extractedProducts.isNotEmpty) {
+          // Chiama il callback finale con i prodotti estratti
+          if (_savedOnResult != null) {
+            final allResults = extractedProducts.map((p) => p.name).join(', ');
+            debugPrint(
+              '🏁 Finalizing con ${extractedProducts.length} prodotti estratti: $allResults',
+            );
+            _savedOnResult!(allResults);
+          }
+        } else {
+          debugPrint(
+            '⚠️ Nessun prodotto estratto dal testo: "$_finalRecognizedText"',
+          );
+          if (_savedOnResult != null) {
+            _savedOnResult!('Nessun prodotto riconosciuto');
+          }
+        }
+      } else {
+        debugPrint('⚠️ Nessun testo ricevuto durante l\'ascolto');
+        if (_savedOnResult != null) {
+          _savedOnResult!('Nessun testo riconosciuto');
+        }
       }
 
+      // Reset finale
+      _finalRecognizedText = '';
       debugPrint('✅ ManualStt listening finalizzato');
     } catch (e) {
       debugPrint('❌ Errore durante finalizzazione: $e');
@@ -329,9 +446,6 @@ class VoiceRecognitionService {
     if (_isListening) {
       cancelListening();
     }
-    if (_sttController != null) {
-      _sttController!.dispose();
-    }
-    _resultsStreamController.close();
+    _sttController.dispose();
   }
 }

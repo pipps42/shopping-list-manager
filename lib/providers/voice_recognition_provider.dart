@@ -4,13 +4,13 @@ import '../services/voice_recognition_service.dart';
 import 'database_provider.dart';
 
 /// Provider per il servizio di riconoscimento vocale
-final voiceRecognitionServiceProvider = Provider<VoiceRecognitionService>((ref) {
+final voiceRecognitionServiceProvider = Provider<VoiceRecognitionService>((
+  ref,
+) {
   final service = VoiceRecognitionService();
   final databaseService = ref.read(databaseServiceProvider);
-  
-  // Inizializza il servizio con dependency injection
+
   service.initialize(databaseService);
-  
   return service;
 });
 
@@ -51,30 +51,32 @@ class VoiceRecognitionState {
 class VoiceRecognitionNotifier extends StateNotifier<VoiceRecognitionState> {
   final VoiceRecognitionService _service;
 
-  VoiceRecognitionNotifier(this._service) : super(const VoiceRecognitionState());
+  VoiceRecognitionNotifier(this._service)
+    : super(const VoiceRecognitionState());
 
   /// Inizializza il servizio
   Future<bool> initialize() async {
     final success = await _service.initialize();
-    
     state = state.copyWith(
       isInitialized: success,
-      isAvailable: _service.isAvailable,
       lastError: success ? null : 'Inizializzazione fallita',
     );
-    
     return success;
   }
 
   /// Avvia l'ascolto vocale
   Future<void> startListening({
     required Function(String) onResult,
-    Duration? timeout,
-    BuildContext? context,
+    required BuildContext context,
   }) async {
-    if (!state.isInitialized) {
-      final initialized = await initialize();
-      if (!initialized) return;
+    if (!state.isInitialized && !await initialize()) return;
+
+    if (!context.mounted) {
+      state = state.copyWith(
+        isListening: false,
+        lastError: 'Contesto non montato',
+      );
+      return;
     }
 
     state = state.copyWith(
@@ -83,34 +85,28 @@ class VoiceRecognitionNotifier extends StateNotifier<VoiceRecognitionState> {
       lastResult: null,
     );
 
-    await _service.startListening(
+    _service.startListening(
       onResult: (result) {
-        state = state.copyWith(
-          lastResult: result,
-          isListening: false,
-        );
+        state = state.copyWith(lastResult: result, isListening: false);
         onResult(result);
       },
       onError: (error) {
-        state = state.copyWith(
-          lastError: error,
-          isListening: false,
-        );
+        state = state.copyWith(lastError: error, isListening: false);
       },
-      timeout: timeout,
+      timeout: const Duration(seconds: 60),
       context: context,
     );
   }
 
   /// Ferma l'ascolto
-  Future<void> stopListening() async {
-    await _service.stopListening();
+  void stopListening() {
+    _service.stopListening();
     state = state.copyWith(isListening: false);
   }
 
   /// Cancella l'ascolto
-  Future<void> cancelListening() async {
-    await _service.cancelListening();
+  void cancelListening() {
+    _service.cancelListening();
     state = state.copyWith(
       isListening: false,
       lastError: null,
@@ -119,9 +115,8 @@ class VoiceRecognitionNotifier extends StateNotifier<VoiceRecognitionState> {
   }
 
   /// Controlla i permessi microfono
-  Future<bool> checkMicrophonePermission() async {
-    return await _service.hasMicrophonePermission();
-  }
+  Future<bool> checkMicrophonePermission() =>
+      _service.hasMicrophonePermission();
 
   @override
   void dispose() {
@@ -131,7 +126,10 @@ class VoiceRecognitionNotifier extends StateNotifier<VoiceRecognitionState> {
 }
 
 /// Provider per lo stato del riconoscimento vocale
-final voiceRecognitionProvider = StateNotifierProvider<VoiceRecognitionNotifier, VoiceRecognitionState>((ref) {
-  final service = ref.watch(voiceRecognitionServiceProvider);
-  return VoiceRecognitionNotifier(service);
-});
+final voiceRecognitionProvider =
+    StateNotifierProvider<VoiceRecognitionNotifier, VoiceRecognitionState>((
+      ref,
+    ) {
+      final service = ref.watch(voiceRecognitionServiceProvider);
+      return VoiceRecognitionNotifier(service);
+    });

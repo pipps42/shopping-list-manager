@@ -32,6 +32,8 @@ dependencies:
   speech_to_text: 7.1.0
   manual_speech_to_text: ^1.0.4
   permission_handler: ^11.3.1
+  google_mlkit_entity_extraction: ^0.15.1
+  fuzzywuzzy: ^1.2.0
 
 dev_dependencies:
   flutter_test:
