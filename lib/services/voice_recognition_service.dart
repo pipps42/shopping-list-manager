@@ -1,4 +1,4 @@
-import 'package:manual_speech_to_text/manual_speech_to_text.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:shopping_list_manager/utils/length_aware_ratio.dart';
@@ -31,14 +31,14 @@ class NgramMatch {
       'NgramMatch($ngram -> ${matchedProduct.name}, score: $fuzzyScore, indices: $startIndex-$endIndex)';
 }
 
-/// Servizio per la gestione del riconoscimento vocale con ManualStt
+/// Servizio per la gestione del riconoscimento vocale con SpeechToText
 class VoiceRecognitionService {
   static final VoiceRecognitionService _instance =
       VoiceRecognitionService._internal();
   factory VoiceRecognitionService() => _instance;
   VoiceRecognitionService._internal();
 
-  late ManualSttController _sttController;
+  late SpeechToText _stt;
   final VoiceTextParser _parser = VoiceTextParser();
 
   // DatabaseService iniettato tramite dependency injection
@@ -51,9 +51,6 @@ class VoiceRecognitionService {
   bool get isInitialized => _isInitialized;
   bool get isListening => _isListening;
 
-  // Timer master per il controllo dei 60 secondi
-  Timer? _masterTimer;
-
   // Callbacks salvati
   Function(String)? _savedOnResult;
   Function(String)? _savedOnError;
@@ -65,7 +62,7 @@ class VoiceRecognitionService {
   final List<Product> _cachedProducts = [];
   final List<String> _productNames = [];
 
-  /// Inizializza il servizio di riconoscimento vocale con ManualStt
+  /// Inizializza il servizio di riconoscimento vocale con SpeechToText
   Future<bool> initialize([
     DatabaseService? databaseService,
     BuildContext? context,
@@ -79,7 +76,27 @@ class VoiceRecognitionService {
       // Carica e normalizza tutti i prodotti per la cache
       await _loadAndCacheProducts();
 
-      // Richiedi permesso microfono (manual_stt lo gestisce automaticamente, ma lo facciamo per sicurezza)
+      // Inizializza SpeechToText
+      _stt = SpeechToText();
+      final available = await _stt.initialize(
+        onError: (error) {
+          debugPrint('❌ Errore SpeechToText (initialize): $error');
+          // Gli errori di initialize sono gestiti diversamente
+          _isListening = false;
+          // Notifica l'UI dell'errore
+          if (_savedOnError != null) {
+            _savedOnError!('Errore riconoscimento vocale: ${error.errorMsg}');
+          }
+        },
+        onStatus: (status) => debugPrint('📢 Status SpeechToText: $status'),
+      );
+
+      if (!available) {
+        debugPrint('❌ SpeechToText non disponibile');
+        return false;
+      }
+
+      // Richiedi permesso microfono per sicurezza
       final permissionStatus = await Permission.microphone.request();
       if (permissionStatus != PermissionStatus.granted) {
         debugPrint('Permesso microfono negato');
@@ -97,7 +114,7 @@ class VoiceRecognitionService {
     }
   }
 
-  /// Avvia l'ascolto vocale con ManualStt (controllo completo per 60 secondi)
+  /// Avvia l'ascolto vocale con SpeechToText
   void startListening({
     required Function(String) onResult,
     required Function(String) onError,
@@ -121,58 +138,37 @@ class VoiceRecognitionService {
     // Reset testo
     _finalRecognizedText = '';
 
-    // Avvia timer master per 60 secondi
-    _masterTimer?.cancel();
-    _masterTimer = Timer(timeout, () {
-      debugPrint(
-        '⏰ Timer master scaduto (${timeout.inSeconds}s) - Fine ascolto automatica',
-      );
-      _finalizeListening();
-    });
-
     try {
-      // Inizializza ManualSttController con context se fornito
-      _sttController = ManualSttController(context);
-      _sttController.pauseIfMuteFor = timeout;
-      debugPrint('🎛️ ManualSttController inizializzato');
-
-      // Configura i callback per ManualStt
-      _sttController.listen(
-        onListeningStateChanged: (ManualSttState state) {
-          debugPrint('🎙️ Stato ManualStt: $state');
-          switch (state) {
-            case ManualSttState.listening:
-              _isListening = true;
-              break;
-            case ManualSttState.paused:
-              // stopListening();
-              debugPrint('⏸️ ManualStt in pausa - ascolto sospeso');
-              break;
-            case ManualSttState.stopped:
-              _isListening = false;
-              break;
-          }
-        },
-        onListeningTextChanged: (String text) {
-          debugPrint('📝 Testo ManualStt: "$text"');
-
-          // Salva l'ultimo testo ricevuto (processamento finale a fine ascolto)
-          _finalRecognizedText = text;
-        },
-        onSoundLevelChanged: (double level) {
-          // Gestisci il livello audio se necessario
-        },
-      );
-
-      // Avvia l'ascolto manuale (startStt è void, non restituisce Future)
-      _sttController.startStt();
       _isListening = true;
 
-      debugPrint(
-        '🚀 ManualStt avviato - Ascolto continuo per ${timeout.inSeconds} secondi',
+      // Avvia l'ascolto con SpeechToText
+      _stt.listen(
+        onResult: (result) {
+          debugPrint(
+            '📝 Testo SpeechToText: "${result.recognizedWords}" (finale: ${result.finalResult})',
+          );
+          // Aggiorna sempre il testo (anche per risultati parziali)
+          _finalRecognizedText = result.recognizedWords;
+          // Se il risultato è finale, elabora
+          if (result.finalResult) {
+            debugPrint('✅ Risultato finale ricevuto, elaborazione...');
+            _finalizeListening();
+          }
+        },
+        listenFor: timeout,
+        pauseFor: const Duration(seconds: 3),
+        localeId: 'it_IT',
+        listenOptions: SpeechListenOptions(
+          cancelOnError: true,
+          partialResults: true,
+          listenMode: ListenMode.dictation,
+        ),
       );
+
+      debugPrint('🚀 SpeechToText avviato');
     } catch (e) {
-      debugPrint('❌ Errore durante l\'avvio ManualStt: $e');
+      debugPrint('❌ Errore durante l\'avvio SpeechToText: $e');
+      _isListening = false;
       onError('Errore durante l\'avvio dell\'ascolto: $e');
     }
   }
@@ -180,8 +176,15 @@ class VoiceRecognitionService {
   /// Ferma l'ascolto vocale e processa tutti i risultati
   void stopListening() {
     if (!_isListening) return;
-
     debugPrint('🛑 Stop manuale richiesto');
+
+    try {
+      _stt.stop();
+    } catch (e) {
+      debugPrint('⚠️ Errore durante stop: $e');
+    }
+
+    // Processa il testo attuale anche se non finale
     _finalizeListening();
   }
 
@@ -190,8 +193,7 @@ class VoiceRecognitionService {
     if (!_isListening) return;
 
     try {
-      _masterTimer?.cancel();
-      _sttController.stopStt();
+      _stt.cancel();
       _isListening = false;
       _finalRecognizedText = '';
 
@@ -203,7 +205,7 @@ class VoiceRecognitionService {
 
   /// Controlla se il microfono ha il permesso
   Future<bool> hasMicrophonePermission() async {
-    return await Permission.microphone.isGranted;
+    return _stt.hasPermission;
   }
 
   /// Carica tutti i prodotti dal database e li mette in cache
@@ -416,13 +418,18 @@ class VoiceRecognitionService {
   /// Finalizza tutto il processo di listening e processa il testo finale
   void _finalizeListening() {
     try {
-      _masterTimer?.cancel();
-
-      if (_isListening) {
-        _sttController.stopStt();
-      }
+      if (!_isListening) return;
 
       _isListening = false;
+
+      // Stoppa SpeechToText se ancora in ascolto
+      try {
+        if (_stt.isListening) {
+          _stt.stop();
+        }
+      } catch (e) {
+        debugPrint('⚠️ Errore durante stop finale: $e');
+      }
 
       // Processa il testo finale usando N-grammi + FuzzyWuzzy
       if (_finalRecognizedText.isNotEmpty) {
@@ -469,10 +476,8 @@ class VoiceRecognitionService {
 
   /// Rilascia le risorse
   void dispose() {
-    _masterTimer?.cancel();
     if (_isListening) {
       cancelListening();
     }
-    _sttController.dispose();
   }
 }
