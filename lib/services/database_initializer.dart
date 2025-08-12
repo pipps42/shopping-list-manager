@@ -241,6 +241,12 @@ class DatabaseInitializer {
         'asset_icon': 'assets/icons/products/006-fennel.png',
       },
       {
+        'name': 'Seadano',
+        'department_id': 1,
+        'asset_icon': 'assets/icons/products/celery.png',
+      },
+
+      {
         'name': 'Porri',
         'department_id': 1,
         'asset_icon': 'assets/icons/products/009-leek.png',
@@ -354,6 +360,16 @@ class DatabaseInitializer {
         'asset_icon': 'assets/icons/products/033-milk.png',
       },
       {
+        'name': 'Latte di Soia',
+        'department_id': 3,
+        'asset_icon': 'assets/icons/products/034-soy-milk.png',
+      },
+      {
+        'name': 'Latte di Mandorla',
+        'department_id': 3,
+        'asset_icon': 'assets/icons/products/001-almond-milk.png',
+      },
+      {
         'name': 'Yogurt',
         'department_id': 3,
         'asset_icon': 'assets/icons/products/035-ice-cream.png',
@@ -379,15 +395,16 @@ class DatabaseInitializer {
         'asset_icon': 'assets/icons/products/038-mascarpone.png',
       },
       {
-        'name': 'Philadelphia',
+        'name': 'Formaggio Spalmabile',
         'department_id': 3,
         'asset_icon': 'assets/icons/products/030-ricotta.png',
       }, // riuso ricotta
       {
-        'name': 'Latte di Mandorla',
+        'name': 'Tofu',
         'department_id': 3,
-        'asset_icon': 'assets/icons/products/001-almond-milk.png',
+        'asset_icon': 'assets/icons/products/005-tofu.png',
       },
+
       // === CARNE (id: 4) - 10 prodotti ===
       {
         'name': 'Petto di Pollo',
@@ -614,7 +631,7 @@ class DatabaseInitializer {
 
       // === OLIO, ACETO E CONDIMENTI (id: 9) - 11 prodotti ===
       {
-        'name': 'Olio EVO',
+        'name': 'Olio d\'Oliva',
         'department_id': 9,
         'asset_icon': 'assets/icons/products/068-olive-oil.png',
       },
@@ -644,11 +661,6 @@ class DatabaseInitializer {
         'asset_icon': 'assets/icons/products/076-salt.png',
       }, // riuso salt
       {
-        'name': 'Latte di Soia',
-        'department_id': 9,
-        'asset_icon': 'assets/icons/products/034-soy-milk.png',
-      },
-      {
         'name': 'Pepe Nero',
         'department_id': 9,
         'asset_icon': 'assets/icons/products/077-pepper-grinder.png',
@@ -672,6 +684,26 @@ class DatabaseInitializer {
         'name': 'Cannella',
         'department_id': 9,
         'asset_icon': 'assets/icons/products/081-cinnamon-roll.png',
+      },
+      {
+        'name': 'Maionese',
+        'department_id': 9,
+        'asset_icon': 'assets/icons/products/001-mayonnaise.png',
+      },
+      {
+        'name': 'Ketchup',
+        'department_id': 9,
+        'asset_icon': 'assets/icons/products/002-ketchup.png',
+      },
+      {
+        'name': 'Senape',
+        'department_id': 9,
+        'asset_icon': 'assets/icons/products/004-mustard.png',
+      },
+      {
+        'name': 'Tabasco',
+        'department_id': 9,
+        'asset_icon': 'assets/icons/products/003-tabasco.png',
       },
 
       // === BISCOTTI E DOLCIUMI (id: 10) - 7 prodotti ===
