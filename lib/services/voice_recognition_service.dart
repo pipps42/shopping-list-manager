@@ -96,13 +96,7 @@ class VoiceRecognitionService {
         return false;
       }
 
-      // Richiedi permesso microfono per sicurezza
-      final permissionStatus = await Permission.microphone.request();
-      if (permissionStatus != PermissionStatus.granted) {
-        debugPrint('Permesso microfono negato');
-        return false;
-      }
-
+      // NON richiedere i permessi qui - saranno richiesti al primo utilizzo
       _isInitialized = true;
       debugPrint(
         '✅ Voice Recognition Service inizializzato con ${_cachedProducts.length} prodotti',
@@ -114,13 +108,29 @@ class VoiceRecognitionService {
     }
   }
 
+  /// Richiede i permessi per il microfono
+  Future<bool> requestMicrophonePermission() async {
+    try {
+      final permissionStatus = await Permission.microphone.request();
+      if (permissionStatus != PermissionStatus.granted) {
+        debugPrint('❌ Permesso microfono negato');
+        return false;
+      }
+      debugPrint('✅ Permesso microfono concesso');
+      return true;
+    } catch (e) {
+      debugPrint('❌ Errore durante richiesta permessi microfono: $e');
+      return false;
+    }
+  }
+
   /// Avvia l'ascolto vocale con SpeechToText
-  void startListening({
+  Future<void> startListening({
     required Function(List<Product>) onResult,
     required Function(String) onError,
     required Duration timeout,
     required BuildContext context,
-  }) {
+  }) async {
     if (!_isInitialized) {
       onError('Servizio non inizializzato');
       return;
@@ -128,6 +138,13 @@ class VoiceRecognitionService {
 
     if (_isListening) {
       debugPrint('⚠️ Già in ascolto...');
+      return;
+    }
+
+    // Richiedi permessi microfono prima di iniziare
+    final hasPermission = await requestMicrophonePermission();
+    if (!hasPermission) {
+      onError('Permesso microfono richiesto per utilizzare il comando vocale');
       return;
     }
 

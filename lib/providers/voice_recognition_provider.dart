@@ -9,9 +9,7 @@ final voiceRecognitionServiceProvider = Provider<VoiceRecognitionService>((
   ref,
 ) {
   final service = VoiceRecognitionService();
-  final databaseService = ref.read(databaseServiceProvider);
-
-  service.initialize(databaseService);
+  // Non inizializzare automaticamente - sarà inizializzato al primo utilizzo
   return service;
 });
 
@@ -51,12 +49,25 @@ class VoiceRecognitionState {
 /// Notifier per gestire lo stato del riconoscimento vocale
 class VoiceRecognitionNotifier extends StateNotifier<VoiceRecognitionState> {
   final VoiceRecognitionService _service;
+  final Ref? _ref;
 
-  VoiceRecognitionNotifier(this._service)
+  VoiceRecognitionNotifier(this._service, [this._ref])
     : super(const VoiceRecognitionState());
 
   /// Inizializza il servizio
   Future<bool> initialize() async {
+    // Se non è ancora inizializzato e abbiamo un ref, passa il database service
+    if (!_service.isInitialized && _ref != null) {
+      final databaseService = _ref.read(databaseServiceProvider);
+      final success = await _service.initialize(databaseService);
+      state = state.copyWith(
+        isInitialized: success,
+        lastError: success ? null : 'Inizializzazione fallita',
+      );
+      return success;
+    }
+    
+    // Altrimenti usa l'inizializzazione standard
     final success = await _service.initialize();
     state = state.copyWith(
       isInitialized: success,
@@ -86,7 +97,7 @@ class VoiceRecognitionNotifier extends StateNotifier<VoiceRecognitionState> {
       lastResult: null,
     );
 
-    _service.startListening(
+    await _service.startListening(
       onResult: (products) {
         final resultText = products.map((p) => p.name).join(', ');
         state = state.copyWith(lastResult: resultText, isListening: false);
@@ -133,5 +144,5 @@ final voiceRecognitionProvider =
       ref,
     ) {
       final service = ref.watch(voiceRecognitionServiceProvider);
-      return VoiceRecognitionNotifier(service);
+      return VoiceRecognitionNotifier(service, ref);
     });
