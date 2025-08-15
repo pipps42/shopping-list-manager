@@ -13,13 +13,19 @@ final imageServiceProvider = Provider<ImageService>((ref) {
 class ImageService {
   final ImagePicker _picker = ImagePicker();
 
-  Future<String?> pickAndSaveImage({bool cropSquare = true}) async {
+  Future<String?> pickAndSaveImage({
+    required ImageSource source,
+    bool cropSquare = true,
+    double? maxWidth,
+    double? maxHeight,
+    int? imageQuality,
+  }) async {
     try {
       final XFile? image = await _picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: AppConstants.maxImageWidth.toDouble(),
-        maxHeight: AppConstants.maxImageHeight.toDouble(),
-        imageQuality: AppConstants.imageQuality,
+        source: source,
+        maxWidth: maxWidth ?? AppConstants.maxImageWidth.toDouble(),
+        maxHeight: maxHeight ?? AppConstants.maxImageHeight.toDouble(),
+        imageQuality: imageQuality ?? AppConstants.imageQuality,
       );
 
       if (image == null) return null;
@@ -31,34 +37,31 @@ class ImageService {
 
       if (originalImage == null) return null;
 
-      // Ridimensiona se necessario
       img.Image resized = originalImage;
-      if (originalImage.width > AppConstants.maxImageWidth ||
-          originalImage.height > AppConstants.maxImageHeight) {
-        resized = img.copyResize(
-          originalImage,
-          width: originalImage.width > originalImage.height
-              ? AppConstants.maxImageWidth
-              : null,
-          height: originalImage.height > originalImage.width
-              ? AppConstants.maxImageHeight
-              : null,
-        );
-      }
 
       // Crop 1:1 se richiesto (per reparti, prodotti, ricette)
       if (cropSquare) {
-        final size = resized.width < resized.height ? resized.width : resized.height;
+        // Ridimensiona se necessario
+        if (originalImage.width > AppConstants.maxImageWidth ||
+            originalImage.height > AppConstants.maxImageHeight) {
+          resized = img.copyResize(
+            originalImage,
+            width: originalImage.width > originalImage.height
+                ? AppConstants.maxImageWidth
+                : null,
+            height: originalImage.height > originalImage.width
+                ? AppConstants.maxImageHeight
+                : null,
+          );
+        }
+        // Crop al centro per ottenere un quadrato
+        final size = resized.width < resized.height
+            ? resized.width
+            : resized.height;
         final x = (resized.width - size) ~/ 2;
         final y = (resized.height - size) ~/ 2;
-        
-        resized = img.copyCrop(
-          resized,
-          x: x,
-          y: y,
-          width: size,
-          height: size,
-        );
+
+        resized = img.copyCrop(resized, x: x, y: y, width: size, height: size);
       }
 
       // Salva l'immagine compressa
@@ -81,11 +84,6 @@ class ImageService {
     } catch (e) {
       return null;
     }
-  }
-
-  /// Metodo di convenienza per immagini senza crop (carte fedeltà)
-  Future<String?> pickAndSaveOriginalImage() async {
-    return pickAndSaveImage(cropSquare: false);
   }
 
   Future<void> deleteImage(String imagePath) async {

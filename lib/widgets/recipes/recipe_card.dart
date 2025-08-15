@@ -152,8 +152,8 @@ class RecipeCard extends StatelessWidget {
 
   Widget _buildRecipeImage(BuildContext context, String? imagePath) {
     return Container(
-      width: 60,
-      height: 60,
+      width: 84,
+      height: 84,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
         color: AppColors.surface(context),
@@ -164,8 +164,8 @@ class RecipeCard extends StatelessWidget {
             ? Image.file(
                 File(imagePath),
                 fit: BoxFit.cover,
-                cacheWidth: 60,
-                cacheHeight: 60,
+                cacheWidth: AppConstants.imageCacheHeight,
+                cacheHeight: AppConstants.imageCacheWidth,
               )
             : Icon(
                 Icons.restaurant_menu,
