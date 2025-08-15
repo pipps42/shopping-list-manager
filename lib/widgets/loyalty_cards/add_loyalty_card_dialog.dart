@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_list_manager/widgets/common/app_image_uploader.dart';
 import 'package:shopping_list_manager/widgets/common/base_dialog.dart';
+import 'package:shopping_list_manager/widgets/common/validated_text_field.dart';
 import '../../models/loyalty_card.dart';
 import '../../utils/constants.dart';
 import '../../utils/color_palettes.dart';
@@ -16,29 +17,15 @@ class AddLoyaltyCardDialog extends StatefulWidget {
 }
 
 class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
-  late final TextEditingController _nameController;
   String? _selectedImagePath;
   bool _isLoading = false;
+  bool _imageError = false;
+  final GlobalKey<ValidatedTextFieldState> _nameFieldKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.card?.name ?? '');
     _selectedImagePath = widget.card?.imagePath;
-
-    // Aggiungi listener per aggiornare UI quando cambia il testo
-    _nameController.addListener(() {
-      setState(() {
-        // Il rebuild farà sì che _canSave venga ricalcolato
-        // e il bottone si abiliti/disabiliti di conseguenza
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
   }
 
   bool get _isEditing => widget.card != null;
@@ -61,14 +48,14 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
               // Campo nome
               SizedBox(
                 width: double.maxFinite,
-                child: TextField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nome della carta',
-                    hintText: 'es. Carta Fidaty, Carta Insieme...',
-                    border: OutlineInputBorder(),
-                  ),
-                  textCapitalization: TextCapitalization.words,
+                child: ValidatedTextField(
+                  key: _nameFieldKey,
+                  labelText: 'Nome della carta',
+                  hintText: 'es. Carta Fidaty, Carta Insieme...',
+                  initialValue: widget.card?.name ?? '',
+                  isRequired: true,
+                  requiredMessage: 'Il nome della carta è obbligatorio',
+                  requireMinThreeLetters: true,
                   enabled: !_isLoading,
                 ),
               ),
@@ -77,8 +64,12 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
               // Sezione immagine
               AppImageUploader(
                 value: _selectedImagePath,
-                onValueChanged: (path) =>
-                    setState(() => _selectedImagePath = path),
+                onValueChanged: (path) => setState(() {
+                  _selectedImagePath = path;
+                  if (_imageError && path.isNotEmpty) {
+                    _imageError = false;
+                  }
+                }),
                 onValueRemoved: () => setState(() => _selectedImagePath = null),
                 title: 'Immagine della carta',
                 fallbackIcon: Icons.credit_card,
@@ -88,6 +79,9 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
                 maxHeight: 1200,
                 imageQuality: 90,
                 preserveAspectRatio: true,
+                isRequired: true,
+                requiredMessage: 'Seleziona un\'immagine per la carta',
+                hasError: _imageError,
               ),
             ],
           ),
@@ -104,17 +98,25 @@ class _AddLoyaltyCardDialogState extends State<AddLoyaltyCardDialog> {
     );
   }
 
-  bool get _canSave {
-    return _nameController.text.trim().isNotEmpty && _selectedImagePath != null;
-  }
-
   Future<void> _saveCard() async {
-    if (!_canSave) return;
+    final nameFieldState = _nameFieldKey.currentState;
+
+    // Valida il campo nome
+    if (nameFieldState == null || !nameFieldState.validate()) {
+      return;
+    }
+
+    if (_selectedImagePath == null) {
+      setState(() {
+        _imageError = true;
+      });
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
-      await widget.onSave(_nameController.text.trim(), _selectedImagePath!);
+      await widget.onSave(nameFieldState.text.trim(), _selectedImagePath!);
 
       if (mounted) {
         Navigator.pop(context);

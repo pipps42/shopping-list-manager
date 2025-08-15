@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopping_list_manager/widgets/common/app_image_uploader.dart';
 import 'package:shopping_list_manager/widgets/common/base_dialog.dart';
+import 'package:shopping_list_manager/widgets/common/validated_text_field.dart';
 import '../../models/product.dart';
 import '../../models/department.dart';
 import '../../utils/icon_types.dart';
@@ -34,16 +35,15 @@ class ProductFormDialog extends ConsumerStatefulWidget {
 }
 
 class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
-  late TextEditingController _nameController;
   int? _selectedDepartmentId;
   IconType _selectedIconType = IconType.asset;
   String? _selectedIconValue;
   bool _isLoading = false;
+  final GlobalKey<ValidatedTextFieldState> _nameFieldKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.product?.name ?? '');
 
     _selectedDepartmentId =
         widget.product?.departmentId ?? // 1. Prodotto esistente
@@ -54,12 +54,6 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
 
     _selectedIconType = widget.product?.iconType ?? IconType.asset;
     _selectedIconValue = widget.product?.iconValue;
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
   }
 
   @override
@@ -75,13 +69,13 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Nome prodotto
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: AppStrings.productNamePlaceholder,
-                border: OutlineInputBorder(),
-              ),
-              textCapitalization: TextCapitalization.words,
+            ValidatedTextField(
+              key: _nameFieldKey,
+              labelText: AppStrings.productNamePlaceholder,
+              initialValue: widget.product?.name ?? '',
+              isRequired: true,
+              requiredMessage: AppStrings.productNameRequired,
+              requireMinThreeLetters: true,
             ),
             const SizedBox(height: AppConstants.spacingM),
 
@@ -164,9 +158,12 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
     if (!mounted) return;
 
     // Creo un prodotto temporaneo per la modale
+    final nameFieldState = _nameFieldKey.currentState;
+    final currentName = nameFieldState?.text ?? '';
+
     final tempProduct = Product(
       id: widget.product?.id ?? 0,
-      name: _nameController.text.isNotEmpty ? _nameController.text : 'Prodotto',
+      name: currentName.isNotEmpty ? currentName : 'Prodotto',
       departmentId: _selectedDepartmentId ?? widget.departments.first.id!,
       iconType: _selectedIconType,
       iconValue: _selectedIconValue,
@@ -188,14 +185,14 @@ class _ProductFormDialogState extends ConsumerState<ProductFormDialog> {
   }
 
   void _handleSave() {
-    final name = _nameController.text.trim();
+    final nameFieldState = _nameFieldKey.currentState;
 
-    if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.productNameRequired)),
-      );
+    // Valida il campo nome
+    if (nameFieldState == null || !nameFieldState.validate()) {
       return;
     }
+
+    final name = nameFieldState.text.trim();
 
     if (_selectedDepartmentId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
