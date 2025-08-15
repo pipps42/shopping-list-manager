@@ -89,6 +89,42 @@ class CurrentListNotifier
     }
   }
 
+  Future<void> addMultipleProductsToList(List<int> productIds, [String? targetListType]) async {
+    try {
+      final String listType = targetListType ?? _ref.read(currentListTypeProvider);
+      
+      // Filtra i prodotti già presenti nella lista per evitare duplicati
+      final currentProductIds = await _ref.read(currentListProductIdsProvider.future);
+      final newProductIds = productIds.where((id) => !currentProductIds.contains(id)).toList();
+      
+      if (newProductIds.isEmpty) {
+        // Tutti i prodotti sono già nella lista
+        return;
+      }
+
+      // Aggiunge tutti i prodotti nuovi
+      final futures = newProductIds.map((productId) => 
+        _databaseService.addProductToCurrentList(productId, listType)
+      );
+      
+      final results = await Future.wait(futures);
+      final anySuccess = results.any((success) => success);
+      
+      if (anySuccess) {
+        // Solo ricarica se è la lista attualmente visualizzata
+        final currentListType = _ref.read(currentListTypeProvider);
+        if (listType == currentListType) {
+          await loadCurrentList();
+        }
+        _ref.invalidate(currentListProductIdsProvider);
+        _ref.invalidate(listProductIdsProvider(listType));
+      }
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+      rethrow;
+    }
+  }
+
   Future<void> removeItemFromList(int itemId) async {
     await _databaseService.deleteListItem(itemId);
     await loadCurrentList();

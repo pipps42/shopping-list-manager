@@ -69,8 +69,8 @@ class AppConstants {
   static const int maxImageWidth = 300;
   static const int maxImageHeight = 300;
   static const int imageQuality = 85;
-  static const int imageCacheWidth = 100;
-  static const int imageCacheHeight = 100;
+  static const int imageCacheWidth = 300; //100;
+  static const int imageCacheHeight = 300; //100;
 
   // Lista Bottom Spacing (per FAB)
   static const double listBottomSpacing = 88.0;

@@ -212,6 +212,69 @@ class DatabaseService {
     return List.generate(maps.length, (i) => Product.fromMap(maps[i]));
   }
 
+  /// Cerca prodotti che contengono il termine specificato (fuzzy search potenziata)
+  Future<List<Product>> searchProducts(String searchTerm) async {
+    if (searchTerm.trim().isEmpty) return [];
+
+    final db = await database;
+    final String cleanTerm = searchTerm.toLowerCase().trim();
+
+    // Pattern per diversi tipi di match
+    final String exactPattern = cleanTerm;
+    final String startPattern = '$cleanTerm%';
+    final String containsPattern = '%$cleanTerm%';
+    // final String wordsPattern = cleanTerm.split(' ').map((word) => '%$word%').join(' ');
+
+    try {
+      final List<Map<String, dynamic>> maps = await db.rawQuery(
+        '''
+        SELECT DISTINCT * FROM products 
+        WHERE LOWER(name) LIKE ? 
+           OR LOWER(name) LIKE ?
+           OR LOWER(name) LIKE ?
+           OR (${cleanTerm.split(' ').map((word) => 'LOWER(name) LIKE ?').join(' AND ')})
+        ORDER BY 
+          CASE 
+            WHEN LOWER(name) = ? THEN 1                    -- Match esatto
+            WHEN LOWER(name) LIKE ? THEN 2                 -- Inizia con il termine
+            WHEN LOWER(name) LIKE ? THEN 3                 -- Contiene il termine
+            ELSE 4                                         -- Altri match
+          END,
+          length(name) ASC,                                -- Preferisce nomi più corti
+          name COLLATE NOCASE ASC
+        LIMIT 15
+      ''',
+        [
+          // WHERE conditions
+          exactPattern,
+          startPattern,
+          containsPattern,
+          ...cleanTerm.split(' ').map((word) => '%$word%'),
+          // ORDER BY conditions
+          exactPattern,
+          startPattern,
+          containsPattern,
+        ],
+      );
+
+      final results = List.generate(
+        maps.length,
+        (i) => Product.fromMap(maps[i]),
+      );
+      print(
+        'Fuzzy search per "$searchTerm": trovati ${results.length} risultati',
+      );
+      for (final product in results.take(5)) {
+        print('  - ${product.name}');
+      }
+
+      return results;
+    } catch (e) {
+      print('Errore nella fuzzy search per "$searchTerm": $e');
+      return [];
+    }
+  }
+
   Future<int> updateProduct(Product product) async {
     final db = await database;
     return await db.update(

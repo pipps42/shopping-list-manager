@@ -126,6 +126,16 @@ class DatabaseInitializer {
         'asset_icon': 'assets/icons/products/003-apple.png',
       },
       {
+        'name': 'Pere',
+        'department_id': 1,
+        'asset_icon': 'assets/icons/products/001-pear.png',
+      },
+      {
+        'name': 'Pesche',
+        'department_id': 1,
+        'asset_icon': 'assets/icons/products/004-peach.png',
+      },
+      {
         'name': 'Banane',
         'department_id': 1,
         'asset_icon': 'assets/icons/products/002-banana.png',
@@ -175,11 +185,6 @@ class DatabaseInitializer {
         'department_id': 1,
         'asset_icon': 'assets/icons/products/010-lettuce.png',
       },
-      {
-        'name': 'Insalata',
-        'department_id': 1,
-        'asset_icon': 'assets/icons/products/010-lettuce.png',
-      }, // riuso lattuga
       {
         'name': 'Spinaci',
         'department_id': 1,
@@ -241,6 +246,12 @@ class DatabaseInitializer {
         'asset_icon': 'assets/icons/products/006-fennel.png',
       },
       {
+        'name': 'Seadano',
+        'department_id': 1,
+        'asset_icon': 'assets/icons/products/celery.png',
+      },
+
+      {
         'name': 'Porri',
         'department_id': 1,
         'asset_icon': 'assets/icons/products/009-leek.png',
@@ -264,6 +275,31 @@ class DatabaseInitializer {
         'name': 'Arachidi',
         'department_id': 1,
         'asset_icon': 'assets/icons/products/007-peanuts.png',
+      },
+      {
+        'name': 'Uva',
+        'department_id': 1,
+        'asset_icon': 'assets/icons/products/030-grapes.png',
+      },
+      {
+        'name': 'Cavolo',
+        'department_id': 1,
+        'asset_icon': 'assets/icons/products/010-lettuce.png',
+      }, // riuso lattuga
+      {
+        'name': 'Radicchio',
+        'department_id': 1,
+        'asset_icon': 'assets/icons/products/002-radish.png',
+      },
+      {
+        'name': 'Zenzero',
+        'department_id': 1,
+        'asset_icon': 'assets/icons/products/003-ginger.png',
+      },
+      {
+        'name': 'Zucca',
+        'department_id': 1,
+        'asset_icon': 'assets/icons/products/005-pumpkin.png',
       },
 
       // === SALUMERIA E FORMAGGI (id: 2) - 15 prodotti ===
@@ -325,7 +361,7 @@ class DatabaseInitializer {
       {
         'name': 'Pecorino',
         'department_id': 2,
-        'asset_icon': 'assets/icons/products/027-cheese.png',
+        'asset_icon': 'assets/icons/products/cheese.png',
       }, // riuso cheese
       {
         'name': 'Grana Padano',
@@ -337,16 +373,21 @@ class DatabaseInitializer {
         'department_id': 2,
         'asset_icon': 'assets/icons/products/032-mozzarella-1.png',
       },
-      {
-        'name': 'Taleggio',
-        'department_id': 2,
-        'asset_icon': 'assets/icons/products/031-cheese-1.png',
-      }, // riuso cheese-1
       // === LATTICINI E UOVA (id: 3) - 8 prodotti ===
       {
         'name': 'Latte',
         'department_id': 3,
         'asset_icon': 'assets/icons/products/033-milk.png',
+      },
+      {
+        'name': 'Latte di Soia',
+        'department_id': 3,
+        'asset_icon': 'assets/icons/products/034-soy-milk.png',
+      },
+      {
+        'name': 'Latte di Mandorla',
+        'department_id': 3,
+        'asset_icon': 'assets/icons/products/001-almond-milk.png',
       },
       {
         'name': 'Yogurt',
@@ -374,15 +415,16 @@ class DatabaseInitializer {
         'asset_icon': 'assets/icons/products/038-mascarpone.png',
       },
       {
-        'name': 'Philadelphia',
+        'name': 'Formaggio Spalmabile',
         'department_id': 3,
         'asset_icon': 'assets/icons/products/030-ricotta.png',
       }, // riuso ricotta
       {
-        'name': 'Latte di Mandorla',
+        'name': 'Tofu',
         'department_id': 3,
-        'asset_icon': 'assets/icons/products/001-almond-milk.png',
+        'asset_icon': 'assets/icons/products/005-tofu.png',
       },
+
       // === CARNE (id: 4) - 10 prodotti ===
       {
         'name': 'Petto di Pollo',
@@ -410,11 +452,6 @@ class DatabaseInitializer {
         'asset_icon': 'assets/icons/products/041-meat.png',
       },
       {
-        'name': 'Scaloppine',
-        'department_id': 4,
-        'asset_icon': 'assets/icons/products/041-meat.png',
-      }, // riuso meat
-      {
         'name': 'Salsiccia',
         'department_id': 4,
         'asset_icon': 'assets/icons/products/042-sausage-1.png',
@@ -422,7 +459,7 @@ class DatabaseInitializer {
       {
         'name': 'Pancetta',
         'department_id': 4,
-        'asset_icon': 'assets/icons/products/025-pepperoni.png',
+        'asset_icon': 'assets/icons/products/008-minced-meat.png',
       }, // riuso pepperoni
       {
         'name': 'Guanciale',
@@ -609,7 +646,7 @@ class DatabaseInitializer {
 
       // === OLIO, ACETO E CONDIMENTI (id: 9) - 11 prodotti ===
       {
-        'name': 'Olio EVO',
+        'name': 'Olio d\'Oliva',
         'department_id': 9,
         'asset_icon': 'assets/icons/products/068-olive-oil.png',
       },
@@ -639,11 +676,6 @@ class DatabaseInitializer {
         'asset_icon': 'assets/icons/products/076-salt.png',
       }, // riuso salt
       {
-        'name': 'Latte di Soia',
-        'department_id': 9,
-        'asset_icon': 'assets/icons/products/034-soy-milk.png',
-      },
-      {
         'name': 'Pepe Nero',
         'department_id': 9,
         'asset_icon': 'assets/icons/products/077-pepper-grinder.png',
@@ -668,6 +700,26 @@ class DatabaseInitializer {
         'department_id': 9,
         'asset_icon': 'assets/icons/products/081-cinnamon-roll.png',
       },
+      {
+        'name': 'Maionese',
+        'department_id': 9,
+        'asset_icon': 'assets/icons/products/001-mayonnaise.png',
+      },
+      {
+        'name': 'Ketchup',
+        'department_id': 9,
+        'asset_icon': 'assets/icons/products/002-ketchup.png',
+      },
+      {
+        'name': 'Senape',
+        'department_id': 9,
+        'asset_icon': 'assets/icons/products/004-mustard.png',
+      },
+      {
+        'name': 'Tabasco',
+        'department_id': 9,
+        'asset_icon': 'assets/icons/products/003-tabasco.png',
+      },
 
       // === BISCOTTI E DOLCIUMI (id: 10) - 7 prodotti ===
       {
@@ -676,12 +728,17 @@ class DatabaseInitializer {
         'asset_icon': 'assets/icons/products/082-cookies.png',
       },
       {
+        'name': 'Cereali',
+        'department_id': 10,
+        'asset_icon': 'assets/icons/products/006-cereal.png',
+      },
+      {
         'name': 'Cioccolata',
         'department_id': 10,
         'asset_icon': 'assets/icons/products/083-chocolate.png',
       },
       {
-        'name': 'Nutella',
+        'name': 'Crema Spalmabile',
         'department_id': 10,
         'asset_icon': 'assets/icons/products/084-chocolate-1.png',
       },
@@ -955,6 +1012,11 @@ class DatabaseInitializer {
         'name': 'Caffè',
         'department_id': 7,
         'asset_icon': 'assets/icons/products/004-coffee-beans.png',
+      },
+      {
+        'name': 'Té',
+        'department_id': 7,
+        'asset_icon': 'assets/icons/products/tea-bag.png',
       },
       {
         'name': 'Pasta Sfoglia',

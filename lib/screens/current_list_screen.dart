@@ -12,6 +12,8 @@ import '../widgets/common/error_state_widget.dart';
 import '../widgets/common/loading_widget.dart';
 import '../widgets/current_list/department_card.dart';
 import '../widgets/current_list/complete_list_dialogs.dart';
+import '../providers/voice_recognition_provider.dart';
+import '../models/product.dart';
 
 class CurrentListScreen extends ConsumerWidget {
   const CurrentListScreen({super.key});
@@ -67,13 +69,7 @@ class CurrentListScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(currentListProvider),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: "current_list_fab",
-        onPressed: () => _showAddProductDialog(context, ref),
-        child: const Icon(Icons.add),
-        backgroundColor: AppColors.secondary,
-        foregroundColor: AppColors.textOnSecondary(context),
-      ),
+      floatingActionButton: _buildFloatingActionButtons(context, ref),
     );
   }
 
@@ -171,10 +167,17 @@ class CurrentListScreen extends ConsumerWidget {
         showDialog(
           context: context,
           builder: (context) => CompleteListChoiceDialog(
-            onMarkAll: () =>
-                _showTotalCostDialog(context, ref, markAllAsChecked: true, keepUncheckedItems: false),
-            onKeepCurrent: () =>
-                _validateAndShowUnpurchasedItemsDialog(context, ref, stats: stats),
+            onMarkAll: () => _showTotalCostDialog(
+              context,
+              ref,
+              markAllAsChecked: true,
+              keepUncheckedItems: false,
+            ),
+            onKeepCurrent: () => _validateAndShowUnpurchasedItemsDialog(
+              context,
+              ref,
+              stats: stats,
+            ),
           ),
         );
       }
@@ -223,10 +226,18 @@ class CurrentListScreen extends ConsumerWidget {
       showDialog(
         context: context,
         builder: (context) => UnpurchasedItemsHandlingDialog(
-          onRemoveItems: () =>
-              _showTotalCostDialog(context, ref, markAllAsChecked: false, keepUncheckedItems: false),
-          onKeepItems: () =>
-              _showTotalCostDialog(context, ref, markAllAsChecked: false, keepUncheckedItems: true),
+          onRemoveItems: () => _showTotalCostDialog(
+            context,
+            ref,
+            markAllAsChecked: false,
+            keepUncheckedItems: false,
+          ),
+          onKeepItems: () => _showTotalCostDialog(
+            context,
+            ref,
+            markAllAsChecked: false,
+            keepUncheckedItems: true,
+          ),
         ),
       );
     }
@@ -338,5 +349,129 @@ class CurrentListScreen extends ConsumerWidget {
         );
       }
     }
+  }
+
+  // ==================== FLOATING ACTION BUTTONS ====================
+
+  Widget _buildFloatingActionButtons(BuildContext context, WidgetRef ref) {
+    final voiceState = ref.watch(voiceRecognitionProvider);
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        // FAB per cancellazione (visibile solo durante l'ascolto)
+        if (voiceState.isListening) ...[
+          FloatingActionButton(
+            heroTag: "cancel_voice_fab",
+            onPressed: () => _cancelVoiceRecognition(ref),
+            backgroundColor: AppColors.error.withValues(alpha: 0.2),
+            foregroundColor: AppColors.error,
+            child: const Icon(Icons.delete_outline),
+          ),
+          const SizedBox(width: AppConstants.spacingS),
+        ],
+
+        // FAB per riconoscimento vocale/stop
+        FloatingActionButton(
+          heroTag: "voice_recognition_fab",
+          onPressed: voiceState.isListening
+              ? () => _stopVoiceRecognition(ref)
+              : () => _startVoiceRecognition(context, ref),
+          backgroundColor: voiceState.isListening
+              ? AppColors.error
+              : AppColors.secondary,
+          foregroundColor: AppColors.textOnSecondary(context),
+          child: voiceState.isListening
+              ? const Icon(Icons.stop)
+              : const Icon(Icons.mic),
+        ),
+
+        const SizedBox(width: AppConstants.spacingS),
+
+        // FAB per aggiunta manuale prodotto
+        FloatingActionButton(
+          heroTag: "current_list_add_fab",
+          onPressed: () => _showAddProductDialog(context, ref),
+          backgroundColor: AppColors.secondary,
+          foregroundColor: AppColors.textOnSecondary(context),
+          child: const Icon(Icons.add),
+        ),
+      ],
+    );
+  }
+
+  // ==================== VOICE RECOGNITION METHODS ====================
+
+  void _startVoiceRecognition(BuildContext context, WidgetRef ref) {
+    final voiceNotifier = ref.read(voiceRecognitionProvider.notifier);
+
+    voiceNotifier.startListening(
+      onResult: (products) => _handleVoiceResult(context, ref, products),
+      context: context,
+    );
+  }
+
+  void _stopVoiceRecognition(WidgetRef ref) {
+    final voiceNotifier = ref.read(voiceRecognitionProvider.notifier);
+    voiceNotifier.stopListening(); // Processa i risultati accumulati
+  }
+
+  void _cancelVoiceRecognition(WidgetRef ref) {
+    final voiceNotifier = ref.read(voiceRecognitionProvider.notifier);
+    voiceNotifier.cancelListening(); // Ignora completamente i risultati
+  }
+
+  void _handleVoiceResult(
+    BuildContext context,
+    WidgetRef ref,
+    List<Product> products,
+  ) {
+    if (products.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Nessun prodotto riconosciuto'),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    // Aggiungi i prodotti alla lista corrente
+    final currentListNotifier = ref.read(currentListProvider.notifier);
+    final productIds = products.map((p) => p.id!).toList();
+
+    currentListNotifier
+        .addMultipleProductsToList(productIds)
+        .then((_) {
+          // Mostra messaggio di successo
+          final productNames = products.map((p) => p.name).join(', ');
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Aggiunti: $productNames'),
+              backgroundColor: AppColors.success,
+              duration: const Duration(seconds: 2),
+              action: SnackBarAction(
+                label: 'OK',
+                textColor: AppColors.textOnPrimary(context),
+                onPressed: () =>
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+              ),
+            ),
+          );
+        })
+        .catchError((error) {
+          // Mostra messaggio di errore
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Errore aggiunta prodotti: $error'),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        });
   }
 }

@@ -1,6 +1,7 @@
 import 'package:shopping_list_manager/screens/completed_lists_screen.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopping_list_manager/widgets/common/app_bar_gradient.dart';
 import 'current_list_screen.dart';
@@ -30,7 +31,8 @@ class MainScreen extends ConsumerStatefulWidget {
 class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  
+  DateTime? _lastBackPressed;
+
   // Mapping da indice a sezione del drawer
   static const Map<int, DrawerSection> _indexToSection = {
     0: DrawerSection.currentList,
@@ -40,13 +42,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     4: DrawerSection.loyaltyCards,
     5: DrawerSection.lastLists,
   };
-  
+
   // Sezioni che hanno la propria AppBar personalizzata
   static const Set<DrawerSection> _sectionsWithCustomAppBar = {
     DrawerSection.currentList,
     DrawerSection.lastLists,
   };
-  
+
   bool _hasCustomAppBar(int index) {
     final section = _indexToSection[index];
     return section != null && _sectionsWithCustomAppBar.contains(section);
@@ -122,36 +124,69 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     FocusScope.of(context).requestFocus(FocusNode());
   }
 
+  Future<bool> _onWillPop() async {
+    final now = DateTime.now();
+    const duration = Duration(seconds: 2);
+
+    if (_lastBackPressed == null ||
+        now.difference(_lastBackPressed!) > duration) {
+      _lastBackPressed = now;
+
+      // Mostra messaggio per premere di nuovo
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Premi di nuovo per uscire'),
+          duration: duration,
+        ),
+      );
+
+      return false; // Non chiudere l'app
+    }
+
+    return true; // Chiudi l'app
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      // AppBar solo per le sezioni che non hanno il proprio AppBar
-      appBar: !_hasCustomAppBar(_selectedIndex)
-          ? AppBarGradient(
-              title: _titles[_selectedIndex],
-              showDrawer: true,
-              onDrawerPressed: () {
-                _onDrawerOpened();
-                _scaffoldKey.currentState?.openDrawer();
-              },
-            )
-          : null,
-      drawer: _buildDrawer(),
-      drawerEdgeDragWidth: (MediaQuery.of(context).size.width * 0.2).clamp(
-        50.0,
-        100.0,
-      ),
-      body: GestureDetector(
-        // Wrapper per catturare tap fuori
-        onTap: () {
-          final currentFocus = FocusScope.of(context);
-          if (!currentFocus.hasPrimaryFocus &&
-              currentFocus.focusedChild != null) {
-            currentFocus.focusedChild!.unfocus();
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (!didPop) {
+          final shouldPop = await _onWillPop();
+          if (shouldPop) {
+            SystemNavigator.pop();
           }
-        },
-        child: IndexedStack(index: _selectedIndex, children: _screens),
+        }
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        // AppBar solo per le sezioni che non hanno il proprio AppBar
+        appBar: !_hasCustomAppBar(_selectedIndex)
+            ? AppBarGradient(
+                title: _titles[_selectedIndex],
+                showDrawer: true,
+                onDrawerPressed: () {
+                  _onDrawerOpened();
+                  _scaffoldKey.currentState?.openDrawer();
+                },
+              )
+            : null,
+        drawer: _buildDrawer(),
+        drawerEdgeDragWidth: (MediaQuery.of(context).size.width * 0.2).clamp(
+          50.0,
+          100.0,
+        ),
+        body: GestureDetector(
+          // Wrapper per catturare tap fuori
+          onTap: () {
+            final currentFocus = FocusScope.of(context);
+            if (!currentFocus.hasPrimaryFocus &&
+                currentFocus.focusedChild != null) {
+              currentFocus.focusedChild!.unfocus();
+            }
+          },
+          child: IndexedStack(index: _selectedIndex, children: _screens),
+        ),
       ),
     );
   }
@@ -163,7 +198,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           DrawerHeader(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)],
+                colors: [
+                  AppColors.primary,
+                  AppColors.primary.withValues(alpha: 0.8),
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -265,20 +303,27 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         final currentListType = ref.watch(currentListTypeProvider);
         final isCurrentType = currentListType == listType;
         final currentSection = _indexToSection[_selectedIndex];
-        final isListScreenSelected = currentSection == DrawerSection.currentList;
-        
+        final isListScreenSelected =
+            currentSection == DrawerSection.currentList;
+
         return Padding(
           padding: const EdgeInsets.only(left: AppConstants.paddingL),
           child: ListTile(
             leading: Icon(
               _getListTypeIcon(listType),
-              color: isCurrentType && isListScreenSelected ? AppColors.primary : null,
+              color: isCurrentType && isListScreenSelected
+                  ? AppColors.primary
+                  : null,
             ),
             title: Text(
               title,
               style: TextStyle(
-                color: isCurrentType && isListScreenSelected ? AppColors.primary : null,
-                fontWeight: isCurrentType && isListScreenSelected ? FontWeight.bold : null,
+                color: isCurrentType && isListScreenSelected
+                    ? AppColors.primary
+                    : null,
+                fontWeight: isCurrentType && isListScreenSelected
+                    ? FontWeight.bold
+                    : null,
               ),
             ),
             selected: isCurrentType && isListScreenSelected,
@@ -293,7 +338,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       },
     );
   }
-  
+
   IconData _getListTypeIcon(String listType) {
     switch (listType) {
       case 'weekly':

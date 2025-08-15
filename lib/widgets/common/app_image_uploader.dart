@@ -78,7 +78,6 @@ class AppImageUploader extends ConsumerStatefulWidget {
 }
 
 class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
-  final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
 
   bool _hasContent() {
@@ -132,9 +131,7 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        child: !hasContent
-            ? _buildEmptyState()
-            : _buildContent(),
+        child: !hasContent ? _buildEmptyState() : _buildContent(),
       ),
     );
   }
@@ -396,20 +393,14 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
     try {
       String? imagePath;
 
-      if (widget.preserveAspectRatio) {
-        // Comportamento originale per carte fedeltà (preserva proporzioni)
-        final XFile? image = await _picker.pickImage(
-          source: source,
-          maxWidth: widget.maxWidth.toDouble(),
-          maxHeight: widget.maxHeight.toDouble(),
-          imageQuality: widget.imageQuality,
-        );
-        imagePath = image?.path;
-      } else {
-        // Default: usa il servizio di immagini con crop 1:1
-        final imageService = ref.read(imageServiceProvider);
-        imagePath = await imageService.pickAndSaveImage(cropSquare: true);
-      }
+      final imageService = ref.read(imageServiceProvider);
+      imagePath = await imageService.pickAndSaveImage(
+        source: source,
+        cropSquare: !widget.preserveAspectRatio,
+        maxWidth: widget.maxWidth.toDouble(),
+        maxHeight: widget.maxHeight.toDouble(),
+        imageQuality: widget.imageQuality,
+      );
 
       if (imagePath != null) {
         // Modalità emojiGallery - imposta come immagine personalizzata
