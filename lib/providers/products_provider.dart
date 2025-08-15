@@ -1,10 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/product.dart';
+import '../models/product_event.dart';
 import '../services/database_service.dart';
 import '../utils/icon_types.dart';
 import 'current_list_provider.dart';
 import 'database_provider.dart';
 import 'recipes_provider.dart';
+import 'product_events_provider.dart';
 
 final productsProvider =
     StateNotifierProvider<ProductsNotifier, AsyncValue<List<Product>>>((ref) {
@@ -25,9 +27,11 @@ final productsByDepartmentProvider = StateNotifierProvider.family
 class ProductsNotifier extends StateNotifier<AsyncValue<List<Product>>> {
   final DatabaseService _databaseService;
   final Ref _ref;
+  late final ProductEventBus _eventBus;
 
   ProductsNotifier(this._databaseService, this._ref)
     : super(const AsyncValue.loading()) {
+    _eventBus = _ref.read(productEventBusProvider);
     loadProducts();
   }
 
@@ -54,16 +58,32 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<Product>>> {
       iconValue: iconValue,
     );
 
-    await _databaseService.insertProduct(product);
+    final insertedId = await _databaseService.insertProduct(product);
+    final insertedProduct = product.copyWith(id: insertedId);
     await loadProducts();
+    
+    // Emetti evento di creazione prodotto
+    _eventBus.emit(ProductEvent.created(insertedProduct));
+    
     // Invalidate related providers to refresh data
     _ref.invalidate(productsByDepartmentProvider);
     _ref.invalidate(currentListProductIdsProvider);
   }
 
   Future<void> updateProduct(Product product) async {
+    // Ottieni il prodotto precedente per confrontare il nome
+    final previousProducts = state.asData?.value ?? [];
+    final previousProduct = previousProducts.firstWhere(
+      (p) => p.id == product.id,
+      orElse: () => product, // Fallback se non trovato
+    );
+    final oldName = previousProduct.name != product.name ? previousProduct.name : null;
+
     await _databaseService.updateProduct(product);
     await loadProducts();
+
+    // Emetti evento di aggiornamento prodotto
+    _eventBus.emit(ProductEvent.updated(product, oldName: oldName));
 
     // Invalidate related providers to refresh data
     _ref.invalidate(currentListProvider);
@@ -80,6 +100,10 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<Product>>> {
   Future<void> deleteProduct(int id) async {
     await _databaseService.deleteProduct(id);
     await loadProducts();
+    
+    // Emetti evento di eliminazione prodotto
+    _eventBus.emit(ProductEvent.deleted(id));
+    
     // Invalidate related providers to refresh data
     _ref.invalidate(currentListProvider);
     _ref.invalidate(currentListProductIdsProvider);

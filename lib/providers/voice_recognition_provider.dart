@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/voice_recognition_service.dart';
 import '../models/product.dart';
+import '../models/product_event.dart';
 import 'database_provider.dart';
+import 'product_events_provider.dart';
 
 /// Provider per il servizio di riconoscimento vocale
 final voiceRecognitionServiceProvider = Provider<VoiceRecognitionService>((
@@ -52,7 +54,10 @@ class VoiceRecognitionNotifier extends StateNotifier<VoiceRecognitionState> {
   final Ref? _ref;
 
   VoiceRecognitionNotifier(this._service, [this._ref])
-    : super(const VoiceRecognitionState());
+    : super(const VoiceRecognitionState()) {
+    // Ascolta gli eventi dei prodotti per aggiornare la cache
+    _listenToProductEvents();
+  }
 
   /// Inizializza il servizio
   Future<bool> initialize() async {
@@ -130,6 +135,41 @@ class VoiceRecognitionNotifier extends StateNotifier<VoiceRecognitionState> {
   /// Controlla i permessi microfono
   Future<bool> checkMicrophonePermission() =>
       _service.hasMicrophonePermission();
+
+  /// Ascolta gli eventi dei prodotti e aggiorna la cache del voice recognition
+  void _listenToProductEvents() {
+    if (_ref == null) return;
+
+    _ref.listen<AsyncValue<ProductEvent>>(productEventsProvider, (previous, next) {
+      next.whenData((event) {
+        // Solo se il voice recognition è inizializzato
+        if (!_service.isInitialized) return;
+
+        switch (event.type) {
+          case ProductEventType.created:
+            if (event.product != null) {
+              debugPrint('🎤 Voice cache: Aggiunto prodotto ${event.product!.name}');
+              _service.addProductToCache(event.product!);
+            }
+            break;
+          
+          case ProductEventType.updated:
+            if (event.product != null) {
+              debugPrint('🎤 Voice cache: Aggiornato prodotto ${event.product!.name}');
+              _service.updateProductInCache(event.product!);
+            }
+            break;
+          
+          case ProductEventType.deleted:
+            if (event.productId != null) {
+              debugPrint('🎤 Voice cache: Rimosso prodotto ID ${event.productId}');
+              _service.removeProductFromCache(event.productId!);
+            }
+            break;
+        }
+      });
+    });
+  }
 
   @override
   void dispose() {
