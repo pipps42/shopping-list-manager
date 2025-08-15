@@ -126,6 +126,16 @@ class DatabaseInitializer {
         'asset_icon': 'assets/icons/products/003-apple.png',
       },
       {
+        'name': 'Pere',
+        'department_id': 1,
+        'asset_icon': 'assets/icons/products/001-pear.png',
+      },
+      {
+        'name': 'Pesche',
+        'department_id': 1,
+        'asset_icon': 'assets/icons/products/004-peach.png',
+      },
+      {
         'name': 'Banane',
         'department_id': 1,
         'asset_icon': 'assets/icons/products/002-banana.png',
@@ -175,11 +185,6 @@ class DatabaseInitializer {
         'department_id': 1,
         'asset_icon': 'assets/icons/products/010-lettuce.png',
       },
-      {
-        'name': 'Insalata',
-        'department_id': 1,
-        'asset_icon': 'assets/icons/products/010-lettuce.png',
-      }, // riuso lattuga
       {
         'name': 'Spinaci',
         'department_id': 1,
@@ -276,6 +281,26 @@ class DatabaseInitializer {
         'department_id': 1,
         'asset_icon': 'assets/icons/products/030-grapes.png',
       },
+      {
+        'name': 'Cavolo',
+        'department_id': 1,
+        'asset_icon': 'assets/icons/products/010-lettuce.png',
+      }, // riuso lattuga
+      {
+        'name': 'Radicchio',
+        'department_id': 1,
+        'asset_icon': 'assets/icons/products/002-radish.png',
+      },
+      {
+        'name': 'Zenzero',
+        'department_id': 1,
+        'asset_icon': 'assets/icons/products/003-ginger.png',
+      },
+      {
+        'name': 'Zucca',
+        'department_id': 1,
+        'asset_icon': 'assets/icons/products/005-pumpkin.png',
+      },
 
       // === SALUMERIA E FORMAGGI (id: 2) - 15 prodotti ===
       {
@@ -336,7 +361,7 @@ class DatabaseInitializer {
       {
         'name': 'Pecorino',
         'department_id': 2,
-        'asset_icon': 'assets/icons/products/027-cheese.png',
+        'asset_icon': 'assets/icons/products/cheese.png',
       }, // riuso cheese
       {
         'name': 'Grana Padano',
@@ -348,11 +373,6 @@ class DatabaseInitializer {
         'department_id': 2,
         'asset_icon': 'assets/icons/products/032-mozzarella-1.png',
       },
-      {
-        'name': 'Taleggio',
-        'department_id': 2,
-        'asset_icon': 'assets/icons/products/031-cheese-1.png',
-      }, // riuso cheese-1
       // === LATTICINI E UOVA (id: 3) - 8 prodotti ===
       {
         'name': 'Latte',
@@ -432,11 +452,6 @@ class DatabaseInitializer {
         'asset_icon': 'assets/icons/products/041-meat.png',
       },
       {
-        'name': 'Scaloppine',
-        'department_id': 4,
-        'asset_icon': 'assets/icons/products/041-meat.png',
-      }, // riuso meat
-      {
         'name': 'Salsiccia',
         'department_id': 4,
         'asset_icon': 'assets/icons/products/042-sausage-1.png',
@@ -444,7 +459,7 @@ class DatabaseInitializer {
       {
         'name': 'Pancetta',
         'department_id': 4,
-        'asset_icon': 'assets/icons/products/025-pepperoni.png',
+        'asset_icon': 'assets/icons/products/008-minced-meat.png',
       }, // riuso pepperoni
       {
         'name': 'Guanciale',
@@ -713,12 +728,17 @@ class DatabaseInitializer {
         'asset_icon': 'assets/icons/products/082-cookies.png',
       },
       {
+        'name': 'Cereali',
+        'department_id': 10,
+        'asset_icon': 'assets/icons/products/006-cereal.png',
+      },
+      {
         'name': 'Cioccolata',
         'department_id': 10,
         'asset_icon': 'assets/icons/products/083-chocolate.png',
       },
       {
-        'name': 'Nutella',
+        'name': 'Crema Spalmabile',
         'department_id': 10,
         'asset_icon': 'assets/icons/products/084-chocolate-1.png',
       },
