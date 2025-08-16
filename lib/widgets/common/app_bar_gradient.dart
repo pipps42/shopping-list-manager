@@ -108,7 +108,7 @@ class AppBarGradient extends StatelessWidget implements PreferredSizeWidget {
   Widget _buildGradientBackground(BuildContext context) {
     final colors =
         gradientColors ??
-        [AppColors.primary, AppColors.primary.withOpacity(0.8)];
+        [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)];
 
     return Container(
       decoration: BoxDecoration(

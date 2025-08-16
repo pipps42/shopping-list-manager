@@ -86,10 +86,10 @@ class CompletedListCard extends StatelessWidget {
                     ),
                     margin: const EdgeInsets.only(bottom: AppConstants.spacingS),
                     decoration: BoxDecoration(
-                      color: AppColors.secondary.withOpacity(0.1),
+                      color: AppColors.secondary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(AppConstants.radiusS),
                       border: Border.all(
-                        color: AppColors.secondary.withOpacity(0.3),
+                        color: AppColors.secondary.withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),

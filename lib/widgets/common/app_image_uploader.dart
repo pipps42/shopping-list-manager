@@ -154,7 +154,7 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
           width: widget.hasError ? 2.0 : 1.0,
         ),
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        color: !hasContent ? AppColors.surface(context).withOpacity(0.5) : null,
+        color: !hasContent ? AppColors.surface(context).withValues(alpha: 0.5) : null,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
@@ -240,7 +240,7 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: AppColors.overlay.withOpacity(0.7),
+      color: AppColors.overlay.withValues(alpha: 0.7),
       child: const Center(
         child: CircularProgressIndicator(
           color: AppColors.primary,
@@ -254,7 +254,7 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: AppColors.surface(context).withOpacity(0.8),
+      color: AppColors.surface(context).withValues(alpha: 0.8),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

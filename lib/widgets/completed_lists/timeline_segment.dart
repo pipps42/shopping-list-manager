@@ -27,7 +27,7 @@ class TimelineSegment extends StatelessWidget {
             bottom: 0,
             child: Container(
               width: 2,
-              color: AppColors.secondary.withOpacity(0.3),
+              color: AppColors.secondary.withValues(alpha: 0.3),
             ),
           ),
 
@@ -59,7 +59,7 @@ class TimelineSegment extends StatelessWidget {
                 child: Container(
                   width: 14,
                   height: 2,
-                  color: AppColors.secondary.withOpacity(0.3),
+                  color: AppColors.secondary.withValues(alpha: 0.3),
                 ),
               ),
             ),

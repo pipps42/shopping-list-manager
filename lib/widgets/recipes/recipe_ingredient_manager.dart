@@ -27,7 +27,7 @@ class RecipeIngredientManager extends ConsumerWidget {
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+              colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
