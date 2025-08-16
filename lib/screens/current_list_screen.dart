@@ -5,7 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopping_list_manager/widgets/common/app_bar_gradient.dart';
 import '../providers/current_list_provider.dart';
 import '../providers/list_type_provider.dart';
-import '../models/department_with_products.dart';
+import '../models/department.dart';
+import '../models/list_item_with_product.dart';
 import '../widgets/add_product_dialog.dart';
 import '../widgets/common/empty_state_widget.dart';
 import '../widgets/common/error_state_widget.dart';
@@ -61,8 +62,8 @@ class CurrentListScreen extends ConsumerWidget {
         onMenuSelected: (value) => _handleMenuAction(context, ref, value),
       ),
       body: currentListState.when(
-        data: (departmentsWithProducts) =>
-            _buildListView(context, ref, departmentsWithProducts),
+        data: (departmentMap) =>
+            _buildListView(context, ref, departmentMap),
         loading: () => const LoadingWidget(message: AppStrings.loadingList),
         error: (error, stack) => ErrorStateWidget(
           message: 'Errore nel caricamento della lista: $error',
@@ -76,15 +77,19 @@ class CurrentListScreen extends ConsumerWidget {
   Widget _buildListView(
     BuildContext context,
     WidgetRef ref,
-    List<DepartmentWithProducts> departments,
+    Map<Department, List<ListItemWithProduct>> departmentMap,
   ) {
-    if (departments.isEmpty) {
+    if (departmentMap.isEmpty) {
       return const EmptyStateWidget(
         icon: Icons.shopping_cart_outlined,
         title: AppStrings.emptyList,
         subtitle: AppStrings.emptyListSubtitle,
       );
     }
+
+    // Converti la Map in lista ordinata per department.orderIndex
+    final sortedDepartments = departmentMap.entries.toList()
+      ..sort((a, b) => a.key.orderIndex.compareTo(b.key.orderIndex));
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -97,9 +102,17 @@ class CurrentListScreen extends ConsumerWidget {
           right: AppConstants.paddingM,
           bottom: AppConstants.listBottomSpacing, // Spazio per il FAB
         ),
-        itemCount: departments.length,
-        itemBuilder: (context, index) =>
-            DepartmentCard(department: departments[index]),
+        itemCount: sortedDepartments.length,
+        itemBuilder: (context, index) {
+          final entry = sortedDepartments[index];
+          final department = entry.key;
+          final items = entry.value;
+          
+          return DepartmentCard(
+            department: department,
+            items: items,
+          );
+        },
       ),
     );
   }

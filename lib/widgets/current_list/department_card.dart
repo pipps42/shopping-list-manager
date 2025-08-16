@@ -1,17 +1,20 @@
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
-import '../../models/department_with_products.dart';
+import '../../models/department.dart';
+import '../../models/list_item_with_product.dart';
 import 'product_list_tile.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
 import '../common/universal_icon.dart';
 
 class DepartmentCard extends StatefulWidget {
-  final DepartmentWithProducts department;
+  final Department department;
+  final List<ListItemWithProduct> items;
   final bool readOnly;
 
   const DepartmentCard({
     super.key,
     required this.department,
+    required this.items,
     this.readOnly = false,
   });
 
@@ -81,7 +84,7 @@ class _DepartmentCardState extends State<DepartmentCard>
               axis: Axis.vertical,
               axisAlignment: -1.0,
               child: Column(
-                children: widget.department.items
+                children: widget.items
                     .map(
                       (item) => ProductListTile(
                         item: item,
@@ -107,7 +110,7 @@ class _DepartmentCardState extends State<DepartmentCard>
         width: double.infinity,
         padding: const EdgeInsets.all(AppConstants.paddingM),
         decoration: BoxDecoration(
-          color: AppColors.secondary.withOpacity(0.4),
+          color: AppColors.secondary.withValues(alpha: 0.4),
           borderRadius: BorderRadius.vertical(
             top: const Radius.circular(AppConstants.radiusL),
             bottom: _isExpanded
@@ -121,7 +124,7 @@ class _DepartmentCardState extends State<DepartmentCard>
             const SizedBox(width: AppConstants.spacingL),
             Expanded(
               child: Text(
-                widget.department.department.name,
+                widget.department.name,
                 style: const TextStyle(
                   fontSize: AppConstants.fontXXL,
                   fontWeight: FontWeight.bold,
@@ -151,8 +154,8 @@ class _DepartmentCardState extends State<DepartmentCard>
 
   Widget _buildDepartmentImage(BuildContext context) {
     return UniversalIcon(
-      iconType: widget.department.department.iconType,
-      iconValue: widget.department.department.iconValue,
+      iconType: widget.department.iconType,
+      iconValue: widget.department.iconValue,
       size: AppConstants.imageXL,
       fallbackIcon: Icons.store,
       fallbackColor: AppColors.secondary,
@@ -160,8 +163,8 @@ class _DepartmentCardState extends State<DepartmentCard>
   }
 
   Widget _buildStats(BuildContext context) {
-    final total = widget.department.items.length;
-    final completed = widget.department.items
+    final total = widget.items.length;
+    final completed = widget.items
         .where((item) => item.isChecked)
         .length;
 
@@ -174,7 +177,7 @@ class _DepartmentCardState extends State<DepartmentCard>
         backgroundBlendMode: AppColors.isLight(context)
             ? BlendMode.darken
             : BlendMode.lighten,
-        color: AppColors.textPrimary(context).withOpacity(0.7),
+        color: AppColors.textPrimary(context).withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(AppConstants.radiusL),
       ),
       child: Text(

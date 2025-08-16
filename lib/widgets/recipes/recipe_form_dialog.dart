@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:shopping_list_manager/widgets/common/app_image_uploader.dart';
 import 'package:shopping_list_manager/widgets/common/base_dialog.dart';
+import 'package:shopping_list_manager/widgets/common/validated_text_field.dart';
 import '../../models/recipe.dart';
 
 class RecipeFormDialog extends ConsumerStatefulWidget {
@@ -16,21 +17,14 @@ class RecipeFormDialog extends ConsumerStatefulWidget {
 }
 
 class _RecipeFormDialogState extends ConsumerState<RecipeFormDialog> {
-  late TextEditingController _nameController;
   String? _selectedImagePath;
   bool _isLoading = false;
+  final GlobalKey<ValidatedTextFieldState> _nameFieldKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.recipe?.name ?? '');
     _selectedImagePath = widget.recipe?.imagePath;
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
   }
 
   @override
@@ -46,13 +40,13 @@ class _RecipeFormDialogState extends ConsumerState<RecipeFormDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // Nome ricetta
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: AppStrings.recipeName,
-                border: OutlineInputBorder(),
-              ),
-              textCapitalization: TextCapitalization.words,
+            ValidatedTextField(
+              key: _nameFieldKey,
+              labelText: AppStrings.recipeName,
+              initialValue: widget.recipe?.name ?? '',
+              isRequired: true,
+              requiredMessage: AppStrings.recipeNameRequired,
+              requireMinThreeLetters: true,
             ),
             const SizedBox(height: AppConstants.spacingM),
 
@@ -82,14 +76,14 @@ class _RecipeFormDialogState extends ConsumerState<RecipeFormDialog> {
   }
 
   void _handleSave() {
-    final name = _nameController.text.trim();
-
-    if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.recipeNameRequired)),
-      );
+    final nameFieldState = _nameFieldKey.currentState;
+    
+    // Valida il campo nome
+    if (nameFieldState == null || !nameFieldState.validate()) {
       return;
     }
+
+    final name = nameFieldState.text.trim();
 
     final recipe = Recipe(
       id: widget.recipe?.id,

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/shopping_list.dart';
-import '../models/department_with_products.dart';
+import '../models/department.dart';
+import '../models/list_item_with_product.dart';
 import '../services/database_service.dart';
 import 'database_provider.dart';
 
@@ -15,7 +16,7 @@ final completedListsProvider =
 final completedListDetailProvider = StateNotifierProvider.family
     .autoDispose<
       CompletedListDetailNotifier,
-      AsyncValue<List<DepartmentWithProducts>>,
+      AsyncValue<Map<Department, List<ListItemWithProduct>>>,
       int
     >((ref, listId) {
       return CompletedListDetailNotifier(
@@ -106,7 +107,7 @@ class CompletedListWithCount {
 }
 
 class CompletedListDetailNotifier
-    extends StateNotifier<AsyncValue<List<DepartmentWithProducts>>> {
+    extends StateNotifier<AsyncValue<Map<Department, List<ListItemWithProduct>>>> {
   final DatabaseService _databaseService;
   final int listId;
 
@@ -118,9 +119,9 @@ class CompletedListDetailNotifier
   Future<void> loadCompletedListDetail() async {
     try {
       state = const AsyncValue.loading();
-      final departments = await _databaseService
+      final departmentMap = await _databaseService
           .getCompletedListGroupedByDepartment(listId);
-      state = AsyncValue.data(departments);
+      state = AsyncValue.data(departmentMap);
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
     }

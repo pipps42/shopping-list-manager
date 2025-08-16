@@ -2,6 +2,7 @@ import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:shopping_list_manager/widgets/common/app_image_uploader.dart';
 import 'package:shopping_list_manager/widgets/common/base_dialog.dart';
+import 'package:shopping_list_manager/widgets/common/validated_text_field.dart';
 import '../../models/department.dart';
 import '../../utils/icon_types.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,25 +23,16 @@ class DepartmentFormDialog extends ConsumerStatefulWidget {
 }
 
 class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
-  late TextEditingController _nameController;
   IconType _selectedIconType = IconType.asset;
   String? _selectedIconValue;
   bool _isLoading = false;
+  final GlobalKey<ValidatedTextFieldState> _nameFieldKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(
-      text: widget.department?.name ?? '',
-    );
     _selectedIconType = widget.department?.iconType ?? IconType.asset;
     _selectedIconValue = widget.department?.iconValue;
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
   }
 
   @override
@@ -55,13 +47,13 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Nome reparto
-          TextField(
-            controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: AppStrings.departmentNamePlaceholder,
-              border: OutlineInputBorder(),
-            ),
-            textCapitalization: TextCapitalization.words,
+          ValidatedTextField(
+            key: _nameFieldKey,
+            labelText: AppStrings.departmentNamePlaceholder,
+            initialValue: widget.department?.name ?? '',
+            isRequired: true,
+            requiredMessage: AppStrings.departmentNameRequired,
+            requireMinThreeLetters: true,
           ),
           const SizedBox(height: AppConstants.spacingM),
 
@@ -97,14 +89,14 @@ class _DepartmentFormDialogState extends ConsumerState<DepartmentFormDialog> {
   }
 
   void _handleSave() {
-    final name = _nameController.text.trim();
-
-    if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.departmentNameRequired)),
-      );
+    final nameFieldState = _nameFieldKey.currentState;
+    
+    // Valida il campo nome
+    if (nameFieldState == null || !nameFieldState.validate()) {
       return;
     }
+
+    final name = nameFieldState.text.trim();
 
     widget.onSave(name, _selectedIconType, _selectedIconValue);
     Navigator.pop(context);

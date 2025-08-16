@@ -96,13 +96,7 @@ class VoiceRecognitionService {
         return false;
       }
 
-      // Richiedi permesso microfono per sicurezza
-      final permissionStatus = await Permission.microphone.request();
-      if (permissionStatus != PermissionStatus.granted) {
-        debugPrint('Permesso microfono negato');
-        return false;
-      }
-
+      // NON richiedere i permessi qui - saranno richiesti al primo utilizzo
       _isInitialized = true;
       debugPrint(
         '✅ Voice Recognition Service inizializzato con ${_cachedProducts.length} prodotti',
@@ -114,13 +108,29 @@ class VoiceRecognitionService {
     }
   }
 
+  /// Richiede i permessi per il microfono
+  Future<bool> requestMicrophonePermission() async {
+    try {
+      final permissionStatus = await Permission.microphone.request();
+      if (permissionStatus != PermissionStatus.granted) {
+        debugPrint('❌ Permesso microfono negato');
+        return false;
+      }
+      debugPrint('✅ Permesso microfono concesso');
+      return true;
+    } catch (e) {
+      debugPrint('❌ Errore durante richiesta permessi microfono: $e');
+      return false;
+    }
+  }
+
   /// Avvia l'ascolto vocale con SpeechToText
-  void startListening({
+  Future<void> startListening({
     required Function(List<Product>) onResult,
     required Function(String) onError,
     required Duration timeout,
     required BuildContext context,
-  }) {
+  }) async {
     if (!_isInitialized) {
       onError('Servizio non inizializzato');
       return;
@@ -128,6 +138,13 @@ class VoiceRecognitionService {
 
     if (_isListening) {
       debugPrint('⚠️ Già in ascolto...');
+      return;
+    }
+
+    // Richiedi permessi microfono prima di iniziare
+    final hasPermission = await requestMicrophonePermission();
+    if (!hasPermission) {
+      onError('Permesso microfono richiesto per utilizzare il comando vocale');
       return;
     }
 
@@ -225,6 +242,48 @@ class VoiceRecognitionService {
       debugPrint('❌ Errore durante caricamento cache prodotti: $e');
       rethrow;
     }
+  }
+
+  /// Aggiunge un prodotto alla cache (aggiornamento atomico)
+  void addProductToCache(Product product) {
+    if (!_isInitialized) return;
+    
+    _cachedProducts.add(product);
+    _productNames.add(product.name.toLowerCase());
+    debugPrint('➕ Prodotto aggiunto alla cache: ${product.name}');
+  }
+
+  /// Rimuove un prodotto dalla cache (aggiornamento atomico)
+  void removeProductFromCache(int productId) {
+    if (!_isInitialized) return;
+    
+    final index = _cachedProducts.indexWhere((p) => p.id == productId);
+    if (index != -1) {
+      final removedProduct = _cachedProducts.removeAt(index);
+      _productNames.removeAt(index);
+      debugPrint('➖ Prodotto rimosso dalla cache: ${removedProduct.name}');
+    }
+  }
+
+  /// Aggiorna un prodotto nella cache (aggiornamento atomico)
+  void updateProductInCache(Product updatedProduct) {
+    if (!_isInitialized) return;
+    
+    final index = _cachedProducts.indexWhere((p) => p.id == updatedProduct.id);
+    if (index != -1) {
+      final oldProduct = _cachedProducts[index];
+      _cachedProducts[index] = updatedProduct;
+      _productNames[index] = updatedProduct.name.toLowerCase();
+      debugPrint('🔄 Prodotto aggiornato nella cache: ${oldProduct.name} -> ${updatedProduct.name}');
+    }
+  }
+
+  /// Ricarica completamente la cache (fallback se necessario)
+  Future<void> reloadCache() async {
+    if (!_isInitialized) return;
+    
+    debugPrint('🔄 Ricaricamento completo cache prodotti...');
+    await _loadAndCacheProducts();
   }
 
   /// Estrae prodotti dal testo finale usando N-grammi + FuzzyWuzzy con voti cumulativi

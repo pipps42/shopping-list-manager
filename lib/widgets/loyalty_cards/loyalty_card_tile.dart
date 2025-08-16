@@ -66,7 +66,7 @@ class LoyaltyCardTile extends StatelessWidget {
                     right: AppConstants.paddingXS,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
+                        color: Colors.black.withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(
                           AppConstants.radiusS,
                         ),

@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:shopping_list_manager/models/loyalty_card.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -5,7 +6,7 @@ import '../models/department.dart';
 import '../models/product.dart';
 import '../models/shopping_list.dart';
 import '../models/list_item.dart';
-import '../models/department_with_products.dart';
+import '../models/list_item_with_product.dart';
 import '../models/recipe.dart';
 import '../models/recipe_ingredient.dart';
 import '../models/recipe_with_ingredients.dart';
@@ -138,6 +139,18 @@ class DatabaseService {
     return List.generate(maps.length, (i) => Department.fromMap(maps[i]));
   }
 
+  Future<Department> getDepartmentById(int id) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'departments',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (maps.isEmpty) throw Exception('Reparto non trovato');
+    return Department.fromMap(maps.first);
+  }
+
   Future<int> updateDepartment(Department department) async {
     final db = await database;
     return await db.update(
@@ -192,21 +205,33 @@ class DatabaseService {
     return await db.insert('products', product.toMap());
   }
 
+  Future<List<Product>> getAllProducts() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'products',
+      orderBy: 'name COLLATE NOCASE ASC',
+    );
+    return List.generate(maps.length, (i) => Product.fromMap(maps[i]));
+  }
+
+  Future<Product> getProductById(int id) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'products',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (maps.isEmpty) throw Exception('Reparto non trovato');
+    return Product.fromMap(maps.first);
+  }
+
   Future<List<Product>> getProductsByDepartment(int departmentId) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       'products',
       where: 'department_id = ?',
       whereArgs: [departmentId],
-      orderBy: 'name COLLATE NOCASE ASC',
-    );
-    return List.generate(maps.length, (i) => Product.fromMap(maps[i]));
-  }
-
-  Future<List<Product>> getAllProducts() async {
-    final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'products',
       orderBy: 'name COLLATE NOCASE ASC',
     );
     return List.generate(maps.length, (i) => Product.fromMap(maps[i]));
@@ -261,16 +286,16 @@ class DatabaseService {
         maps.length,
         (i) => Product.fromMap(maps[i]),
       );
-      print(
+      debugPrint(
         'Fuzzy search per "$searchTerm": trovati ${results.length} risultati',
       );
       for (final product in results.take(5)) {
-        print('  - ${product.name}');
+        debugPrint('  - ${product.name}');
       }
 
       return results;
     } catch (e) {
-      print('Errore nella fuzzy search per "$searchTerm": $e');
+      debugPrint('Errore nella fuzzy search per "$searchTerm": $e');
       return [];
     }
   }
@@ -326,23 +351,23 @@ class DatabaseService {
     return await db.insert('list_items', item.toMap());
   }
 
-  Future<List<DepartmentWithProducts>> getCurrentListGroupedByDepartment([
-    String? listType,
-  ]) async {
+  /// Restituisce la lista corrente raggruppata per dipartimento (NUOVO METODO OTTIMIZZATO)
+  Future<Map<Department, List<ListItemWithProduct>>>
+  getCurrentListGroupedByDepartment([String? listType]) async {
     final db = await database;
 
-    // Query con JOIN per ottenere tutti i dati necessari
+    // Query JOIN completa per ottenere tutti i dati necessari
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT 
-        li.id,
+        li.id as item_id,
         li.list_id,
-        li.product_id,
         li.is_checked,
         li.added_at,
+        p.id as product_id,
         p.name as product_name,
         p.icon_type as product_icon_type,
         p.icon_value as product_icon_value,
-        d.id as department_id,
+        p.department_id,
         d.name as department_name,
         d.order_index as department_order,
         d.icon_type as department_icon_type,
@@ -356,43 +381,68 @@ class DatabaseService {
       ORDER BY d.order_index ASC, p.name COLLATE NOCASE ASC
     ''', listType != null ? [listType] : []);
 
-    final List<ListItem> items = List.generate(
-      maps.length,
-      (i) => ListItem.fromMap(maps[i]),
-    );
+    // Costruisce la Map raggruppata direttamente
+    final Map<Department, List<ListItemWithProduct>> grouped = {};
 
-    // Raggruppa per reparto
-    final Map<int, DepartmentWithProducts> grouped = {};
+    for (final map in maps) {
+      // Crea il Department completo
+      final department = Department(
+        id: map['department_id'] as int,
+        name: map['department_name'] as String,
+        orderIndex: map['department_order'] as int,
+        iconType: IconType.values.firstWhere(
+          (e) => e.name == map['department_icon_type'],
+          orElse: () => IconType.emoji,
+        ),
+        iconValue: map['department_icon_value'] as String,
+      );
 
-    for (final item in items) {
-      final deptId = item.departmentId!;
+      // Crea il Product completo
+      final product = Product(
+        id: map['product_id'] as int,
+        name: map['product_name'] as String,
+        iconType: IconType.values.firstWhere(
+          (e) => e.name == map['product_icon_type'],
+          orElse: () => IconType.emoji,
+        ),
+        iconValue: map['product_icon_value'] as String,
+        departmentId: map['department_id'] as int,
+      );
 
-      if (!grouped.containsKey(deptId)) {
-        grouped[deptId] = DepartmentWithProducts(
-          department: Department(
-            id: deptId,
-            name: item.departmentName!,
-            orderIndex: item.departmentOrder!,
-            iconType: IconType.fromString(
-              maps.firstWhere(
-                    (m) => m['department_id'] == deptId,
-                  )['department_icon_type'] ??
-                  'asset',
-            ),
-            iconValue: maps.firstWhere(
-              (m) => m['department_id'] == deptId,
-            )['department_icon_value'],
-          ),
-          items: [],
-        );
+      // Crea il ListItemWithProduct
+      final item = ListItemWithProduct(
+        id: map['item_id'] as int?,
+        listId: map['list_id'] as int,
+        product: product,
+        isChecked: (map['is_checked'] as int) == 1,
+        addedAt: DateTime.fromMillisecondsSinceEpoch(map['added_at'] as int),
+      );
+
+      // Raggruppa per Department (trova department esistente per evitare duplicati)
+      Department? existingDept;
+      for (final dept in grouped.keys) {
+        if (dept.id == department.id) {
+          existingDept = dept;
+          break;
+        }
       }
 
-      grouped[deptId]!.items.add(item);
+      if (existingDept != null) {
+        grouped[existingDept]!.add(item);
+      } else {
+        grouped[department] = [item];
+      }
     }
 
-    return grouped.values.toList()..sort(
-      (a, b) => a.department.orderIndex.compareTo(b.department.orderIndex),
-    );
+    return grouped;
+  }
+
+  /// Metodo di compatibilità: converte Map in lista piatta (per listProductIdsProvider)
+  Future<List<ListItemWithProduct>> getCurrentListItems([
+    String? listType,
+  ]) async {
+    final grouped = await getCurrentListGroupedByDepartment(listType);
+    return grouped.values.expand((items) => items).toList();
   }
 
   Future<int> updateListItem(ListItem item) async {
@@ -463,6 +513,16 @@ class DatabaseService {
     int productId, [
     String? listType,
   ]) async {
+    final result = await addProductToCurrentListDetailed(productId, listType);
+    return result != null;
+  }
+
+  /// Aggiunge un prodotto alla lista corrente e restituisce il ListItem semplice
+  /// Restituisce null se il prodotto è già nella lista o se c'è un errore
+  Future<ListItem?> addProductToCurrentListDetailed(
+    int productId, [
+    String? listType,
+  ]) async {
     final currentList = await getCurrentShoppingList(listType);
     if (currentList == null) {
       throw Exception('Nessuna lista corrente trovata');
@@ -470,9 +530,10 @@ class DatabaseService {
 
     final exists = await isProductInCurrentList(productId, listType);
     if (exists) {
-      return false;
+      return null; // Prodotto già presente
     }
 
+    // Crea il ListItem semplice
     final item = ListItem(
       listId: currentList.id!,
       productId: productId,
@@ -480,8 +541,11 @@ class DatabaseService {
       addedAt: DateTime.now(),
     );
 
-    await insertListItem(item);
-    return true;
+    // Inserisci il ListItem e ottieni l'ID
+    final insertedId = await insertListItem(item);
+
+    // Restituisci il ListItem con l'ID assegnato
+    return item.copyWith(id: insertedId);
   }
 
   Future<void> toggleItemChecked(int itemId, bool isChecked) async {
@@ -677,7 +741,9 @@ class DatabaseService {
   }
 
   // =========== CRUD per Completed Lists ===========
-  Future<List<DepartmentWithProducts>> getCompletedListGroupedByDepartment(
+  
+  /// Ottiene una lista completata raggruppata per dipartimento usando Map
+  Future<Map<Department, List<ListItemWithProduct>>> getCompletedListGroupedByDepartment(
     int listId,
   ) async {
     final db = await database;
@@ -686,15 +752,15 @@ class DatabaseService {
     final List<Map<String, dynamic>> maps = await db.rawQuery(
       '''
     SELECT 
-      li.id,
+      li.id as item_id,
       li.list_id,
-      li.product_id,
       li.is_checked,
       li.added_at,
+      p.id as product_id,
       p.name as product_name,
       p.icon_type as product_icon_type,
       p.icon_value as product_icon_value,
-      d.id as department_id,
+      p.department_id,
       d.name as department_name,
       d.order_index as department_order,
       d.icon_type as department_icon_type,
@@ -709,43 +775,55 @@ class DatabaseService {
       [listId],
     );
 
-    final List<ListItem> items = List.generate(
-      maps.length,
-      (i) => ListItem.fromMap(maps[i]),
-    );
+    // Costruisci la Map direttamente nel DatabaseService
+    final Map<Department, List<ListItemWithProduct>> departmentMap = {};
 
-    // Raggruppa per reparto
-    final Map<int, DepartmentWithProducts> grouped = {};
+    for (final map in maps) {
+      // Crea l'oggetto Product completo
+      final product = Product(
+        id: map['product_id'] as int,
+        name: map['product_name'] as String,
+        departmentId: map['department_id'] as int,
+        iconType: IconType.fromString(map['product_icon_type'] ?? 'asset'),
+        iconValue: map['product_icon_value'] as String?,
+      );
 
-    for (final item in items) {
-      final deptId = item.departmentId!;
+      // Crea l'oggetto Department completo
+      final department = Department(
+        id: map['department_id'] as int,
+        name: map['department_name'] as String,
+        orderIndex: map['department_order'] as int,
+        iconType: IconType.fromString(map['department_icon_type'] ?? 'asset'),
+        iconValue: map['department_icon_value'] as String?,
+      );
 
-      if (!grouped.containsKey(deptId)) {
-        grouped[deptId] = DepartmentWithProducts(
-          department: Department(
-            id: deptId,
-            name: item.departmentName!,
-            orderIndex: item.departmentOrder!,
-            iconType: IconType.fromString(
-              maps.firstWhere(
-                    (m) => m['department_id'] == deptId,
-                  )['department_icon_type'] ??
-                  'asset',
-            ),
-            iconValue: maps.firstWhere(
-              (m) => m['department_id'] == deptId,
-            )['department_icon_value'],
-          ),
-          items: [],
-        );
+      // Crea il ListItemWithProduct
+      final item = ListItemWithProduct(
+        id: map['item_id'] as int?,
+        listId: map['list_id'] as int,
+        product: product,
+        isChecked: (map['is_checked'] as int) == 1,
+        addedAt: DateTime.fromMillisecondsSinceEpoch(map['added_at'] as int),
+      );
+
+      // Trova il dipartimento esistente nella Map o creane uno nuovo
+      Department? existingDepartment;
+      try {
+        existingDepartment = departmentMap.keys.firstWhere((dept) => dept.id == department.id);
+      } catch (_) {
+        existingDepartment = null;
       }
 
-      grouped[deptId]!.items.add(item);
+      if (existingDepartment != null) {
+        // Aggiungi l'item al dipartimento esistente
+        departmentMap[existingDepartment]!.add(item);
+      } else {
+        // Crea nuovo dipartimento nella Map
+        departmentMap[department] = [item];
+      }
     }
 
-    return grouped.values.toList()..sort(
-      (a, b) => a.department.orderIndex.compareTo(b.department.orderIndex),
-    );
+    return departmentMap;
   }
 
   Future<Map<String, int>> getCompletedListStats(int listId) async {

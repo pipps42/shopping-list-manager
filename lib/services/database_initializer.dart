@@ -1014,7 +1014,7 @@ class DatabaseInitializer {
         'asset_icon': 'assets/icons/products/004-coffee-beans.png',
       },
       {
-        'name': 'Té',
+        'name': 'Té in Bustine',
         'department_id': 7,
         'asset_icon': 'assets/icons/products/tea-bag.png',
       },

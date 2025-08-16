@@ -85,7 +85,7 @@ class MyApp extends StatelessWidget {
 
       // === CHIP THEME ===
       chipTheme: ChipThemeData(
-        selectedColor: AppColors.accent.withOpacity(0.2),
+        selectedColor: AppColors.accent.withValues(alpha: 0.2),
         checkmarkColor: AppColors.accent,
       ),
 

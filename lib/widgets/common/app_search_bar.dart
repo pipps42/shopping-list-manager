@@ -181,7 +181,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
       disabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
         borderSide: BorderSide(
-          color: AppColors.border(context).withOpacity(0.5),
+          color: AppColors.border(context).withValues(alpha: 0.5),
           width: 1.0,
         ),
       ),
@@ -204,7 +204,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
       filled: true,
       fillColor: widget.enabled
           ? AppColors.surface(context)
-          : AppColors.surface(context).withOpacity(0.5),
+          : AppColors.surface(context).withValues(alpha: 0.5),
 
       // Colori delle icone
       prefixIconColor: AppColors.iconSecondary(context),

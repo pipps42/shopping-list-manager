@@ -95,7 +95,7 @@ class CompleteListChoiceDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppConstants.paddingS),
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.1),
+                color: iconColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppConstants.radiusS),
               ),
               child: Icon(icon, color: iconColor, size: AppConstants.iconL),
@@ -223,7 +223,7 @@ class UnpurchasedItemsHandlingDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppConstants.paddingS),
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.1),
+                color: iconColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppConstants.radiusS),
               ),
               child: Icon(icon, color: iconColor, size: AppConstants.iconL),

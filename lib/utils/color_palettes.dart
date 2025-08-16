@@ -20,7 +20,7 @@ class AppColors {
   static const Color transparent = Colors.transparent;
   static const Color shadow = Colors.black26;
   static const Color overlay = Colors.black54;
-  static Color get completedOverlay => Colors.grey.withOpacity(0.2);
+  static Color get completedOverlay => Colors.grey.withValues(alpha: 0.2);
 
   // === COLORI DINAMICI ===
 
@@ -28,9 +28,9 @@ class AppColors {
   static Color textPrimary(BuildContext context) =>
       Theme.of(context).colorScheme.onSurface;
   static Color textSecondary(BuildContext context) =>
-      Theme.of(context).colorScheme.onSurface.withOpacity(0.6);
+      Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6);
   static Color textDisabled(BuildContext context) =>
-      Theme.of(context).colorScheme.onSurface.withOpacity(0.4);
+      Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4);
   static Color textOnPrimary(BuildContext context) =>
       Theme.of(context).colorScheme.onPrimary;
   static Color textOnSecondary(BuildContext context) =>
@@ -56,9 +56,9 @@ class AppColors {
   static Color iconPrimary(BuildContext context) =>
       Theme.of(context).iconTheme.color ?? textPrimary(context);
   static Color iconSecondary(BuildContext context) =>
-      iconPrimary(context).withOpacity(0.6);
+      iconPrimary(context).withValues(alpha: 0.6);
   static Color iconDisabled(BuildContext context) =>
-      iconPrimary(context).withOpacity(0.4);
+      iconPrimary(context).withValues(alpha: 0.4);
 
   // Utility
   static bool isDark(BuildContext context) =>

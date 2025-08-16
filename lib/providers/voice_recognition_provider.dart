@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/voice_recognition_service.dart';
 import '../models/product.dart';
+import '../models/product_event.dart';
 import 'database_provider.dart';
+import 'product_events_provider.dart';
 
 /// Provider per il servizio di riconoscimento vocale
 final voiceRecognitionServiceProvider = Provider<VoiceRecognitionService>((
   ref,
 ) {
   final service = VoiceRecognitionService();
-  final databaseService = ref.read(databaseServiceProvider);
-
-  service.initialize(databaseService);
+  // Non inizializzare automaticamente - sarà inizializzato al primo utilizzo
   return service;
 });
 
@@ -51,12 +51,28 @@ class VoiceRecognitionState {
 /// Notifier per gestire lo stato del riconoscimento vocale
 class VoiceRecognitionNotifier extends StateNotifier<VoiceRecognitionState> {
   final VoiceRecognitionService _service;
+  final Ref? _ref;
 
-  VoiceRecognitionNotifier(this._service)
-    : super(const VoiceRecognitionState());
+  VoiceRecognitionNotifier(this._service, [this._ref])
+    : super(const VoiceRecognitionState()) {
+    // Ascolta gli eventi dei prodotti per aggiornare la cache
+    _listenToProductEvents();
+  }
 
   /// Inizializza il servizio
   Future<bool> initialize() async {
+    // Se non è ancora inizializzato e abbiamo un ref, passa il database service
+    if (!_service.isInitialized && _ref != null) {
+      final databaseService = _ref.read(databaseServiceProvider);
+      final success = await _service.initialize(databaseService);
+      state = state.copyWith(
+        isInitialized: success,
+        lastError: success ? null : 'Inizializzazione fallita',
+      );
+      return success;
+    }
+    
+    // Altrimenti usa l'inizializzazione standard
     final success = await _service.initialize();
     state = state.copyWith(
       isInitialized: success,
@@ -86,7 +102,7 @@ class VoiceRecognitionNotifier extends StateNotifier<VoiceRecognitionState> {
       lastResult: null,
     );
 
-    _service.startListening(
+    await _service.startListening(
       onResult: (products) {
         final resultText = products.map((p) => p.name).join(', ');
         state = state.copyWith(lastResult: resultText, isListening: false);
@@ -120,6 +136,41 @@ class VoiceRecognitionNotifier extends StateNotifier<VoiceRecognitionState> {
   Future<bool> checkMicrophonePermission() =>
       _service.hasMicrophonePermission();
 
+  /// Ascolta gli eventi dei prodotti e aggiorna la cache del voice recognition
+  void _listenToProductEvents() {
+    if (_ref == null) return;
+
+    _ref.listen<AsyncValue<ProductEvent>>(productEventsProvider, (previous, next) {
+      next.whenData((event) {
+        // Solo se il voice recognition è inizializzato
+        if (!_service.isInitialized) return;
+
+        switch (event.type) {
+          case ProductEventType.created:
+            if (event.product != null) {
+              debugPrint('🎤 Voice cache: Aggiunto prodotto ${event.product!.name}');
+              _service.addProductToCache(event.product!);
+            }
+            break;
+          
+          case ProductEventType.updated:
+            if (event.product != null) {
+              debugPrint('🎤 Voice cache: Aggiornato prodotto ${event.product!.name}');
+              _service.updateProductInCache(event.product!);
+            }
+            break;
+          
+          case ProductEventType.deleted:
+            if (event.productId != null) {
+              debugPrint('🎤 Voice cache: Rimosso prodotto ID ${event.productId}');
+              _service.removeProductFromCache(event.productId!);
+            }
+            break;
+        }
+      });
+    });
+  }
+
   @override
   void dispose() {
     _service.dispose();
@@ -133,5 +184,5 @@ final voiceRecognitionProvider =
       ref,
     ) {
       final service = ref.watch(voiceRecognitionServiceProvider);
-      return VoiceRecognitionNotifier(service);
+      return VoiceRecognitionNotifier(service, ref);
     });

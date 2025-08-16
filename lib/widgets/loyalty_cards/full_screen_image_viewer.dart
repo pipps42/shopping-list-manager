@@ -20,7 +20,7 @@ class FullScreenImageViewer extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black.withOpacity(0.8),
+        backgroundColor: Colors.black.withValues(alpha: 0.8),
         foregroundColor: Colors.white,
         title: Text(cardName, style: const TextStyle(color: Colors.white)),
         leading: IconButton(

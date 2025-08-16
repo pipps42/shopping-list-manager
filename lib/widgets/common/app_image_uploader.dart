@@ -43,6 +43,11 @@ class AppImageUploader extends ConsumerStatefulWidget {
   final String? removeButtonText;
   final String? emptyStateText;
   final bool preserveAspectRatio;
+  
+  // Parametri per validazione
+  final bool isRequired;
+  final String? requiredMessage;
+  final bool hasError;
 
   const AppImageUploader({
     super.key,
@@ -71,6 +76,10 @@ class AppImageUploader extends ConsumerStatefulWidget {
     this.removeButtonText,
     this.emptyStateText,
     this.preserveAspectRatio = false,
+    // Validazione
+    this.isRequired = false,
+    this.requiredMessage,
+    this.hasError = false,
   });
 
   @override
@@ -108,6 +117,21 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
         else
           _buildBelowLayout(),
 
+        // Messaggio di errore
+        if (widget.hasError && widget.isRequired) ...[
+          const SizedBox(height: AppConstants.spacingS),
+          Padding(
+            padding: const EdgeInsets.only(left: AppConstants.paddingS),
+            child: Text(
+              widget.requiredMessage ?? 'Campo obbligatorio',
+              style: TextStyle(
+                color: Colors.red[700],
+                fontSize: AppConstants.fontS,
+              ),
+            ),
+          ),
+        ],
+
         // Pulsante rimuovi (se c'è contenuto)
         if (_hasContent() && widget.enabled && !_isLoading)
           _buildRemoveButton(),
@@ -125,9 +149,12 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.border(context), width: 1.0),
+        border: Border.all(
+          color: widget.hasError ? Colors.red : AppColors.border(context), 
+          width: widget.hasError ? 2.0 : 1.0,
+        ),
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        color: !hasContent ? AppColors.surface(context).withOpacity(0.5) : null,
+        color: !hasContent ? AppColors.surface(context).withValues(alpha: 0.5) : null,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppConstants.borderRadius),
@@ -213,7 +240,7 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: AppColors.overlay.withOpacity(0.7),
+      color: AppColors.overlay.withValues(alpha: 0.7),
       child: const Center(
         child: CircularProgressIndicator(
           color: AppColors.primary,
@@ -227,7 +254,7 @@ class _AppImageUploaderState extends ConsumerState<AppImageUploader> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: AppColors.surface(context).withOpacity(0.8),
+      color: AppColors.surface(context).withValues(alpha: 0.8),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

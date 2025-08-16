@@ -18,7 +18,7 @@ class ReorderInstructionsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = backgroundColor ?? AppColors.info.withOpacity(0.1);
+    final bgColor = backgroundColor ?? AppColors.info.withValues(alpha: 0.1);
     final txtColor = textColor ?? AppColors.info;
 
     return Container(
@@ -27,7 +27,7 @@ class ReorderInstructionsWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: bgColor,
         border: Border(
-          bottom: BorderSide(color: AppColors.info.withOpacity(0.3), width: 1),
+          bottom: BorderSide(color: AppColors.info.withValues(alpha: 0.3), width: 1),
         ),
       ),
       child: Row(
