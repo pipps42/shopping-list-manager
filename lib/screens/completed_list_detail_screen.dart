@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopping_list_manager/widgets/common/app_bar_gradient.dart';
 import '../models/shopping_list.dart';
-import '../models/department_with_products.dart';
+import '../models/department.dart';
+import '../models/list_item_with_product.dart';
 import '../providers/completed_lists_provider.dart';
 import '../widgets/common/empty_state_widget.dart';
 import '../widgets/common/error_state_widget.dart';
@@ -33,7 +34,7 @@ class CompletedListDetailScreen extends ConsumerWidget {
                 '€${shoppingList.totalCost!.toStringAsFixed(2)}',
                 style: TextStyle(
                   fontSize: AppConstants.fontM,
-                  color: AppColors.textOnPrimary(context).withOpacity(0.8),
+                  color: AppColors.textOnPrimary(context).withValues(alpha: 0.8),
                   fontWeight: FontWeight.normal,
                 ),
               )
@@ -53,7 +54,7 @@ class CompletedListDetailScreen extends ConsumerWidget {
         onMenuSelected: (value) => _handleMenuAction(context, ref, value),
       ),
       body: detailState.when(
-        data: (departments) => _buildDetailView(context, ref, departments),
+        data: (departmentMap) => _buildDetailView(context, ref, departmentMap),
         loading: () =>
             const LoadingWidget(message: 'Caricamento dettagli lista...'),
         error: (error, stack) => ErrorStateWidget(
@@ -68,9 +69,9 @@ class CompletedListDetailScreen extends ConsumerWidget {
   Widget _buildDetailView(
     BuildContext context,
     WidgetRef ref,
-    List<DepartmentWithProducts> departments,
+    Map<Department, List<ListItemWithProduct>> departmentMap,
   ) {
-    if (departments.isEmpty) {
+    if (departmentMap.isEmpty) {
       return const EmptyStateWidget(
         icon: Icons.shopping_basket_outlined,
         title: AppStrings.emptyList,
@@ -89,9 +90,18 @@ class CompletedListDetailScreen extends ConsumerWidget {
           right: AppConstants.paddingM,
           bottom: AppConstants.paddingM,
         ),
-        itemCount: departments.length,
-        itemBuilder: (context, index) =>
-            DepartmentCard(department: departments[index], readOnly: true),
+        itemCount: departmentMap.length,
+        itemBuilder: (context, index) {
+          final sortedDepartments = departmentMap.entries.toList()
+            ..sort((a, b) => a.key.orderIndex.compareTo(b.key.orderIndex));
+          
+          final entry = sortedDepartments[index];
+          return DepartmentCard(
+            department: entry.key,
+            items: entry.value,
+            readOnly: true,
+          );
+        },
       ),
     );
   }

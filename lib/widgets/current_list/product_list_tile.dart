@@ -2,14 +2,13 @@ import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopping_list_manager/widgets/common/swipe_action_tile.dart';
-import '../../models/list_item.dart';
+import '../../models/list_item_with_product.dart';
 import '../../providers/current_list_provider.dart';
-import '../../utils/icon_types.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
 import '../common/universal_icon.dart';
 
 class ProductListTile extends ConsumerStatefulWidget {
-  final ListItem item;
+  final ListItemWithProduct item;
   final bool readOnly;
 
   const ProductListTile({super.key, required this.item, this.readOnly = false});
@@ -40,43 +39,13 @@ class _ProductListTileState extends ConsumerState<ProductListTile> {
       onRemove: () {
         ref
             .read(currentListProvider.notifier)
-            .removeItemFromList(widget.item.id!);
+            .removeProductFromList(widget.item.product.id!);
       },
-      /* child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          color: widget.item.isChecked
-              ? AppColors.completedOverlay
-              : AppColors.cardBackground(context),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-        child: ListTile(
-          leading: _buildProductImage(),
-          title: Text(
-            widget.item.productName ?? 'Prodotto sconosciuto',
-            style: TextStyle(
-              decoration: widget.item.isChecked
-                  ? TextDecoration.lineThrough
-                  : null,
-              color: widget.item.isChecked
-                  ? AppColors.textSecondary(context)
-                  : null,
-            ),
-          ),
-          trailing: widget.item.isChecked
-              ? Icon(Icons.check_circle, color: AppColors.success)
-              : Icon(
-                  Icons.swipe_right_alt,
-                  color: AppColors.textDisabled(context),
-                ),
-          onLongPress: () => _showRemoveDialog(context),
-        ),
-      ), */
       isChecked: widget.item.isChecked,
       child: ListTile(
         leading: _buildProductImage(),
         title: Text(
-          widget.item.productName ?? 'Prodotto sconosciuto',
+          widget.item.product.name,
           style: TextStyle(
             decoration: widget.item.isChecked
                 ? TextDecoration.lineThrough
@@ -104,7 +73,7 @@ class _ProductListTileState extends ConsumerState<ProductListTile> {
       child: ListTile(
         leading: _buildProductImage(),
         title: Text(
-          widget.item.productName ?? 'Prodotto sconosciuto',
+          widget.item.product.name,
           style: TextStyle(
             fontSize: AppConstants.fontL,
             fontWeight: FontWeight.w500,
@@ -117,8 +86,8 @@ class _ProductListTileState extends ConsumerState<ProductListTile> {
 
   Widget _buildProductImage() {
     return UniversalIcon(
-      iconType: IconType.fromString(widget.item.productIconType ?? 'asset'),
-      iconValue: widget.item.productIconValue,
+      iconType: widget.item.product.iconType,
+      iconValue: widget.item.product.iconValue,
       size: AppConstants.imageXL,
       fallbackIcon: Icons.shopping_basket,
     );
@@ -132,7 +101,7 @@ class _ProductListTileState extends ConsumerState<ProductListTile> {
       builder: (context) => AlertDialog(
         title: const Text('Rimuovi prodotto'),
         content: Text(
-          'Vuoi rimuovere "${widget.item.productName}" dalla lista?',
+          'Vuoi rimuovere "${widget.item.product.name}" dalla lista?',
         ),
         actions: [
           TextButton(
@@ -143,7 +112,7 @@ class _ProductListTileState extends ConsumerState<ProductListTile> {
             onPressed: () {
               ref
                   .read(currentListProvider.notifier)
-                  .removeItemFromList(widget.item.id!);
+                  .removeProductFromList(widget.item.product.id!);
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
