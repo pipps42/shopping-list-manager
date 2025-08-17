@@ -12,12 +12,26 @@ import '../widgets/completed_lists/completed_list_card.dart';
 import '../utils/constants.dart';
 import '../utils/color_palettes.dart';
 import 'completed_list_detail_screen.dart';
+import '../features/tutorials/mixins/tutorial_mixin.dart';
 
-class CompletedListsScreen extends ConsumerWidget {
+class CompletedListsScreen extends ConsumerStatefulWidget {
   const CompletedListsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CompletedListsScreen> createState() =>
+      _CompletedListsScreenState();
+}
+
+class _CompletedListsScreenState extends ConsumerState<CompletedListsScreen>
+    with TutorialMixin {
+  @override
+  void initState() {
+    super.initState();
+    // Tutorial gestito dal MainScreen
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final completedListsState = ref.watch(completedListsProvider);
 
     return Scaffold(
@@ -437,8 +451,7 @@ class CompletedListsScreen extends ConsumerWidget {
     try {
       await ref.read(completedListsProvider.notifier).deleteAllCompletedLists();
 
-      if (context.mounted) {
-      }
+      if (context.mounted) {}
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

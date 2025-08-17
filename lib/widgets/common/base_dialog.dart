@@ -60,6 +60,7 @@ class BaseDialog extends StatelessWidget {
   final Color? titleIconColor;
   final Widget content;
   final List<DialogAction> actions;
+  final Widget? customActions; // Widget personalizzato per le actions
   final bool hasColoredHeader;
   final double? width;
   final double? height;
@@ -72,6 +73,7 @@ class BaseDialog extends StatelessWidget {
     this.titleIconColor,
     required this.content,
     this.actions = const [],
+    this.customActions,
     this.hasColoredHeader = false,
     this.width,
     this.height,
@@ -103,7 +105,18 @@ class BaseDialog extends StatelessWidget {
             ),
             
             // Actions
-            if (actions.isNotEmpty) _buildActions(context),
+            if (customActions != null) 
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppConstants.paddingL,
+                  0,
+                  AppConstants.paddingL,
+                  AppConstants.paddingL,
+                ),
+                child: customActions!,
+              )
+            else if (actions.isNotEmpty) 
+              _buildActions(context),
           ],
         ),
       ),

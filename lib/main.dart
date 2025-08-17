@@ -3,9 +3,27 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
 import 'screens/main_screen.dart';
+import 'features/tutorials/providers/tutorial_provider.dart';
+import 'features/tutorials/models/tutorial_configs.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
+}
+
+class TutorialInitializer extends ConsumerWidget {
+  final Widget child;
+
+  const TutorialInitializer({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final tutorialService = ref.read(tutorialServiceProvider);
+      tutorialService.registerTutorials(TutorialConfigs.getAllConfigs().values.toList());
+    });
+
+    return child;
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -21,7 +39,7 @@ class MyApp extends StatelessWidget {
       theme: _buildTheme(Brightness.light),
       darkTheme: _buildTheme(Brightness.dark),
 
-      home: const MainScreen(),
+      home: const TutorialInitializer(child: MainScreen()),
       debugShowCheckedModeBanner: false,
     );
   }

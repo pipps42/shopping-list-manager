@@ -12,12 +12,27 @@ import '../widgets/departments_management/department_form_dialog.dart';
 import '../widgets/departments_management/delete_department_dialog.dart';
 import '../widgets/departments_management/reorder_instructions.dart';
 import 'department_detail_screen.dart';
+import '../features/tutorials/mixins/tutorial_mixin.dart';
 
-class DepartmentsManagementScreen extends ConsumerWidget {
+class DepartmentsManagementScreen extends ConsumerStatefulWidget {
   const DepartmentsManagementScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DepartmentsManagementScreen> createState() =>
+      _DepartmentsManagementScreenState();
+}
+
+class _DepartmentsManagementScreenState
+    extends ConsumerState<DepartmentsManagementScreen>
+    with TutorialMixin {
+  @override
+  void initState() {
+    super.initState();
+    // Tutorial gestito dal MainScreen
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final departmentsState = ref.watch(departmentsProvider);
 
     return Scaffold(

@@ -15,6 +15,7 @@ import '../widgets/products_management/product_tile.dart';
 import '../widgets/products_management/product_form_dialog.dart';
 import '../widgets/products_management/move_product_dialog.dart';
 import '../widgets/products_management/delete_product_dialog.dart';
+import '../features/tutorials/mixins/tutorial_mixin.dart';
 
 class ProductsManagementScreen extends ConsumerStatefulWidget {
   const ProductsManagementScreen({super.key});
@@ -25,9 +26,16 @@ class ProductsManagementScreen extends ConsumerStatefulWidget {
 }
 
 class _ProductsManagementScreenState
-    extends ConsumerState<ProductsManagementScreen> {
+    extends ConsumerState<ProductsManagementScreen>
+    with TutorialMixin {
   String _searchQuery = '';
   int? _selectedDepartmentId;
+
+  @override
+  void initState() {
+    super.initState();
+    // Tutorial gestito dal MainScreen
+  }
 
   @override
   Widget build(BuildContext context) {
