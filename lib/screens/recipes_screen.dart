@@ -14,6 +14,7 @@ import '../widgets/recipes/recipe_card.dart';
 import '../widgets/recipes/recipe_form_dialog.dart';
 import '../widgets/recipes/recipe_ingredients_dialog.dart';
 import '../widgets/add_product_dialog.dart';
+import '../features/tutorials/mixins/tutorial_mixin.dart';
 
 class RecipesScreen extends ConsumerStatefulWidget {
   const RecipesScreen({super.key});
@@ -22,9 +23,16 @@ class RecipesScreen extends ConsumerStatefulWidget {
   ConsumerState<RecipesScreen> createState() => _RecipesScreenState();
 }
 
-class _RecipesScreenState extends ConsumerState<RecipesScreen> {
+class _RecipesScreenState extends ConsumerState<RecipesScreen>
+    with TutorialMixin {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Tutorial gestito dal MainScreen
+  }
 
   @override
   void dispose() {

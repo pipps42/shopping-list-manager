@@ -361,7 +361,7 @@ class DatabaseInitializer {
       {
         'name': 'Pecorino',
         'department_id': 2,
-        'asset_icon': 'assets/icons/products/cheese.png',
+        'asset_icon': 'assets/icons/departments/cheese.png',
       }, // riuso cheese
       {
         'name': 'Grana Padano',

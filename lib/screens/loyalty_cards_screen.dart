@@ -11,12 +11,25 @@ import '../widgets/loyalty_cards/add_loyalty_card_dialog.dart';
 import '../widgets/loyalty_cards/full_screen_image_viewer.dart';
 import '../utils/constants.dart';
 import '../utils/color_palettes.dart';
+import '../features/tutorials/mixins/tutorial_mixin.dart';
 
-class LoyaltyCardsScreen extends ConsumerWidget {
+class LoyaltyCardsScreen extends ConsumerStatefulWidget {
   const LoyaltyCardsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LoyaltyCardsScreen> createState() => _LoyaltyCardsScreenState();
+}
+
+class _LoyaltyCardsScreenState extends ConsumerState<LoyaltyCardsScreen>
+    with TutorialMixin {
+  @override
+  void initState() {
+    super.initState();
+    // Tutorial gestito dal MainScreen
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final loyaltyCardsState = ref.watch(loyaltyCardsProvider);
 
     return Scaffold(

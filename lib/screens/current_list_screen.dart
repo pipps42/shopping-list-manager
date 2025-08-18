@@ -15,12 +15,25 @@ import '../widgets/current_list/department_card.dart';
 import '../widgets/current_list/complete_list_dialogs.dart';
 import '../providers/voice_recognition_provider.dart';
 import '../models/product.dart';
+import '../features/tutorials/mixins/tutorial_mixin.dart';
 
-class CurrentListScreen extends ConsumerWidget {
+class CurrentListScreen extends ConsumerStatefulWidget {
   const CurrentListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CurrentListScreen> createState() => _CurrentListScreenState();
+}
+
+class _CurrentListScreenState extends ConsumerState<CurrentListScreen>
+    with TutorialMixin {
+  @override
+  void initState() {
+    super.initState();
+    // Tutorial gestito dal MainScreen
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final currentListState = ref.watch(currentListProvider);
     final currentListType = ref.watch(currentListTypeProvider);
     final listTypeName = getListTypeName(currentListType);
@@ -35,6 +48,16 @@ class CurrentListScreen extends ConsumerWidget {
           scaffoldState?.openDrawer();
         },
         menuItems: [
+          const PopupMenuItem(
+            value: 'show_tutorial',
+            child: Row(
+              children: [
+                Icon(Icons.school, color: AppColors.accent),
+                SizedBox(width: AppConstants.spacingS),
+                Text('Tutorial'),
+              ],
+            ),
+          ),
           const PopupMenuItem(
             value: 'complete_list',
             child: Row(
@@ -62,8 +85,7 @@ class CurrentListScreen extends ConsumerWidget {
         onMenuSelected: (value) => _handleMenuAction(context, ref, value),
       ),
       body: currentListState.when(
-        data: (departmentMap) =>
-            _buildListView(context, ref, departmentMap),
+        data: (departmentMap) => _buildListView(context, ref, departmentMap),
         loading: () => const LoadingWidget(message: AppStrings.loadingList),
         error: (error, stack) => ErrorStateWidget(
           message: 'Errore nel caricamento della lista: $error',
@@ -107,11 +129,8 @@ class CurrentListScreen extends ConsumerWidget {
           final entry = sortedDepartments[index];
           final department = entry.key;
           final items = entry.value;
-          
-          return DepartmentCard(
-            department: department,
-            items: items,
-          );
+
+          return DepartmentCard(department: department, items: items);
         },
       ),
     );
@@ -137,6 +156,9 @@ class CurrentListScreen extends ConsumerWidget {
 
   void _handleMenuAction(BuildContext context, WidgetRef ref, String action) {
     switch (action) {
+      case 'show_tutorial':
+        showTutorialManually('current_list');
+        break;
       case 'complete_list':
         _showCompleteListFlow(context, ref);
         break;

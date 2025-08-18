@@ -11,6 +11,7 @@ import 'loyalty_cards_screen.dart';
 import 'recipes_screen.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
 import 'package:shopping_list_manager/providers/list_type_provider.dart';
+import '../features/tutorials/providers/tutorial_provider.dart';
 
 enum DrawerSection {
   currentList,
@@ -32,6 +33,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   DateTime? _lastBackPressed;
+
+  @override
+  void initState() {
+    super.initState();
+    // Mostra il tutorial per il primo tab al primo avvio
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkTutorialForTab(0);
+    });
+  }
 
   // Mapping da indice a sezione del drawer
   static const Map<int, DrawerSection> _indexToSection = {
@@ -113,6 +123,47 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       _selectedIndex = index;
     });
     Navigator.pop(context);
+
+    // Mostra tutorial se è la prima volta che si visita questo tab
+    _checkTutorialForTab(index);
+  }
+
+  void _checkTutorialForTab(int index) {
+    // Rimuoviamo il check _visitedTabs per permettere al tutorial di apparire ogni volta
+    // a meno che non sia stato disabilitato con "Non mostrare più"
+
+    // Ritarda un po' per dare tempo al widget di costruirsi
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+
+      final tutorialService = ref.read(tutorialServiceProvider);
+      String? sectionKey;
+
+      switch (index) {
+        case 0:
+          sectionKey = 'current_list';
+          break;
+        case 1:
+          sectionKey = 'departments_management';
+          break;
+        case 2:
+          sectionKey = 'products_management';
+          break;
+        case 3:
+          sectionKey = 'recipes';
+          break;
+        case 4:
+          sectionKey = 'loyalty_cards';
+          break;
+        case 5:
+          sectionKey = 'completed_lists';
+          break;
+      }
+
+      if (sectionKey != null) {
+        tutorialService.checkAndShowTutorial(context, sectionKey);
+      }
+    });
   }
 
   void _onDrawerOpened() {
