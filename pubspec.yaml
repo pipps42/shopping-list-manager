@@ -18,6 +18,8 @@ dependencies:
   # Image handling
   image_picker: ^1.0.4
   image: ^4.1.3
+  # Video handling
+  video_player: ^2.8.1
   # UI Components
   reorderables: ^0.6.0
   # Utils
@@ -32,6 +34,8 @@ dependencies:
   permission_handler: ^11.3.1
   fuzzywuzzy: ^1.2.0
   shared_preferences: ^2.5.3
+  visibility_detector: ^0.4.0+2
+  asset_fill: ^2.0.0
 
 dev_dependencies:
   flutter_test:
@@ -42,8 +46,14 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/images/
     - assets/icons/
     - assets/icons/departments/
     - assets/icons/products/
+    - assets/images/
     - assets/tutorials/
+    - assets/tutorials/completed_lists/
+    - assets/tutorials/current_list/
+    - assets/tutorials/departments/
+    - assets/tutorials/loyalty_cards/
+    - assets/tutorials/products/
+    - assets/tutorials/recipes/

@@ -1,4 +1,4 @@
-enum MediaType { image, gif, video }
+enum MediaType { image, gif, video, webm }
 
 class TutorialPage {
   final String title;

@@ -116,13 +116,14 @@ class _TutorialDialogState extends State<TutorialDialog> {
       subtitle: widget.config.subtitle,
       titleIcon: Icons.school,
       hasColoredHeader: true,
-      width: MediaQuery.of(context).size.width * 0.95,
-      height: MediaQuery.of(context).size.height * 0.85,
+      width: MediaQuery.sizeOf(context).width * 1,
+      //MediaQuery.of(context).size.width * 1, //* 0.95,
+      height: MediaQuery.of(context).size.height * 0.9,
       content: Column(
         children: [
           // Indicatori di pagina fissi in alto
           _buildPageIndicators(),
-          
+
           // Contenuto scrollabile
           Expanded(
             child: PageView.builder(
@@ -131,36 +132,40 @@ class _TutorialDialogState extends State<TutorialDialog> {
               itemCount: widget.config.pages.length,
               itemBuilder: (context, index) {
                 return SingleChildScrollView(
-                  child: TutorialContent(
-                    page: widget.config.pages[index],
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppConstants.spacingM,
+                    vertical: AppConstants.spacingS,
                   ),
+                  child: TutorialContent(page: widget.config.pages[index]),
                 );
               },
             ),
           ),
         ],
       ),
-      customActions: Row(
+      customActions: Column(
+        mainAxisSize: MainAxisSize.min,
         children: _buildCustomActions(),
       ),
     );
   }
 
-
   List<Widget> _buildCustomActions() {
-    // Pulsante "Non mostrare più" sempre presente - layout migliorato
-    final neverShowButton = SizedBox(
-      height: 40,
-      child: OutlinedButton(
+    // Pulsante "Non mostrare più" con sottolineatura - apparirà sotto
+    final neverShowButton = Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton(
         onPressed: _neverShowAgain,
-        style: OutlinedButton.styleFrom(
+        style: TextButton.styleFrom(
           foregroundColor: AppColors.textSecondary(context),
-          side: BorderSide(color: AppColors.textSecondary(context)),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: EdgeInsets.zero,
         ),
         child: const Text(
           'Non mostrare più',
-          style: TextStyle(fontSize: 12),
+          style: TextStyle(
+            fontSize: AppConstants.fontM,
+            decoration: TextDecoration.underline,
+          ),
         ),
       ),
     );
@@ -168,104 +173,138 @@ class _TutorialDialogState extends State<TutorialDialog> {
     if (_hasSinglePage) {
       // Layout per pagina singola
       return [
-        neverShowButton,
-        const SizedBox(width: AppConstants.spacingM),
-        Expanded(
-          child: SizedBox(
-            height: 40,
-            child: ElevatedButton(
-              onPressed: _completeTutorial,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
+        // Prima riga: bottone principale
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            SizedBox(
+              height: 40,
+              child: ElevatedButton(
+                onPressed: _completeTutorial,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.secondary,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text(
+                  'Ho capito!',
+                  style: TextStyle(fontSize: AppConstants.fontM),
+                ),
               ),
-              child: const Text('Ho capito!'),
             ),
-          ),
+          ],
         ),
+        const SizedBox(height: AppConstants.spacingS),
+        // Seconda riga: "Non mostrare più"
+        neverShowButton,
       ];
     } else if (_isFirstPage) {
       // Layout per prima pagina
       return [
-        neverShowButton,
-        const SizedBox(width: AppConstants.spacingM),
-        Expanded(
-          child: SizedBox(
-            height: 40,
-            child: ElevatedButton(
-              onPressed: _nextPage,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
+        // Prima riga: bottone principale
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            SizedBox(
+              height: 40,
+              child: ElevatedButton(
+                onPressed: _nextPage,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.secondary,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text(
+                  'Avanti',
+                  style: TextStyle(fontSize: AppConstants.fontM),
+                ),
               ),
-              child: const Text('Avanti'),
             ),
-          ),
+          ],
         ),
+        const SizedBox(height: AppConstants.spacingS),
+        // Seconda riga: "Non mostrare più"
+        neverShowButton,
       ];
     } else if (_isLastPage) {
       // Layout per ultima pagina
       return [
+        // Prima riga: bottoni principali
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            SizedBox(
+              height: 40,
+              child: TextButton(
+                onPressed: _previousPage,
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.textSecondary(context),
+                ),
+                child: const Text(
+                  'Indietro',
+                  style: TextStyle(fontSize: AppConstants.fontM),
+                ),
+              ),
+            ),
+            const SizedBox(width: AppConstants.spacingS),
+            SizedBox(
+              height: 40,
+              child: ElevatedButton(
+                onPressed: _completeTutorial,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.secondary,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text(
+                  'Completato!',
+                  style: TextStyle(fontSize: AppConstants.fontM),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppConstants.spacingS),
+        // Seconda riga: "Non mostrare più"
         neverShowButton,
-        const SizedBox(width: AppConstants.spacingS),
-        Expanded(
-          child: SizedBox(
-            height: 40,
-            child: TextButton(
-              onPressed: _previousPage,
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.textSecondary(context),
-              ),
-              child: const Text('Indietro'),
-            ),
-          ),
-        ),
-        const SizedBox(width: AppConstants.spacingS),
-        Expanded(
-          child: SizedBox(
-            height: 40,
-            child: ElevatedButton(
-              onPressed: _completeTutorial,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Completato!'),
-            ),
-          ),
-        ),
       ];
     } else {
       // Layout per pagine intermedie
       return [
+        // Prima riga: bottoni principali
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            SizedBox(
+              height: 40,
+              child: TextButton(
+                onPressed: _previousPage,
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.textSecondary(context),
+                ),
+                child: const Text(
+                  'Indietro',
+                  style: TextStyle(fontSize: AppConstants.fontM),
+                ),
+              ),
+            ),
+            const SizedBox(width: AppConstants.spacingS),
+            SizedBox(
+              height: 40,
+              child: ElevatedButton(
+                onPressed: _nextPage,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.secondary,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text(
+                  'Avanti',
+                  style: TextStyle(fontSize: AppConstants.fontM),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppConstants.spacingS),
+        // Seconda riga: "Non mostrare più"
         neverShowButton,
-        const SizedBox(width: AppConstants.spacingS),
-        Expanded(
-          child: SizedBox(
-            height: 40,
-            child: TextButton(
-              onPressed: _previousPage,
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.textSecondary(context),
-              ),
-              child: const Text('Indietro'),
-            ),
-          ),
-        ),
-        const SizedBox(width: AppConstants.spacingS),
-        Expanded(
-          child: SizedBox(
-            height: 40,
-            child: ElevatedButton(
-              onPressed: _nextPage,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.secondary,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Avanti'),
-            ),
-          ),
-        ),
       ];
     }
   }
