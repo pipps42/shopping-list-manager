@@ -3,6 +3,7 @@ import 'package:shopping_list_manager/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shopping_list_manager/widgets/common/app_bar_gradient.dart';
 import 'current_list_screen.dart';
 import 'departments_management_screen.dart';
@@ -12,6 +13,11 @@ import 'recipes_screen.dart';
 import 'package:shopping_list_manager/utils/color_palettes.dart';
 import 'package:shopping_list_manager/providers/list_type_provider.dart';
 import '../features/tutorials/providers/tutorial_provider.dart';
+
+// Provider per ottenere informazioni dell'app dal pubspec.yaml
+final packageInfoProvider = FutureProvider<PackageInfo>((ref) async {
+  return await PackageInfo.fromPlatform();
+});
 
 enum DrawerSection {
   currentList,
@@ -305,12 +311,33 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           const Divider(),
           Padding(
             padding: const EdgeInsets.all(AppConstants.paddingM),
-            child: Text(
-              AppConstants.appVersion,
-              style: TextStyle(
-                color: AppColors.textDisabled(context),
-                fontSize: AppConstants.fontM,
-              ),
+            child: Consumer(
+              builder: (context, ref, child) {
+                final packageInfoAsync = ref.watch(packageInfoProvider);
+                return packageInfoAsync.when(
+                  data: (packageInfo) => Text(
+                    'v${packageInfo.version}',
+                    style: TextStyle(
+                      color: AppColors.textDisabled(context),
+                      fontSize: AppConstants.fontM,
+                    ),
+                  ),
+                  loading: () => Text(
+                    'v-.-.-',
+                    style: TextStyle(
+                      color: AppColors.textDisabled(context),
+                      fontSize: AppConstants.fontM,
+                    ),
+                  ),
+                  error: (error, stackTrace) => Text(
+                    'v-.-.-',
+                    style: TextStyle(
+                      color: AppColors.textDisabled(context),
+                      fontSize: AppConstants.fontM,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],

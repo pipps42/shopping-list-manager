@@ -1,7 +1,7 @@
 name: shopping_list_manager
 description: Lista della spesa ordinata per reparti
 publish_to: "none"
-version: 1.0.0+1
+version: 0.4.0+1
 environment:
   sdk: ^3.8.1
   flutter: ">=3.10.0"
@@ -36,6 +36,7 @@ dependencies:
   shared_preferences: ^2.5.3
   visibility_detector: ^0.4.0+2
   asset_fill: ^2.0.0
+  package_info_plus: ^8.3.1
 
 dev_dependencies:
   flutter_test:
